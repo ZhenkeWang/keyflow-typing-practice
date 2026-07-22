@@ -3,18 +3,33 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build && node scripts/export-dist.mjs",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "vinext dev",
+    "build": "vinext build && node scripts/package-sites.mjs",
+    "start": "vinext start",
+    "lint": "next lint",
+    "dev:vinext": "vinext dev --port 3001",
+    "build:vinext": "vinext build && node scripts/package-sites.mjs",
+    "start:vinext": "wrangler dev --config dist/server/wrangler.json",
+    "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
+    "@vinext/cloudflare": "^1.0.0-beta.3",
     "next": "^16.2.11",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-server-dom-webpack": "^19.2.8",
+    "vinext": "^1.0.0-beta.3"
   },
   "overrides": {
     "postcss": "^8.5.10",
     "sharp": "^0.35.0"
-  }
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.46.0",
+    "@vitejs/plugin-react": "^6.0.4",
+    "@vitejs/plugin-rsc": "^0.5.29",
+    "vite": "^8.1.5",
+    "wrangler": "^4.113.0"
+  },
+  "type": "module"
 }
