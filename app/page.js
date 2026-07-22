@@ -36,6 +36,11 @@ const TEXT_BANK = {
     "好的习惯来自微小的重复，当动作变得自然，思考便可以走得更远，看见更多可能。",
     "山川湖海各有自己的方向，文字也有独特的温度，耐心输入，让想法准确地抵达。",
   ],
+  news: [
+    "城市公共空间正在变得更加开放与友好，新的生活方式也在街巷之间自然生长。",
+    "人工智能工具逐渐融入日常工作，人们开始重新思考效率、创造力与协作的关系。",
+    "健康生活、绿色出行和周末短途旅行，正在成为越来越多人关注的生活话题。",
+  ],
 };
 
 const MODES = [
@@ -44,6 +49,20 @@ const MODES = [
   { id: "code", label: "代码", icon: "</>", desc: "符号流" },
   { id: "numbers", label: "数字", icon: "123", desc: "数字列" },
   { id: "chinese", label: "中文", icon: "中", desc: "中文段落" },
+  { id: "news", label: "热点", icon: "↗", desc: "实时内容" },
+];
+
+const INTERACTIONS = [
+  { id: "standard", label: "标准", desc: "自由修正" },
+  { id: "focus", label: "聚焦", desc: "高亮当前" },
+  { id: "sprint", label: "冲刺", desc: "禁止回删" },
+  { id: "zen", label: "禅意", desc: "隐藏数据" },
+];
+
+const FEED_SOURCES = [
+  { id: "news", label: "全球新闻", detail: "实时媒体标题" },
+  { id: "hot", label: "中文热榜", detail: "近期关注话题" },
+  { id: "tech", label: "科技趋势", detail: "开发者热议" },
 ];
 
 const KEY_ROWS = [
@@ -58,7 +77,7 @@ function makeText(mode, minLength = 1600) {
   let result = "";
   let index = Math.floor(Math.random() * source.length);
   while (result.length < minLength) {
-    result += (result ? (mode === "chinese" ? "" : " ") : "") + source[index % source.length];
+    result += (result ? (["chinese", "news"].includes(mode) ? "" : " ") : "") + source[index % source.length];
     index += 1;
   }
   return result;
@@ -75,8 +94,24 @@ function wordCount(value) {
   return value.trim() ? value.trim().split(/\s+/).length : 0;
 }
 
-function unitCount(value, mode) {
-  return mode === "chinese" ? [...value.replace(/\s/g, "")].length : wordCount(value);
+function isChineseContent(mode, newsSource) {
+  return mode === "chinese" || (mode === "news" && newsSource !== "tech");
+}
+
+function unitCount(value, mode, newsSource) {
+  return isChineseContent(mode, newsSource) ? [...value.replace(/\s/g, "")].length : wordCount(value);
+}
+
+function makeLiveText(items, source, minLength = 1600) {
+  const sentences = items.map((item) => source === "hot" ? `“${item}”成为近期受到关注的话题。` : item.replace(/[。.!?？]$/, "") + (source === "tech" ? "." : "。"));
+  let result = "";
+  let index = 0;
+  while (result.length < minLength && sentences.length) {
+    const separator = result ? (source === "tech" ? " " : "") : "";
+    result += separator + sentences[index % sentences.length];
+    index += 1;
+  }
+  return result;
 }
 
 export default function Home() {
@@ -94,6 +129,11 @@ export default function Home() {
   const [draft, setDraft] = useState("");
   const [pkPlayer, setPkPlayer] = useState(1);
   const [pkScores, setPkScores] = useState({ 1: null, 2: null });
+  const [interaction, setInteraction] = useState("standard");
+  const [feedback, setFeedback] = useState("correct");
+  const [newsSource, setNewsSource] = useState("news");
+  const [feedStatus, setFeedStatus] = useState("idle");
+  const [feedUpdated, setFeedUpdated] = useState("");
 
   const inputRef = useRef(null);
   const startedAt = useRef(0);
@@ -113,11 +153,12 @@ export default function Home() {
     ? Math.max(0, (status === "finished" ? finishedAt.current : now) - startedAt.current)
     : 0;
   const elapsedSeconds = elapsedMs / 1000;
-  const metric = mode === "chinese" ? "CPM" : "WPM";
+  const chineseContent = isChineseContent(mode, newsSource);
+  const metric = chineseContent ? "CPM" : "WPM";
   const wpm = elapsedSeconds > 0
-    ? Math.round((mode === "chinese" ? correct : correct / 5) / (elapsedSeconds / 60))
+    ? Math.round((chineseContent ? correct : correct / 5) / (elapsedSeconds / 60))
     : 0;
-  const words = unitCount(typed, mode);
+  const words = unitCount(typed, mode, newsSource);
   const timeLeft = testType !== "words" ? Math.max(0, Math.ceil(goal - elapsedSeconds)) : 0;
   const progress = testType !== "words"
     ? Math.min(100, (elapsedSeconds / goal) * 100)
@@ -143,6 +184,7 @@ export default function Home() {
     setStatus("idle");
     setNow(0);
     setCombo(0);
+    setFeedback("correct");
     setPkPlayer(1);
     setPkScores({ 1: null, 2: null });
     setBest(Number(localStorage.getItem(`keyflow-best-${nextMode}`)) || (nextMode === "focus" ? Number(localStorage.getItem("keyflow-best")) || 0 : 0));
@@ -163,6 +205,26 @@ export default function Home() {
     }
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (mode !== "news") return;
+    const controller = new AbortController();
+    setFeedStatus("loading");
+    fetch(`/api/trending?source=${newsSource}`, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Feed unavailable");
+        return response.json();
+      })
+      .then((data) => {
+        if (startedAt.current === 0 && data.items?.length) setText(makeLiveText(data.items, newsSource));
+        setFeedUpdated(data.updatedAt || "");
+        setFeedStatus(data.fallback ? "fallback" : "live");
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") setFeedStatus("fallback");
+      });
+    return () => controller.abort();
+  }, [mode, newsSource]);
 
   useEffect(() => {
     if (status !== "running") return;
@@ -220,6 +282,7 @@ export default function Home() {
   function processInput(value) {
     if (status === "finished") return;
     value = value.replace(/[\r\n]/g, "").slice(0, text.length);
+    if (interaction === "sprint" && value.length < typed.length) return;
     const stamp = Date.now();
     if (status === "idle" && value.length) {
       startedAt.current = stamp;
@@ -235,13 +298,14 @@ export default function Home() {
       const index = value.length - 1;
       const isCorrect = value[index] === text[index];
       setCombo((current) => isCorrect ? current + 1 : 0);
+      setFeedback(isCorrect ? "correct" : "wrong");
       setPulse((current) => current + 1);
     } else if (value.length < typed.length) {
       setCombo(0);
     }
 
     setTyped(value);
-    if (testType === "words" && unitCount(value, mode) >= goal) finish();
+    if (testType === "words" && unitCount(value, mode, newsSource) >= goal) finish();
   }
 
   function handleInput(event) {
@@ -280,6 +344,9 @@ export default function Home() {
       ? pkScores[1].accuracy === pkScores[2].accuracy ? 0 : pkScores[1].accuracy > pkScores[2].accuracy ? 1 : 2
       : pkScores[1].wpm > pkScores[2].wpm ? 1 : 2
     : null;
+  const focusStart = chineseContent ? typed.length : text.lastIndexOf(" ", Math.max(0, typed.length - 1)) + 1;
+  const nextSpace = chineseContent ? typed.length + 8 : text.indexOf(" ", typed.length);
+  const focusEnd = nextSpace === -1 ? text.length : nextSpace;
 
   return (
     <main className="app-shell" onClick={() => status !== "finished" && inputRef.current?.focus()}>
@@ -303,7 +370,7 @@ export default function Home() {
       <section className="intro">
         <div>
           <p className="eyebrow"><span /> FLOW STATE TRAINING</p>
-          <h1>找到你的<span>击键节奏。</span></h1>
+          <h1 className="art-title">找到你的<span>击键节奏。</span></h1>
         </div>
         <p>让视觉反馈跟上每一次敲击。<br />放松、专注，然后自然加速。</p>
       </section>
@@ -315,6 +382,11 @@ export default function Home() {
               key={item.id}
               className={`mode-card ${mode === item.id ? "active" : ""}`}
               onClick={(event) => { event.stopPropagation(); reset({ mode: item.id }); }}
+              onPointerMove={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                event.currentTarget.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+                event.currentTarget.style.setProperty("--my", `${event.clientY - rect.top}px`);
+              }}
             >
               <span className="mode-icon">{item.icon}</span>
               <span><strong>{item.label}</strong><small>{item.desc}</small></span>
@@ -332,18 +404,42 @@ export default function Home() {
           <div className="goal-options">
             {(testType === "time" ? timeOptions : testType === "pk" ? pkOptions : wordOptions).map((item) => (
               <button key={item} className={goal === item ? "active" : ""} onClick={(event) => { event.stopPropagation(); reset({ goal: item }); }}>
-                {testType !== "words" ? (item === 120 ? "2m" : `${item}s`) : `${item}${mode === "chinese" ? "字" : "词"}`}
+                {testType !== "words" ? (item === 120 ? "2m" : `${item}s`) : `${item}${chineseContent ? "字" : "词"}`}
               </button>
             ))}
           </div>
+          <div className="interaction-switch" aria-label="交互方式">
+            {INTERACTIONS.map((item) => (
+              <button
+                key={item.id}
+                className={interaction === item.id ? "active" : ""}
+                title={item.desc}
+                onClick={(event) => { event.stopPropagation(); setInteraction(item.id); reset(); }}
+              ><strong>{item.label}</strong><small>{item.desc}</small></button>
+            ))}
+          </div>
         </div>
+
+        {mode === "news" && (
+          <div className="feed-bar">
+            <div className={`feed-live ${feedStatus}`}><i /> {feedStatus === "loading" ? "正在更新内容" : feedStatus === "live" ? "实时内容已更新" : "当前使用备用内容"}</div>
+            <div className="feed-options">
+              {FEED_SOURCES.map((item) => (
+                <button key={item.id} className={newsSource === item.id ? "active" : ""} onClick={(event) => { event.stopPropagation(); setNewsSource(item.id); reset({ mode: "news" }); }}>
+                  <strong>{item.label}</strong><small>{item.detail}</small>
+                </button>
+              ))}
+            </div>
+            <span>{feedUpdated ? `更新于 ${new Date(feedUpdated).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}` : "连接公开数据源"}</span>
+          </div>
+        )}
       </section>
 
-      <section className={`practice-card ${status} ${errors > 0 && typed.at(-1) !== text[typed.length - 1] ? "has-error" : ""}`}>
+      <section className={`practice-card ${status} interaction-${interaction} ${errors > 0 && typed.at(-1) !== text[typed.length - 1] ? "has-error" : ""}`}>
         <div className="progress-track"><span style={{ width: `${progress}%` }} /></div>
         <div className="card-topline">
           <span className={`live-status ${status}`}><i /> {status === "idle" ? "READY" : status === "running" ? "LIVE SESSION" : "SESSION COMPLETE"}</span>
-          <span>{modeLabel} · {testType !== "words" ? `${goal} 秒` : `${goal} ${mode === "chinese" ? "字" : "词"}`}</span>
+          <span>{modeLabel} · {INTERACTIONS.find((item) => item.id === interaction)?.label} · {testType !== "words" ? `${goal} 秒` : `${goal} ${chineseContent ? "字" : "词"}`}</span>
           <span className="session-index">{testType === "pk" ? `PLAYER ${pkPlayer} / 2` : `SESSION / ${String(history.length + 1).padStart(2, "0")}`}</span>
         </div>
 
@@ -351,7 +447,7 @@ export default function Home() {
           <div className="stat primary" key={`wpm-${pulse}`}><span>{metric}</span><strong>{wpm}</strong><small>速度</small></div>
           <div className="stat"><span>ACC</span><strong>{accuracy}<small>%</small></strong><small>准确率</small></div>
           <div className="stat"><span>FLOW</span><strong>{consistency}<small>%</small></strong><small>稳定度</small></div>
-          <div className="stat"><span>{testType === "words" ? (mode === "chinese" ? "CHARS" : "WORDS") : "TIME"}</span><strong>{testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}</strong><small>{testType === "words" ? "进度" : "剩余"}</small></div>
+          <div className="stat"><span>{testType === "words" ? (chineseContent ? "CHARS" : "WORDS") : "TIME"}</span><strong>{testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}</strong><small>{testType === "words" ? "进度" : "剩余"}</small></div>
         </div>
 
         <div className="typing-zone">
@@ -375,7 +471,10 @@ export default function Home() {
           <div className="typing-meta">
             <span>ERRORS <b>{errors}</b></span>
             <span className={`combo ${combo >= 5 ? "hot" : ""}`}>COMBO <b>{combo}</b></span>
+            <span className="interaction-label">{INTERACTIONS.find((item) => item.id === interaction)?.desc}</span>
           </div>
+
+          {pulse > 0 && status === "running" && <span className={`key-burst ${feedback}`} key={pulse}>{feedback === "correct" ? "+1" : "×"}</span>}
 
           <div className={`passage ${mode}`} aria-hidden="true">
             {visibleText.split("").map((char, index) => {
@@ -383,11 +482,12 @@ export default function Home() {
               let className = "pending";
               if (absolute < typed.length) className = typed[absolute] === char ? "correct" : "wrong";
               if (absolute === typed.length && status !== "finished") className += " current";
+              if (absolute >= focusStart && absolute <= focusEnd) className += " focus-range";
               return <span className={className} key={`${absolute}-${char}`}>{char}</span>;
             })}
           </div>
 
-          {status === "idle" && <div className="start-hint"><span>{testType === "pk" ? `玩家 ${pkPlayer} 准备好后开始输入` : "点击这里或直接开始输入"}</span><small>{mode === "chinese" ? "支持拼音与五笔输入法" : "首个按键后自动计时"}</small></div>}
+          {status === "idle" && <div className="start-hint"><span>{testType === "pk" ? `玩家 ${pkPlayer} 准备好后开始输入` : "点击这里或直接开始输入"}</span><small>{chineseContent ? "支持拼音与五笔输入法" : interaction === "sprint" ? "冲刺模式无法使用退格键" : "首个按键后自动计时"}</small></div>}
 
           {status === "finished" && (
             <div className="result-overlay">
@@ -410,7 +510,7 @@ export default function Home() {
           )}
         </div>
 
-        {mode === "chinese" ? <div className="ime-panel"><span>中</span><div><strong>中文输入已就绪</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div> : <div className="keyboard" aria-hidden="true">
+        {chineseContent ? <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div> : <div className="keyboard" aria-hidden="true">
           {KEY_ROWS.map((row, rowIndex) => (
             <div className="key-row" key={rowIndex}>
               {row.map((key) => <span className={expectedKey === key ? "next" : ""} key={key}>{key}</span>)}
