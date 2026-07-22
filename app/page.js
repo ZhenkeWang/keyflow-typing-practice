@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Aurora from "./components/Aurora";
 
 const TEXT_BANK = {
   focus: [
@@ -282,6 +283,8 @@ export default function Home() {
 
   return (
     <main className="app-shell" onClick={() => status !== "finished" && inputRef.current?.focus()}>
+      <div className="aurora-backdrop"><Aurora /></div>
+      <div className="background-wash" />
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
 
