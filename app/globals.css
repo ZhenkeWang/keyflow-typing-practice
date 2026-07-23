@@ -1503,9 +1503,9 @@ html[data-theme="light"] .theme-menu {
   height: 82px;
   border-radius: 50%;
   background: radial-gradient(ellipse, rgba(3, 7, 20, .42), transparent 68%);
-  filter: blur(20px);
+  filter: blur(27px);
   transform: translateX(-50%) rotateX(72deg);
-  animation: keyboardShadowFloat 5.6s ease-in-out infinite;
+  animation: keyboardShadowFloat 8.4s cubic-bezier(.45, 0, .55, 1) infinite;
 }
 .keyboard-aura {
   position: absolute;
@@ -1596,25 +1596,6 @@ html[data-theme="light"] .theme-menu {
     0 0 32px color-mix(in srgb, var(--accent-2) 30%, transparent),
     0 0 52px color-mix(in srgb, var(--accent-3) 15%, transparent);
 }
-.hero-keyboard-stage > p {
-  position: absolute;
-  bottom: 13px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  color: var(--dim);
-  font: 700 9px "IBM Plex Mono", monospace;
-  letter-spacing: 1.5px;
-}
-.hero-keyboard-stage > p span {
-  width: 22px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent-2));
-}
-.hero-keyboard-stage > p span:last-child {
-  transform: scaleX(-1);
-}
 html[data-theme="light"] .hero-keyboard-stage::before {
   background: radial-gradient(ellipse, rgba(68, 74, 125, .2), transparent 68%);
 }
@@ -1643,8 +1624,8 @@ html[data-theme="light"] .hero-keyboard-stage .key-row > span {
   50% { transform: translate3d(0, 9px, 0); }
 }
 @keyframes keyboardShadowFloat {
-  0%, 100% { opacity: .62; transform: translateX(-50%) rotateX(72deg) scale(.94); }
-  50% { opacity: .42; transform: translateX(-50%) rotateX(72deg) scale(1.04); }
+  0%, 100% { opacity: .5; transform: translateX(-50%) rotateX(72deg) scale(.985); }
+  50% { opacity: .44; transform: translateX(-50%) rotateX(72deg) scale(1.015); }
 }
 @keyframes keyboardAuraDrift {
   from { transform: translate3d(-3%, -1%, 0) scale(.96); opacity: .72; }
@@ -1661,7 +1642,6 @@ html[data-theme="light"] .hero-keyboard-stage .key-row > span {
   .hero-keyboard-stage { min-height: 285px; margin-top: 8px; }
   .keyboard-float-shell { width: 980px; }
   .hero-keyboard-stage .hero-keyboard { --hero-scale: .56; }
-  .hero-keyboard-stage > p { font-size: 7px; }
   .app-shell:not(.immersive-mode) .typing-zone { min-height: 330px; padding-inline: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1673,9 +1653,7 @@ html[data-theme="light"] .hero-keyboard-stage .key-row > span {
 }
 
 /* Deeper chassis, full-stage interaction and richer typing motion */
-.hero-keyboard-stage {
-  cursor: crosshair;
-}
+.hero-keyboard-stage { cursor: default; }
 .keyboard-float-shell::after {
   content: "";
   position: absolute;
@@ -1726,6 +1704,45 @@ html[data-theme="light"] .hero-keyboard-stage .key-row > span {
 .hero-keyboard-stage .key-row:nth-child(5) > span { animation-delay: -2.6s; }
 .hero-keyboard-stage .key-row > span:nth-child(3n) { animation-delay: -3.2s; }
 .hero-keyboard-stage .key-row > span:nth-child(4n) { animation-delay: -4.1s; }
+.hero-keyboard-stage .key-row > span {
+  box-shadow:
+    0 11px 0 rgba(3, 6, 18, .27),
+    0 18px 24px rgba(3, 6, 18, .18),
+    0 0 28px var(--key-accent, transparent),
+    inset 0 1px rgba(255, 255, 255, .14);
+  transition:
+    transform 190ms cubic-bezier(.2, .85, .25, 1.18),
+    box-shadow 230ms cubic-bezier(.2, .8, .2, 1),
+    color .2s,
+    border-color .2s,
+    background .22s;
+}
+.hero-keyboard-stage .key-row > span.pointer-down,
+.key-row > span.pointer-down {
+  z-index: 3;
+  border-color: color-mix(in srgb, var(--accent-2) 48%, transparent);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent-1) 15%, rgba(255, 255, 255, .07)), color-mix(in srgb, var(--accent-3) 9%, rgba(255, 255, 255, .018)));
+  box-shadow:
+    0 2px 0 rgba(3, 6, 18, .24),
+    0 5px 9px rgba(3, 6, 18, .13),
+    0 0 22px color-mix(in srgb, var(--accent-2) 22%, transparent),
+    inset 0 2px 8px rgba(2, 5, 16, .2);
+}
+html[data-theme="light"] .hero-keyboard-stage .key-row > span {
+  box-shadow:
+    0 11px 0 rgba(72, 80, 124, .14),
+    0 18px 24px rgba(72, 80, 124, .09),
+    0 0 28px var(--key-accent, transparent),
+    inset 0 1px rgba(255, 255, 255, .96);
+}
+html[data-theme="light"] .hero-keyboard-stage .key-row > span.pointer-down {
+  box-shadow:
+    0 2px 0 rgba(72, 80, 124, .12),
+    0 5px 9px rgba(72, 80, 124, .07),
+    0 0 20px color-mix(in srgb, var(--accent-2) 18%, transparent),
+    inset 0 2px 8px rgba(72, 80, 124, .1);
+}
 .key-row > span.pressed {
   z-index: 4;
   color: #fff;
@@ -1748,18 +1765,18 @@ html[data-theme="light"] .hero-keyboard-stage .key-row > span {
 }
 @keyframes keyboardKeyStrike {
   0% {
-    transform: translate3d(0, -2px, 26px) scale(1);
-    box-shadow: 0 7px 0 rgba(3, 6, 18, .25), 0 0 0 transparent;
+    transform: translate3d(0, 0, 26px) scale(1);
+    box-shadow: 0 11px 0 rgba(3, 6, 18, .27), 0 0 0 transparent;
   }
   24% {
-    transform: translate3d(0, 5px, 8px) scale(.94);
+    transform: translate3d(0, 12px, -2px) scale(.93);
     background: linear-gradient(135deg, rgba(134, 103, 255, .48), rgba(74, 137, 255, .4), rgba(70, 225, 190, .42));
     box-shadow:
-      0 2px 0 rgba(3, 6, 18, .22),
+      0 1px 0 rgba(3, 6, 18, .22),
       0 0 26px color-mix(in srgb, var(--accent-2) 56%, transparent),
       0 0 54px color-mix(in srgb, var(--accent-3) 28%, transparent);
   }
-  58% { transform: translate3d(0, -15px, 58px) scale(1.1); }
+  58% { transform: translate3d(0, -12px, 62px) scale(1.09); }
   100% { transform: translate3d(0, 0, 18px) scale(1); }
 }
 @keyframes pressedKeyRing {

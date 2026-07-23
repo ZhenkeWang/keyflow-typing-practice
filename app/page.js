@@ -523,13 +523,20 @@ export default function Home() {
         event.clientX - (keyRect.left + keyRect.width / 2),
         event.clientY - (keyRect.top + keyRect.height / 2)
       );
-      const proximity = Math.max(0, 1 - distance / 235);
+      const isPointed = (
+        event.clientX >= keyRect.left &&
+        event.clientX <= keyRect.right &&
+        event.clientY >= keyRect.top &&
+        event.clientY <= keyRect.bottom
+      );
+      const proximity = isPointed ? 1 : Math.max(0, 1 - distance / 150) * .12;
       const ratio = Math.min(1, Math.max(0, (keyRect.left + keyRect.width / 2 - keyboardRect.left) / keyboardRect.width));
       const hue = 255 - ratio * 90;
       const lightness = theme === "light" ? 43 : 68;
       const saturation = theme === "light" ? 76 : 88;
-      key.style.setProperty("--key-y", `${proximity * -11}px`);
-      key.style.setProperty("--key-z", `${proximity * 30}px`);
+      key.classList.toggle("pointer-down", isPointed);
+      key.style.setProperty("--key-y", `${proximity * 11}px`);
+      key.style.setProperty("--key-z", `${proximity * -18}px`);
       key.style.setProperty("--key-light", proximity.toFixed(3));
       key.style.setProperty("--key-accent", `hsla(${hue}, ${saturation}%, ${lightness}%, ${(proximity * .3).toFixed(3)})`);
       key.style.setProperty("--key-border", `hsla(${hue}, ${saturation}%, ${lightness}%, ${(proximity * .62).toFixed(3)})`);
@@ -550,6 +557,7 @@ export default function Home() {
       key.style.setProperty("--key-light", "0");
       key.style.setProperty("--key-accent", "transparent");
       key.style.setProperty("--key-border", "transparent");
+      key.classList.remove("pointer-down");
     });
   }
 
@@ -697,7 +705,6 @@ export default function Home() {
               <i /><i /><i /><i /><i /><i /><i />
             </span>
           )}
-          <p><span /> MOVE TO EXPLORE · TYPE TO RESPOND <span /></p>
         </section>
       )}
 
