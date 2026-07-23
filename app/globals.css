@@ -1491,10 +1491,14 @@ html[data-theme="light"] .theme-menu {
   transform: translateY(-1px);
 }
 .immersive-exit {
-  position: absolute;
-  top: 14px;
-  right: 16px;
+  position: relative;
+  top: auto;
+  right: auto;
   z-index: 12;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
+  margin-right: max(18px, env(safe-area-inset-right));
   padding: 8px 10px;
   border-radius: 9px;
   font-size: 9px;
@@ -1510,11 +1514,12 @@ body:has(.immersive-mode) {
   overflow: hidden;
 }
 .app-shell.immersive-mode {
-  width: 100%;
+  width: 100vw;
   min-height: 100dvh;
   display: grid;
-  place-items: center;
-  padding: clamp(22px, 4vh, 48px);
+  place-items: stretch;
+  padding: 0;
+  margin: 0;
 }
 .immersive-mode > .nav,
 .immersive-mode > .intro,
@@ -1524,22 +1529,40 @@ body:has(.immersive-mode) {
   display: none;
 }
 .immersive-mode .practice-card {
-  width: min(1240px, calc(100vw - 44px));
-  min-height: min(880px, calc(100dvh - 44px));
-  max-height: calc(100dvh - 44px);
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
   display: grid;
-  grid-template-rows: auto minmax(280px, 1fr) auto;
-  border-radius: 24px;
+  grid-template-rows: 56px auto minmax(0, 1fr) auto;
+  border: 0;
+  border-radius: 0;
   box-shadow:
-    0 48px 140px rgba(2, 5, 17, .42),
-    0 0 90px color-mix(in srgb, var(--accent-1) 8%, transparent),
+    inset 0 0 120px rgba(2, 5, 17, .18),
     inset 0 1px rgba(255, 255, 255, .15);
-  animation: immersiveCardIn 850ms cubic-bezier(.32, .72, 0, 1) both;
+  transform-origin: 50% 44%;
+  animation: immersiveCardIn 1000ms cubic-bezier(.22, .82, .16, 1) both;
 }
 @keyframes immersiveCardIn {
-  from { opacity: .2; transform: scale(.94) translateY(18px); filter: blur(10px); }
-  72% { opacity: 1; transform: scale(1.008); filter: blur(0); }
-  to { transform: none; }
+  0% {
+    opacity: .18;
+    transform: scale(.91) translateY(22px);
+    filter: blur(14px) saturate(.82);
+    clip-path: inset(7% 8% 7% 8% round 32px);
+  }
+  58% {
+    opacity: 1;
+    transform: scale(1.012) translateY(-2px);
+    filter: blur(0) saturate(1.06);
+    clip-path: inset(0 round 8px);
+  }
+  78% { transform: scale(.997); }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    clip-path: inset(0 round 0);
+  }
 }
 .immersive-mode .progress-track,
 .immersive-mode .card-topline,
@@ -1552,6 +1575,8 @@ body:has(.immersive-mode) {
 .immersive-mode .interaction-zen .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-row: 2;
+  animation: immersiveElementIn 680ms cubic-bezier(.22, .82, .16, 1) 180ms both;
 }
 .immersive-mode .stat {
   min-height: clamp(112px, 16vh, 148px);
@@ -1567,7 +1592,9 @@ body:has(.immersive-mode) {
   min-height: 280px;
   display: grid;
   align-content: center;
+  grid-row: 3;
   padding: clamp(34px, 5vh, 64px) clamp(36px, 5vw, 74px);
+  animation: immersiveElementIn 720ms cubic-bezier(.22, .82, .16, 1) 260ms both;
 }
 .immersive-mode .passage,
 .immersive-mode .interaction-zen .passage {
@@ -1579,12 +1606,31 @@ body:has(.immersive-mode) {
 .immersive-mode .interaction-zen .keyboard {
   min-height: clamp(250px, 33vh, 330px);
   display: grid;
+  grid-row: 4;
   padding: 30px clamp(20px, 3vw, 42px);
+  animation: immersiveElementIn 760ms cubic-bezier(.22, .82, .16, 1) 340ms both;
+}
+.immersive-mode .immersive-exit {
+  animation: immersiveElementIn 600ms cubic-bezier(.22, .82, .16, 1) 320ms both;
+}
+@keyframes immersiveElementIn {
+  from { opacity: 0; transform: translateY(14px) scale(.985); filter: blur(6px); }
+  72% { opacity: 1; transform: translateY(-1px) scale(1.002); filter: blur(0); }
+  to { opacity: 1; transform: none; }
+}
+:fullscreen .app-shell.immersive-mode {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+}
+:fullscreen .immersive-mode .practice-card {
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
 }
 html[data-theme="light"] .immersive-mode .practice-card {
   box-shadow:
-    0 48px 130px rgba(62, 65, 112, .18),
-    0 0 90px color-mix(in srgb, var(--accent-2) 9%, transparent),
+    inset 0 0 120px rgba(78, 85, 137, .08),
     inset 0 1px rgba(255, 255, 255, .96);
 }
 
@@ -1641,7 +1687,7 @@ html.interaction-transitioning::view-transition-new(interaction-selector) {
 
 @media (max-height: 760px) {
   .immersive-mode .practice-card {
-    grid-template-rows: auto minmax(210px, 1fr) auto;
+    grid-template-rows: 48px auto minmax(0, 1fr) auto;
   }
   .immersive-mode .stat { min-height: 96px; }
   .immersive-mode .keyboard,
@@ -1650,6 +1696,10 @@ html.interaction-transitioning::view-transition-new(interaction-selector) {
 
 @media (prefers-reduced-motion: reduce) {
   .immersive-mode .practice-card,
+  .immersive-mode .stats,
+  .immersive-mode .typing-zone,
+  .immersive-mode .keyboard,
+  .immersive-mode .immersive-exit,
   html.interaction-transitioning::view-transition-old(practice-panel),
   html.interaction-transitioning::view-transition-new(practice-panel),
   html.interaction-transitioning::view-transition-old(interaction-selector),
