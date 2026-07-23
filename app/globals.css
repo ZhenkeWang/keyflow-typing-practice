@@ -2385,3 +2385,116 @@ html[data-theme="light"] .keyboard-input-wave,
 html[data-theme="light"] .keyboard-deck-wave {
   opacity: .5;
 }
+
+/* Airier vertical rhythm across the product-stage layout. */
+.app-shell:not(.immersive-mode) > .intro {
+  padding-top: clamp(58px, 6vw, 76px);
+  padding-bottom: 50px;
+}
+.app-shell:not(.immersive-mode) > .hero-keyboard-stage {
+  margin-top: 0;
+  margin-bottom: 38px;
+}
+.app-shell:not(.immersive-mode) .practice-card {
+  min-height: 640px;
+  margin-top: 18px;
+}
+.app-shell:not(.immersive-mode) .card-topline {
+  min-height: 54px;
+  padding-inline: 28px;
+}
+.app-shell:not(.immersive-mode) .stat {
+  min-height: 114px;
+  padding: 24px 28px;
+}
+.app-shell:not(.immersive-mode) .typing-zone {
+  min-height: 396px;
+  padding-top: 54px;
+  padding-bottom: 48px;
+}
+.app-shell:not(.immersive-mode) .control-deck {
+  margin-top: 34px;
+  margin-bottom: 18px;
+}
+.app-shell:not(.immersive-mode) .mode-grid {
+  gap: 10px;
+}
+.app-shell:not(.immersive-mode) .mode-card {
+  min-height: 76px;
+  padding: 14px 16px;
+}
+.app-shell:not(.immersive-mode) .session-controls {
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px;
+}
+.app-shell:not(.immersive-mode) .feed-bar {
+  margin-top: 12px;
+  padding-block: 12px;
+}
+.app-shell:not(.immersive-mode) .history-section {
+  margin-top: 48px;
+}
+.app-shell:not(.immersive-mode) .section-heading {
+  margin-bottom: 16px;
+}
+.app-shell:not(.immersive-mode) .history-item {
+  min-height: 54px;
+}
+.app-shell:not(.immersive-mode) .page-footer {
+  height: 110px;
+}
+
+@media (max-width: 860px) {
+  .app-shell:not(.immersive-mode) > .intro {
+    padding-top: 48px;
+    padding-bottom: 38px;
+  }
+  .app-shell:not(.immersive-mode) > .hero-keyboard-stage {
+    margin-bottom: 28px;
+  }
+  .app-shell:not(.immersive-mode) .practice-card {
+    min-height: 0;
+    margin-top: 14px;
+  }
+  .app-shell:not(.immersive-mode) .typing-zone {
+    min-height: 330px;
+    padding: 38px 28px 34px;
+  }
+  .app-shell:not(.immersive-mode) .control-deck {
+    margin-top: 28px;
+  }
+  .app-shell:not(.immersive-mode) .mode-grid {
+    gap: 9px;
+  }
+  .app-shell:not(.immersive-mode) .history-section {
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 650px) {
+  .app-shell:not(.immersive-mode) > .intro {
+    padding-top: 40px;
+    padding-bottom: 54px;
+  }
+  .app-shell:not(.immersive-mode) > .hero-keyboard-stage {
+    margin-bottom: 22px;
+  }
+  .app-shell:not(.immersive-mode) .stat {
+    min-height: 108px;
+    padding: 22px 20px;
+  }
+  .app-shell:not(.immersive-mode) .typing-zone {
+    min-height: 300px;
+    padding: 32px 21px 30px;
+  }
+  .app-shell:not(.immersive-mode) .mode-card {
+    min-height: 72px;
+  }
+  .app-shell:not(.immersive-mode) .session-controls {
+    gap: 8px;
+  }
+  .app-shell:not(.immersive-mode) .page-footer {
+    height: 96px;
+  }
+}
