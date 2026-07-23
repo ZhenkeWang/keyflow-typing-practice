@@ -1452,6 +1452,98 @@ html[data-theme="light"] .theme-menu {
   }
 }
 
+/* MacBook stage: larger screen content, complete silhouette, one smooth exit timeline. */
+.entry-laptop-webgl {
+  will-change: transform, opacity;
+}
+.webgl-screen-ui {
+  width: 820px;
+  height: 470px;
+  padding: 42px 52px;
+}
+.webgl-screen-ui > span {
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+.webgl-screen-ui h1 {
+  font-size: 88px;
+  line-height: .93;
+}
+.webgl-screen-ui button {
+  min-width: 224px;
+  height: 58px;
+  margin-top: 30px;
+  font-size: 16px;
+}
+.entry-gate.is-leaving {
+  animation: entryGateLeaveSilk .82s cubic-bezier(.32, .72, 0, 1) both;
+}
+.entry-gate.is-leaving .entry-laptop-webgl {
+  animation: webglStageLeaveSilk .82s cubic-bezier(.32, .72, 0, 1) both;
+  pointer-events: none;
+}
+.entry-gate.is-leaving .webgl-screen-ui {
+  animation: webglScreenLeaveSilk .52s cubic-bezier(.32, .72, 0, 1) both;
+}
+.practice-entered:not(.immersive-mode) > .nav,
+.practice-entered:not(.immersive-mode) > .practice-card,
+.practice-entered:not(.immersive-mode) > .control-deck,
+.practice-entered:not(.immersive-mode) > .history-section,
+.practice-entered:not(.immersive-mode) > .page-footer {
+  animation: practicePageEnterSilk .78s cubic-bezier(.22, .82, .16, 1) both;
+  will-change: transform, opacity;
+}
+.practice-entered:not(.immersive-mode) > .practice-card { animation-delay: 40ms; }
+.practice-entered:not(.immersive-mode) > .control-deck { animation-delay: 80ms; }
+.practice-entered:not(.immersive-mode) > .history-section { animation-delay: 120ms; }
+.practice-entered:not(.immersive-mode) > .page-footer { animation-delay: 150ms; }
+
+@keyframes entryGateLeaveSilk {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+@keyframes webglStageLeaveSilk {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, -8px, 0) scale(1.025); }
+}
+@keyframes webglScreenLeaveSilk {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, -5px, 0) scale(1.018); }
+}
+@keyframes practicePageEnterSilk {
+  from { opacity: 0; transform: translate3d(0, 16px, 0) scale(.996); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@media (max-width: 720px) {
+  .webgl-screen-ui {
+    width: 700px;
+    height: 400px;
+    padding: 32px 42px;
+  }
+  .webgl-screen-ui h1 { font-size: 76px; }
+  .webgl-screen-ui > span { font-size: 11px; }
+  .webgl-screen-ui button {
+    min-width: 204px;
+    height: 52px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-gate.is-leaving,
+  .entry-gate.is-leaving .entry-laptop-webgl,
+  .entry-gate.is-leaving .webgl-screen-ui,
+  .practice-entered:not(.immersive-mode) > .nav,
+  .practice-entered:not(.immersive-mode) > .practice-card,
+  .practice-entered:not(.immersive-mode) > .control-deck,
+  .practice-entered:not(.immersive-mode) > .history-section,
+  .practice-entered:not(.immersive-mode) > .page-footer {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
 /* Cinematic laptop entry */
 body:has(.entry-gate) {
   overflow: hidden;

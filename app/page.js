@@ -595,11 +595,11 @@ export default function Home() {
     event?.stopPropagation();
     if (!entryReady || entryLeaving) return;
     setEntryLeaving(true);
+    setEntered(true);
     window.setTimeout(() => {
-      setEntered(true);
       setEntryLeaving(false);
       requestAnimationFrame(() => inputRef.current?.focus());
-    }, 920);
+    }, 820);
   }
 
   const pkWinner = pkScores[1] && pkScores[2]
@@ -631,7 +631,7 @@ export default function Home() {
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
 
-      {!entered && (
+      {(!entered || entryLeaving) && (
         <section
           className={`entry-gate ${entryReady ? "is-ready" : ""} ${entryLeaving ? "is-leaving" : ""}`}
           aria-label="Keyflow 入场动画"

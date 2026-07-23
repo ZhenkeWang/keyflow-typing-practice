@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Html, Lightformer, RoundedBox } from "@react-three/drei";
+import { Html, RoundedBox } from "@react-three/drei";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -51,29 +51,18 @@ function KeyRow({ row, rowIndex, keyRefs }) {
     return (
       <group
         key={`${rowIndex}-${keyIndex}-${key}`}
-        position={[x * .48, .34, -1.52 + rowIndex * .61]}
+        position={[x * .48, .2, -1.52 + rowIndex * .61]}
         ref={(node) => { keyRefs.current[absoluteIndex] = node; }}
       >
-        <RoundedBox args={[width * .45, .19, .48]} radius={.055} smoothness={3}>
+        <RoundedBox args={[width * .45, .14, .48]} radius={.05} smoothness={3}>
           <meshStandardMaterial
-            color="#10151e"
-            metalness={.48}
-            roughness={.34}
-            emissive="#5577c8"
-            emissiveIntensity={.035}
+            color="#07090d"
+            metalness={.32}
+            roughness={.28}
+            emissive="#7794e8"
+            emissiveIntensity={.025}
           />
         </RoundedBox>
-        <Html
-          transform
-          center
-          position={[0, .106, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          distanceFactor={4.7}
-          zIndexRange={[20, 0]}
-          style={{ pointerEvents: "none" }}
-        >
-          <span className="webgl-key-label">{key}</span>
-        </Html>
       </group>
     );
   });
@@ -98,7 +87,7 @@ function LaptopModel({ ready, leaving, onEnter }) {
       if (!key) return;
       const local = typingTime - index * .0085;
       const press = local > 0 && local < .24 ? Math.sin((local / .24) * Math.PI) : 0;
-      key.position.y = .34 - press * .105;
+      key.position.y = .2 - press * .08;
       const material = key.children[0]?.material;
       if (material) material.emissiveIntensity = .035 + press * .32;
     });
@@ -106,32 +95,32 @@ function LaptopModel({ ready, leaving, onEnter }) {
     if (screenGlow.current) {
       screenGlow.current.material.emissiveIntensity = THREE.MathUtils.damp(
         screenGlow.current.material.emissiveIntensity,
-        time > 2.3 ? .62 : .04,
+        time > 2.3 ? .4 : .025,
         3.2,
         delta
       );
     }
 
     if (root.current) {
-      const fittedScale = Math.min(1.32, state.viewport.width / 9);
-      const targetScale = leaving ? fittedScale * 1.72 : fittedScale;
-      root.current.scale.setScalar(THREE.MathUtils.damp(root.current.scale.x, targetScale, leaving ? 3.8 : 2.8, delta));
-      root.current.position.z = THREE.MathUtils.damp(root.current.position.z, leaving ? 4.8 : 0, 3.6, delta);
+      const fittedScale = Math.min(1.02, state.viewport.width / 10, state.viewport.height / 7.4);
+      const targetScale = leaving ? fittedScale * 1.14 : fittedScale;
+      root.current.scale.setScalar(THREE.MathUtils.damp(root.current.scale.x, targetScale, leaving ? 4.4 : 3.2, delta));
+      root.current.position.z = THREE.MathUtils.damp(root.current.position.z, leaving ? 1.15 : 0, 4.2, delta);
       root.current.position.y = THREE.MathUtils.damp(
         root.current.position.y,
-        leaving ? .65 : Math.sin(time * .72) * .045,
+        leaving ? .12 : Math.sin(time * .72) * .025,
         3.4,
         delta
       );
       root.current.rotation.y = THREE.MathUtils.damp(
         root.current.rotation.y,
-        leaving ? 0 : state.pointer.x * .09,
+        leaving ? 0 : state.pointer.x * .045,
         2.6,
         delta
       );
       root.current.rotation.x = THREE.MathUtils.damp(
         root.current.rotation.x,
-        leaving ? -.035 : state.pointer.y * -.035,
+        leaving ? -.018 : state.pointer.y * -.02,
         2.6,
         delta
       );
@@ -141,49 +130,61 @@ function LaptopModel({ ready, leaving, onEnter }) {
   return (
     <group ref={root} position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <group>
-        <RoundedBox args={[8.75, .36, 5.35]} radius={.24} smoothness={5}>
-          <meshPhysicalMaterial color="#59616f" metalness={.92} roughness={.23} clearcoat={.7} clearcoatRoughness={.22} />
+        <RoundedBox args={[8.6, .2, 5.08]} radius={.22} smoothness={5}>
+          <meshPhysicalMaterial color="#b9bdc4" metalness={.94} roughness={.2} clearcoat={.82} clearcoatRoughness={.16} />
         </RoundedBox>
-        <RoundedBox args={[8.15, .08, 4.66]} radius={.15} smoothness={4} position={[0, .22, -.08]}>
-          <meshStandardMaterial color="#202633" metalness={.62} roughness={.36} />
+        <RoundedBox args={[8.18, .035, 4.7]} radius={.15} smoothness={4} position={[0, .12, -.08]}>
+          <meshStandardMaterial color="#adb2ba" metalness={.9} roughness={.22} />
+        </RoundedBox>
+
+        <RoundedBox args={[.58, .018, 2.92]} radius={.12} smoothness={3} position={[-3.66, .15, -.18]}>
+          <meshStandardMaterial color="#858b94" metalness={.75} roughness={.32} />
+        </RoundedBox>
+        <RoundedBox args={[.58, .018, 2.92]} radius={.12} smoothness={3} position={[3.66, .15, -.18]}>
+          <meshStandardMaterial color="#858b94" metalness={.75} roughness={.32} />
         </RoundedBox>
 
         {KEY_ROWS_3D.map((row, rowIndex) => (
           <KeyRow row={row} rowIndex={rowIndex} key={rowIndex} keyRefs={keyRefs} />
         ))}
 
-        <RoundedBox args={[3.15, .035, 1.2]} radius={.12} smoothness={4} position={[0, .285, 1.82]}>
-          <meshPhysicalMaterial color="#68717f" metalness={.82} roughness={.31} />
+        <RoundedBox args={[4.15, .025, 1.38]} radius={.12} smoothness={4} position={[0, .16, 1.72]}>
+          <meshPhysicalMaterial color="#9da3ac" metalness={.88} roughness={.24} />
         </RoundedBox>
-        <mesh position={[0, .05, 2.69]} rotation={[Math.PI / 2, 0, 0]}>
-          <capsuleGeometry args={[.65, 1.9, 8, 24]} />
-          <meshStandardMaterial color="#252b36" metalness={.8} roughness={.28} />
+        <RoundedBox args={[2.2, .05, .15]} radius={.07} smoothness={3} position={[0, -.03, 2.54]}>
+          <meshStandardMaterial color="#777d86" metalness={.86} roughness={.25} />
+        </RoundedBox>
+        <mesh position={[0, .13, -2.51]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[.105, .105, 6.3, 32]} />
+          <meshStandardMaterial color="#17191d" metalness={.86} roughness={.24} />
         </mesh>
       </group>
 
-      <group ref={lid} position={[0, .08, -2.62]} rotation={[-Math.PI / 2 + .025, 0, 0]}>
-        <RoundedBox args={[8.45, 5.18, .24]} radius={.25} smoothness={5} position={[0, 2.55, 0]}>
-          <meshPhysicalMaterial color="#515967" metalness={.94} roughness={.2} clearcoat={.85} clearcoatRoughness={.18} />
+      <group ref={lid} position={[0, .08, -2.52]} rotation={[-Math.PI / 2 + .025, 0, 0]}>
+        <RoundedBox args={[8.35, 5.12, .14]} radius={.23} smoothness={5} position={[0, 2.55, 0]}>
+          <meshPhysicalMaterial color="#b7bbc2" metalness={.95} roughness={.18} clearcoat={.86} clearcoatRoughness={.14} />
+        </RoundedBox>
+        <RoundedBox args={[8.04, 4.8, .045]} radius={.17} smoothness={4} position={[0, 2.55, .09]}>
+          <meshStandardMaterial color="#040506" metalness={.3} roughness={.3} />
         </RoundedBox>
         <RoundedBox
           ref={screenGlow}
-          args={[7.92, 4.65, .055]}
-          radius={.16}
+          args={[7.78, 4.5, .025]}
+          radius={.13}
           smoothness={4}
-          position={[0, 2.55, .145]}
+          position={[0, 2.55, .122]}
         >
-          <meshStandardMaterial color="#0b1121" emissive="#304e9e" emissiveIntensity={.04} roughness={.24} />
+          <meshStandardMaterial color="#09101f" emissive="#274892" emissiveIntensity={.025} roughness={.21} />
         </RoundedBox>
-        <mesh position={[0, 4.73, .19]}>
-          <sphereGeometry args={[.035, 18, 18]} />
-          <meshStandardMaterial color="#05070b" roughness={.2} />
-        </mesh>
+        <RoundedBox args={[1.02, .23, .035]} radius={.1} smoothness={4} position={[0, 4.75, .145]}>
+          <meshStandardMaterial color="#020304" roughness={.22} />
+        </RoundedBox>
 
         <Html
           transform
           center
-          position={[0, 2.55, .19]}
-          distanceFactor={1.22}
+          position={[0, 2.55, .155]}
+          distanceFactor={1.02}
           zIndexRange={[120, 60]}
           style={{ pointerEvents: "auto" }}
         >
@@ -209,31 +210,21 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
   return (
     <div className={`entry-laptop-webgl ${leaving ? "is-leaving" : ""}`}>
       <Canvas
-        dpr={[1, 1.7]}
-        camera={{ position: [0, 5.6, 12.6], fov: 35 }}
+        dpr={[1, 1.35]}
+        camera={{ position: [0, 4.7, 14.2], fov: 32 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-        shadows
+        onCreated={({ camera }) => camera.lookAt(0, 1.35, 0)}
       >
-        <ambientLight intensity={.72} />
-        <hemisphereLight args={["#dbe6ff", "#10131e", 1.6]} />
-        <spotLight
-          castShadow
-          position={[7, 11, 8]}
-          intensity={65}
-          angle={.36}
-          penumbra={.78}
-          decay={2}
-          color="#e8eeff"
-        />
-        <spotLight position={[-8, 6, 3]} intensity={38} angle={.48} penumbra={1} decay={2} color="#7c8fff" />
-        <pointLight position={[0, 2, -7]} intensity={22} color="#5ee9c5" />
+        <ambientLight intensity={.86} />
+        <hemisphereLight args={["#f1f4ff", "#111726", 1.45]} />
+        <directionalLight position={[6, 10, 8]} intensity={2.8} color="#f5f7ff" />
+        <directionalLight position={[-7, 4, 2]} intensity={1.5} color="#8293ff" />
+        <pointLight position={[0, 3, -5]} intensity={14} color="#63e7c5" />
         <LaptopModel ready={ready} leaving={leaving} onEnter={onEnter} />
-        <ContactShadows position={[0, -.31, 0]} opacity={.5} scale={13} blur={2.9} far={7} color="#030714" />
-        <Environment resolution={96}>
-          <Lightformer form="rect" intensity={4} color="#dfe8ff" position={[0, 8, 4]} scale={[12, 6, 1]} />
-          <Lightformer form="rect" intensity={2.4} color="#7585ff" position={[-7, 3, 1]} rotation={[0, Math.PI / 2, 0]} scale={[8, 4, 1]} />
-          <Lightformer form="ring" intensity={2} color="#5ee9c5" position={[6, 2, -4]} scale={5} />
-        </Environment>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -.18, .32]} scale={[1.65, 1, 1]}>
+          <circleGeometry args={[3.8, 64]} />
+          <meshBasicMaterial color="#02050d" transparent opacity={.22} depthWrite={false} />
+        </mesh>
       </Canvas>
       <p className="entry-webgl-caption">一台电脑，一段节奏。准备好后，从第一键开始。</p>
     </div>
