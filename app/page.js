@@ -476,8 +476,9 @@ export default function Home() {
       <div className="aurora-backdrop">
         <Aurora
           colorStops={theme === "light" ? ["#b8a9ff", "#8de5d1", "#b9c8ff"] : ["#7667ff", "#47d7bf", "#5363e8"]}
-          amplitude={theme === "light" ? 0.56 : 0.72}
-          blend={theme === "light" ? 0.48 : 0.58}
+          amplitude={theme === "light" ? 0.68 : 0.88}
+          blend={theme === "light" ? 0.58 : 0.7}
+          speed={theme === "light" ? 0.62 : 0.72}
         />
       </div>
       <div className="background-wash" />

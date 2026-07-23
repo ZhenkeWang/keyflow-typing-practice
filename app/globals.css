@@ -814,3 +814,177 @@ html[data-theme="light"] .stat:hover {
 @media (max-width: 1020px) {
   .keyboard { transform: none; }
 }
+
+/* Layered glass surfaces and a more visible ambient drift */
+body {
+  background-size: 180% 180%;
+  animation: ambientGradientDrift 12s cubic-bezier(.45,.05,.55,.95) infinite alternate;
+}
+@keyframes ambientGradientDrift {
+  0% { background-position: 0% 18%; }
+  45% { background-position: 72% 50%; }
+  100% { background-position: 100% 82%; }
+}
+.aurora-backdrop {
+  opacity: .57;
+  filter: saturate(1.08) contrast(1.03);
+}
+.background-wash {
+  background: linear-gradient(135deg, rgba(12,16,32,.13), rgba(24,20,47,.18));
+}
+
+.mode-card,
+.session-controls,
+.feed-bar,
+.practice-card,
+.best-pill,
+.icon-button,
+.ime-panel,
+.keyboard {
+  -webkit-backdrop-filter: blur(24px) saturate(1.35);
+  backdrop-filter: blur(24px) saturate(1.35);
+}
+.mode-card {
+  border-color: rgba(255,255,255,.115);
+  background: linear-gradient(145deg, rgba(32,40,69,.56), rgba(14,19,38,.43));
+  box-shadow:
+    0 16px 34px rgba(3,6,18,.2),
+    inset 0 1px rgba(255,255,255,.1),
+    inset 0 -1px rgba(255,255,255,.025);
+}
+.mode-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(110deg, rgba(255,255,255,.08), transparent 24%),
+    radial-gradient(110px circle at 22% -18%, rgba(255,255,255,.13), transparent 72%);
+}
+.mode-card:hover {
+  background: linear-gradient(145deg, rgba(43,52,87,.65), rgba(18,23,45,.5));
+  box-shadow:
+    0 22px 46px rgba(3,6,18,.28),
+    inset 0 1px rgba(255,255,255,.14);
+}
+.mode-card.active {
+  background: linear-gradient(135deg, rgba(129,103,255,.22), rgba(24,31,57,.5) 52%, rgba(61,205,176,.1));
+  box-shadow:
+    0 20px 44px rgba(4,7,20,.27),
+    0 0 34px rgba(119,91,255,.07),
+    inset 0 1px rgba(255,255,255,.14);
+}
+
+.session-controls,
+.feed-bar {
+  position: relative;
+  border-color: rgba(255,255,255,.105);
+  background: linear-gradient(135deg, rgba(27,34,60,.55), rgba(14,20,39,.46));
+  box-shadow:
+    0 20px 44px rgba(3,6,18,.18),
+    inset 0 1px rgba(255,255,255,.09);
+}
+.session-controls::after,
+.feed-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 1px rgba(255,255,255,.09), inset 1px 0 rgba(255,255,255,.025);
+}
+.session-controls > *,
+.feed-bar > * { position: relative; z-index: 1; }
+
+.practice-card {
+  border-color: rgba(255,255,255,.14);
+  background: linear-gradient(145deg, rgba(28,35,63,.72), rgba(10,15,31,.66));
+  -webkit-backdrop-filter: blur(34px) saturate(1.4);
+  backdrop-filter: blur(34px) saturate(1.4);
+  box-shadow:
+    0 42px 120px rgba(2,5,17,.4),
+    0 10px 38px rgba(5,8,24,.22),
+    inset 0 1px rgba(255,255,255,.11),
+    inset 0 -1px rgba(255,255,255,.025);
+}
+.practice-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.13),
+    inset 1px 0 rgba(255,255,255,.035),
+    inset -1px 0 rgba(121,100,255,.035);
+}
+.stats {
+  background: linear-gradient(90deg, rgba(255,255,255,.018), rgba(255,255,255,.006));
+}
+.stat {
+  background: linear-gradient(145deg, rgba(255,255,255,.022), transparent 62%);
+}
+.keyboard,
+.ime-panel {
+  background: linear-gradient(180deg, rgba(10,15,31,.34), rgba(2,7,20,.22));
+  box-shadow: inset 0 1px rgba(255,255,255,.055);
+}
+.best-pill,
+.icon-button {
+  border-color: rgba(255,255,255,.12);
+  background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 10px 24px rgba(3,6,18,.12);
+}
+
+html[data-theme="light"] body {
+  background-size: 180% 180%;
+}
+html[data-theme="light"] .aurora-backdrop {
+  opacity: .43;
+  filter: saturate(.92) contrast(1.01);
+}
+html[data-theme="light"] .background-wash {
+  background: linear-gradient(135deg, rgba(249,250,255,.25), rgba(246,250,255,.2));
+}
+html[data-theme="light"] .mode-card {
+  border-color: rgba(255,255,255,.72);
+  background: linear-gradient(145deg, rgba(255,255,255,.6), rgba(238,241,251,.43));
+  box-shadow:
+    0 18px 38px rgba(64,62,111,.11),
+    inset 0 1px rgba(255,255,255,.92),
+    inset 0 -1px rgba(89,80,145,.05);
+}
+html[data-theme="light"] .mode-card:hover {
+  background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(239,242,252,.55));
+}
+html[data-theme="light"] .mode-card.active {
+  background: linear-gradient(135deg, rgba(224,216,255,.62), rgba(255,255,255,.58) 58%, rgba(210,250,240,.42));
+}
+html[data-theme="light"] .session-controls,
+html[data-theme="light"] .feed-bar {
+  border-color: rgba(255,255,255,.74);
+  background: linear-gradient(135deg, rgba(255,255,255,.58), rgba(236,240,251,.42));
+  box-shadow: 0 20px 44px rgba(66,63,112,.1), inset 0 1px rgba(255,255,255,.9);
+}
+html[data-theme="light"] .practice-card {
+  border-color: rgba(255,255,255,.82);
+  background: linear-gradient(145deg, rgba(255,255,255,.7), rgba(237,241,251,.58));
+  box-shadow:
+    0 42px 100px rgba(66,65,111,.16),
+    0 10px 34px rgba(66,65,111,.08),
+    inset 0 1px rgba(255,255,255,.94);
+}
+html[data-theme="light"] .keyboard,
+html[data-theme="light"] .ime-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(232,236,248,.25));
+}
+html[data-theme="light"] .best-pill,
+html[data-theme="light"] .icon-button {
+  border-color: rgba(255,255,255,.75);
+  background: linear-gradient(145deg, rgba(255,255,255,.63), rgba(235,239,249,.4));
+  box-shadow: inset 0 1px rgba(255,255,255,.95), 0 10px 24px rgba(72,68,118,.08);
+}
