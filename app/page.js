@@ -109,6 +109,8 @@ const SPARKS = [
   [-42, 3, 22, 4], [-21, -8, 46, 3], [18, 8, 32, 4], [2, -18, 14, 3],
 ];
 
+const TITLE_LINES = ["找到你的", "击键节奏。"];
+
 function makeText(mode, minLength = 1600) {
   const source = TEXT_BANK[mode];
   let result = "";
@@ -173,6 +175,7 @@ export default function Home() {
   const [feedUpdated, setFeedUpdated] = useState("");
   const [theme, setTheme] = useState("dark");
   const [burstPosition, setBurstPosition] = useState({ x: 0, y: 0 });
+  const [titleCycle, setTitleCycle] = useState(0);
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -253,6 +256,11 @@ export default function Home() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("keyflow-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setTitleCycle((cycle) => cycle + 1), 6200);
+    return () => clearInterval(timer);
+  }, []);
 
   useLayoutEffect(() => {
     if (!pulse || !typed.length) return;
@@ -478,7 +486,7 @@ export default function Home() {
           colorStops={theme === "light" ? ["#b8a9ff", "#8de5d1", "#b9c8ff"] : ["#7667ff", "#47d7bf", "#5363e8"]}
           amplitude={theme === "light" ? 0.68 : 0.88}
           blend={theme === "light" ? 0.58 : 0.7}
-          speed={theme === "light" ? 0.62 : 0.72}
+          speed={theme === "light" ? 0.78 : 0.9}
         />
       </div>
       <div className="background-wash" />
@@ -509,7 +517,23 @@ export default function Home() {
       <section className="intro">
         <div>
           <p className="eyebrow"><span /> FLOW STATE TRAINING</p>
-          <h1 className="art-title">找到你的<span>击键节奏。</span></h1>
+          <h1 className="art-title" aria-label="找到你的击键节奏。">
+            {TITLE_LINES.map((line, lineIndex) => (
+              <span className={`title-line ${lineIndex ? "title-line-accent" : ""}`} key={`${titleCycle}-${lineIndex}`}>
+                {[...line].map((char, charIndex) => (
+                  <span
+                    className="title-char"
+                    style={{ "--char-delay": `${(lineIndex * 4 + charIndex) * 92}ms` }}
+                    key={`${titleCycle}-${lineIndex}-${charIndex}`}
+                  >{char}</span>
+                ))}
+                {lineIndex === 1 && <i className="title-caret" aria-hidden="true" />}
+              </span>
+            ))}
+            <span className="title-keyboard" key={`keyboard-${titleCycle}`} aria-hidden="true">
+              <i>A</i><i>中</i><i>↵</i>
+            </span>
+          </h1>
         </div>
         <p>让视觉反馈跟上每一次敲击。<br />放松、专注，然后自然加速。</p>
       </section>
