@@ -720,9 +720,7 @@ export default function Home() {
             </div>
           </div>
           {pulse > 0 && status === "running" && (
-            <span className={`keyboard-input-wave ${feedback}`} key={`keyboard-wave-${pulse}`} aria-hidden="true">
-              <i /><i /><i /><i /><i /><i /><i />
-            </span>
+            <span className={`keyboard-input-wave ${feedback}`} key={`keyboard-wave-${pulse}`} aria-hidden="true" />
           )}
         </section>
       )}
@@ -921,7 +919,7 @@ export default function Home() {
             </div>
           ))}
           {pulse > 0 && status === "running" && (
-            <span className={`keyboard-deck-wave ${feedback}`} key={`deck-wave-${pulse}`} aria-hidden="true"><i /><i /></span>
+            <span className={`keyboard-deck-wave ${feedback}`} key={`deck-wave-${pulse}`} aria-hidden="true" />
           )}
         </div>}
 

@@ -2263,3 +2263,125 @@ html.interaction-transitioning::view-transition-new(interaction-selector) {
     animation-duration: 1ms;
   }
 }
+
+/* Restrained, theme-aligned typing feedback for both keyboard contexts. */
+.key-row > span.pressed {
+  color: #fff;
+  border-color: color-mix(in srgb, var(--accent-3) 44%, transparent);
+  animation: keyboardKeyStrikeCalm 430ms cubic-bezier(.2, .82, .2, 1) both !important;
+}
+.key-row > span.pressed::after {
+  border-color: color-mix(in srgb, var(--accent-2) 46%, transparent);
+  opacity: .58;
+  animation: pressedKeyRingCalm 440ms ease-out both;
+}
+@keyframes keyboardKeyStrikeCalm {
+  0% {
+    transform: translate3d(0, 0, 18px) scale(1);
+    box-shadow: 0 11px 0 rgba(3, 6, 18, .27), 0 0 0 transparent;
+  }
+  32% {
+    transform: translate3d(0, 11px, -3px) scale(.96);
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--accent-2) 18%, rgba(255, 255, 255, .05)),
+      color-mix(in srgb, var(--accent-3) 12%, rgba(255, 255, 255, .015))
+    );
+    box-shadow:
+      0 1px 0 rgba(3, 6, 18, .22),
+      0 0 16px color-mix(in srgb, var(--accent-2) 25%, transparent);
+  }
+  68% { transform: translate3d(0, -3px, 25px) scale(1.015); }
+  100% { transform: translate3d(0, 0, 18px) scale(1); }
+}
+@keyframes pressedKeyRingCalm {
+  0% {
+    transform: scale(.9);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-2) 30%, transparent);
+  }
+  62% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 4px transparent;
+    opacity: .34;
+  }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
+.keyboard-input-wave {
+  width: min(460px, 42vw);
+  height: 90px;
+  opacity: .68;
+}
+.keyboard-input-wave::before {
+  width: 64px;
+  height: 64px;
+  border: 1px solid color-mix(in srgb, var(--accent-3) 45%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent-2) 18%, transparent);
+  animation: keyboardWaveRingCalm 520ms cubic-bezier(.2, .75, .25, 1) both;
+}
+.keyboard-input-wave::after {
+  width: 32%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent-2) 55%, transparent),
+    color-mix(in srgb, var(--accent-3) 50%, transparent),
+    transparent
+  );
+  filter: none;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-2) 18%, transparent);
+  animation: keyboardWaveSweepCalm 480ms cubic-bezier(.2, .75, .25, 1) both;
+}
+.keyboard-input-wave.wrong {
+  filter: hue-rotate(118deg) saturate(.8);
+}
+@keyframes keyboardWaveRingCalm {
+  from { opacity: .45; transform: translate(-50%, -50%) scale(.55); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(2.25); }
+}
+@keyframes keyboardWaveSweepCalm {
+  0% { opacity: 0; transform: translate(-50%, -50%) scaleX(.4); }
+  26% { opacity: .44; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scaleX(1.45); }
+}
+
+.keyboard-deck-wave::before {
+  inset: 10%;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 20%, transparent);
+  border-radius: 24px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--accent-2) 9%, transparent),
+    transparent 62%
+  );
+  transform: none;
+  animation: deckPulseCalm 560ms cubic-bezier(.2, .75, .25, 1) both;
+}
+.keyboard-deck-wave::after {
+  content: "";
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent-3) 38%, transparent),
+    transparent
+  );
+  animation: deckLineCalm 480ms ease-out both;
+}
+@keyframes deckPulseCalm {
+  from { opacity: .34; transform: scale(.985); }
+  to { opacity: 0; transform: scale(1.025); }
+}
+@keyframes deckLineCalm {
+  from { opacity: .38; transform: scaleX(.35); }
+  to { opacity: 0; transform: scaleX(1.25); }
+}
+html[data-theme="light"] .keyboard-input-wave,
+html[data-theme="light"] .keyboard-deck-wave {
+  opacity: .5;
+}
