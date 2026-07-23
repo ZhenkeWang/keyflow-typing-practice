@@ -520,3 +520,128 @@ html[data-theme="light"] .interaction-focus .passage .focus-range {
   .stat strong { font-size: 36px; }
   .result-overlay > strong { font-size: 54px; }
 }
+
+/* Spatial mode transitions with an iOS-like settle */
+.practice-card { view-transition-name: practice-panel; }
+.mode-grid { view-transition-name: mode-selector; perspective: 900px; }
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-group(practice-panel),
+::view-transition-group(mode-selector) {
+  animation-duration: 720ms;
+  animation-timing-function: cubic-bezier(.32,.72,0,1);
+}
+::view-transition-old(practice-panel) {
+  animation: practiceExit 520ms cubic-bezier(.32,.72,0,1) both;
+}
+::view-transition-new(practice-panel) {
+  animation: practiceEnter 720ms cubic-bezier(.32,.72,0,1) both;
+}
+::view-transition-old(mode-selector) {
+  animation: selectorExit 460ms cubic-bezier(.32,.72,0,1) both;
+}
+::view-transition-new(mode-selector) {
+  animation: selectorEnter 680ms cubic-bezier(.32,.72,0,1) both;
+}
+@keyframes practiceExit {
+  to { opacity: 0; filter: blur(7px); transform: translate3d(-22px, 5px, 0) scale(.985); }
+}
+@keyframes practiceEnter {
+  from { opacity: 0; filter: blur(9px); transform: translate3d(28px, 8px, 0) scale(.982); }
+  72% { opacity: 1; filter: blur(0); transform: translate3d(-2px, 0, 0) scale(1.002); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+@keyframes selectorExit {
+  to { opacity: .22; filter: blur(3px); transform: translateY(-5px) scale(.992); }
+}
+@keyframes selectorEnter {
+  from { opacity: .2; filter: blur(4px); transform: translateY(7px) scale(.99); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+
+/* Pointer-responsive 3D cards */
+.mode-card {
+  transform-style: preserve-3d;
+  transform: perspective(700px) rotateX(var(--card-rx, 0deg)) rotateY(var(--card-ry, 0deg));
+  will-change: transform;
+  transition:
+    transform 520ms cubic-bezier(.32,.72,0,1),
+    border-color .25s,
+    background .25s,
+    box-shadow .3s;
+}
+.mode-card:hover {
+  transform: perspective(700px) translateY(-3px) rotateX(var(--card-rx, 0deg)) rotateY(var(--card-ry, 0deg));
+  box-shadow: 0 15px 32px rgba(4,7,18,.18);
+}
+.mode-card > span { transform: translateZ(12px); }
+.mode-card > i { transform: translateZ(18px); }
+
+/* Aceternity-inspired 3D keyboard surface */
+.keyboard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  transform: perspective(900px) rotateX(var(--kbd-rx, 0deg)) rotateY(var(--kbd-ry, 0deg));
+  will-change: transform;
+  transition: transform 520ms cubic-bezier(.32,.72,0,1);
+}
+.keyboard::before {
+  content: "";
+  position: absolute;
+  inset: -70px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .72;
+  background: radial-gradient(150px circle at var(--kbd-glow-x, 50%) var(--kbd-glow-y, 50%), rgba(94,233,197,.14), rgba(139,116,255,.06) 42%, transparent 72%);
+  transition: opacity .35s ease;
+}
+.key-row {
+  position: relative;
+  z-index: 1;
+  transform-style: preserve-3d;
+}
+.key-row > span {
+  --key-y: 0px;
+  --key-z: 0px;
+  --key-light: 0;
+  --key-glow-alpha: 0;
+  position: relative;
+  transform: translate3d(0, var(--key-y), var(--key-z));
+  will-change: transform, box-shadow, color;
+  box-shadow:
+    0 6px 12px rgba(4,7,18,.12),
+    0 0 22px rgba(94,233,197,var(--key-glow-alpha));
+  transition:
+    transform 360ms cubic-bezier(.32,.72,0,1),
+    box-shadow 280ms ease,
+    color .2s,
+    border-color .2s,
+    background .2s;
+}
+.key-row > span::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgba(94,233,197,.45);
+  border-radius: inherit;
+  opacity: var(--key-light);
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+html[data-theme="light"] .mode-card:hover {
+  box-shadow: 0 16px 34px rgba(73,65,125,.12);
+}
+html[data-theme="light"] .keyboard::before {
+  background: radial-gradient(150px circle at var(--kbd-glow-x, 50%) var(--kbd-glow-y, 50%), rgba(36,172,145,.13), rgba(116,91,231,.07) 44%, transparent 72%);
+}
+html[data-theme="light"] .key-row > span {
+  box-shadow:
+    0 7px 13px rgba(69,67,112,.1),
+    0 0 20px rgba(36,172,145,var(--key-glow-alpha));
+}

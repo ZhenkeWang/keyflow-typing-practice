@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Aurora from "./components/Aurora";
 
 const TEXT_BANK = {
@@ -141,8 +142,11 @@ export default function Home() {
   const [feedStatus, setFeedStatus] = useState("idle");
   const [feedUpdated, setFeedUpdated] = useState("");
   const [theme, setTheme] = useState("dark");
+  const [burstPosition, setBurstPosition] = useState({ x: 0, y: 0 });
 
   const inputRef = useRef(null);
+  const typingZoneRef = useRef(null);
+  const passageRef = useRef(null);
   const startedAt = useRef(0);
   const finishedAt = useRef(0);
   const lastKeyAt = useRef(0);
@@ -219,6 +223,19 @@ export default function Home() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("keyflow-theme", theme);
   }, [theme]);
+
+  useLayoutEffect(() => {
+    if (!pulse || !typed.length) return;
+    const zone = typingZoneRef.current;
+    const target = passageRef.current?.querySelector(`[data-absolute="${typed.length - 1}"]`);
+    if (!zone || !target) return;
+    const zoneRect = zone.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    setBurstPosition({
+      x: targetRect.left - zoneRect.left + targetRect.width / 2,
+      y: targetRect.top - zoneRect.top + targetRect.height / 2,
+    });
+  }, [pulse, typed.length]);
 
   useEffect(() => {
     if (mode !== "news") return;
@@ -346,6 +363,59 @@ export default function Home() {
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
+  function changeMode(nextMode) {
+    if (nextMode === mode || typeof document.startViewTransition !== "function") {
+      reset({ mode: nextMode });
+      return;
+    }
+    document.documentElement.classList.add("mode-transitioning");
+    const transition = document.startViewTransition(() => {
+      flushSync(() => reset({ mode: nextMode }));
+    });
+    const finishTransition = () => {
+      document.documentElement.classList.remove("mode-transitioning");
+    };
+    transition.finished.then(finishTransition, finishTransition);
+  }
+
+  function handleKeyboardPointerMove(event) {
+    const keyboard = event.currentTarget;
+    const rect = keyboard.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const nx = x / rect.width - .5;
+    const ny = y / rect.height - .5;
+    keyboard.style.setProperty("--kbd-ry", `${nx * 7}deg`);
+    keyboard.style.setProperty("--kbd-rx", `${ny * -6}deg`);
+    keyboard.style.setProperty("--kbd-glow-x", `${x}px`);
+    keyboard.style.setProperty("--kbd-glow-y", `${y}px`);
+
+    keyboard.querySelectorAll(".key-row > span").forEach((key) => {
+      const keyRect = key.getBoundingClientRect();
+      const distance = Math.hypot(
+        event.clientX - (keyRect.left + keyRect.width / 2),
+        event.clientY - (keyRect.top + keyRect.height / 2)
+      );
+      const proximity = Math.max(0, 1 - distance / 125);
+      key.style.setProperty("--key-y", `${proximity * -7}px`);
+      key.style.setProperty("--key-z", `${proximity * 18}px`);
+      key.style.setProperty("--key-light", proximity.toFixed(3));
+      key.style.setProperty("--key-glow-alpha", (proximity * .2).toFixed(3));
+    });
+  }
+
+  function resetKeyboardDepth(event) {
+    const keyboard = event.currentTarget;
+    keyboard.style.setProperty("--kbd-ry", "0deg");
+    keyboard.style.setProperty("--kbd-rx", "0deg");
+    keyboard.querySelectorAll(".key-row > span").forEach((key) => {
+      key.style.setProperty("--key-y", "0px");
+      key.style.setProperty("--key-z", "0px");
+      key.style.setProperty("--key-light", "0");
+      key.style.setProperty("--key-glow-alpha", "0");
+    });
+  }
+
   const visibleStart = Math.max(0, typed.length - 85);
   const visibleText = text.slice(visibleStart, visibleStart + 360);
   const expectedKey = (text[typed.length] || "").toLowerCase();
@@ -410,11 +480,19 @@ export default function Home() {
             <button
               key={item.id}
               className={`mode-card ${mode === item.id ? "active" : ""}`}
-              onClick={(event) => { event.stopPropagation(); reset({ mode: item.id }); }}
+              onClick={(event) => { event.stopPropagation(); changeMode(item.id); }}
               onPointerMove={(event) => {
                 const rect = event.currentTarget.getBoundingClientRect();
-                event.currentTarget.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-                event.currentTarget.style.setProperty("--my", `${event.clientY - rect.top}px`);
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                event.currentTarget.style.setProperty("--mx", `${x}px`);
+                event.currentTarget.style.setProperty("--my", `${y}px`);
+                event.currentTarget.style.setProperty("--card-ry", `${(x / rect.width - .5) * 7}deg`);
+                event.currentTarget.style.setProperty("--card-rx", `${(y / rect.height - .5) * -6}deg`);
+              }}
+              onPointerLeave={(event) => {
+                event.currentTarget.style.setProperty("--card-ry", "0deg");
+                event.currentTarget.style.setProperty("--card-rx", "0deg");
               }}
             >
               <span className="mode-icon">{item.icon}</span>
@@ -479,7 +557,7 @@ export default function Home() {
           <div className="stat"><span>{testType === "words" ? (chineseContent ? "CHARS" : "WORDS") : "TIME"}</span><strong>{testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}</strong><small>{testType === "words" ? "进度" : "剩余"}</small></div>
         </div>
 
-        <div className="typing-zone">
+        <div className="typing-zone" ref={typingZoneRef}>
           <textarea
             ref={inputRef}
             value={typed + draft}
@@ -505,7 +583,12 @@ export default function Home() {
 
           {pulse > 0 && status === "running" && <span className={`key-burst ${feedback}`} key={pulse}>{feedback === "correct" ? "+1" : "×"}</span>}
           {pulse > 0 && status === "running" && (
-            <span className={`spark-burst ${feedback}`} key={`spark-${pulse}`} aria-hidden="true">
+            <span
+              className={`spark-burst ${feedback}`}
+              key={`spark-${pulse}`}
+              style={{ left: `${burstPosition.x}px`, top: `${burstPosition.y}px` }}
+              aria-hidden="true"
+            >
               <i className="spark-core" />
               {SPARKS.map(([x, y, delay, size], index) => (
                 <i
@@ -517,14 +600,14 @@ export default function Home() {
             </span>
           )}
 
-          <div className={`passage ${mode}`} aria-hidden="true">
+          <div className={`passage ${mode}`} ref={passageRef} aria-hidden="true">
             {visibleText.split("").map((char, index) => {
               const absolute = visibleStart + index;
               let className = "pending";
               if (absolute < typed.length) className = typed[absolute] === char ? "correct" : "wrong";
               if (absolute === typed.length && status !== "finished") className += " current";
               if (absolute >= focusStart && absolute <= focusEnd) className += " focus-range";
-              return <span className={className} key={`${absolute}-${char}`}>{char}</span>;
+              return <span className={className} data-absolute={absolute} key={`${absolute}-${char}`}>{char}</span>;
             })}
           </div>
 
@@ -551,7 +634,12 @@ export default function Home() {
           )}
         </div>
 
-        {chineseContent ? <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div> : <div className="keyboard" aria-hidden="true">
+        {chineseContent ? <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div> : <div
+          className="keyboard"
+          onPointerMove={handleKeyboardPointerMove}
+          onPointerLeave={resetKeyboardDepth}
+          aria-hidden="true"
+        >
           {KEY_ROWS.map((row, rowIndex) => (
             <div className="key-row" key={rowIndex}>
               {row.map((key) => <span className={expectedKey === key ? "next" : ""} key={key}>{key}</span>)}
