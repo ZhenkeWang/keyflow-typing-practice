@@ -13,12 +13,15 @@
     "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@vinext/cloudflare": "^1.0.0-beta.3",
     "next": "^16.2.11",
     "ogl": "^1.0.11",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-server-dom-webpack": "^19.2.8",
+    "three": "^0.185.1",
     "vinext": "^1.0.0-beta.3"
   },
   "overrides": {

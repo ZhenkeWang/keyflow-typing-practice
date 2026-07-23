@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Aurora from "./components/Aurora";
+import LaptopIntro from "./components/LaptopIntro";
 
 const TEXT_BANK = {
   focus: [
@@ -58,14 +59,6 @@ const INTERACTIONS = [
   { id: "focus", label: "聚焦", desc: "高亮当前" },
   { id: "sprint", label: "冲刺", desc: "禁止回删" },
   { id: "zen", label: "禅意", desc: "隐藏数据" },
-];
-
-const LAPTOP_KEYS = [
-  ["esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "del"],
-  ["tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]"],
-  ["caps", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "enter"],
-  ["shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "shift"],
-  ["fn", "ctrl", "opt", "cmd", "space", "cmd", "opt", "left", "up", "down", "right"],
 ];
 
 const FEED_SOURCES = [
@@ -644,51 +637,7 @@ export default function Home() {
           aria-label="Keyflow 入场动画"
         >
           <div className="entry-orbit" aria-hidden="true" />
-          <div className="entry-laptop-scene">
-            <div className="entry-laptop">
-              <div className="entry-laptop-screen">
-                <div className="entry-screen-bezel">
-                  <span className="entry-camera" />
-                  <div className="entry-screen-content">
-                    <span className="entry-screen-kicker">KEYFLOW · FLOW STATE TRAINING</span>
-                    <h1>
-                      {TITLE_LINES.map((line) => <span key={line}>{line}</span>)}
-                    </h1>
-                    <button
-                      type="button"
-                      className="entry-cta"
-                      disabled={!entryReady || entryLeaving}
-                      onClick={enterPractice}
-                    >
-                      点击进入练习 <span aria-hidden="true">→</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="entry-hinge" aria-hidden="true" />
-              <div className="entry-laptop-base" aria-hidden="true">
-                <div className="entry-keyboard">
-                  {LAPTOP_KEYS.map((row, rowIndex) => (
-                    <div className="entry-key-row" key={rowIndex}>
-                      {row.map((key, keyIndex) => (
-                        <i
-                          className={`entry-key entry-key-${key}`}
-                          style={{ "--entry-key-index": rowIndex * 14 + keyIndex }}
-                          key={`${rowIndex}-${keyIndex}-${key}`}
-                        >
-                          {key === "left" ? "←" : key === "right" ? "→" : key === "up" ? "↑" : key === "down" ? "↓" : key}
-                        </i>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-                <div className="entry-trackpad" />
-              </div>
-              <div className="entry-laptop-lip" aria-hidden="true" />
-            </div>
-          </div>
-          <p className="entry-caption">一台电脑，一段节奏。准备好后，从第一键开始。</p>
+          <LaptopIntro ready={entryReady} leaving={entryLeaving} onEnter={enterPractice} />
         </section>
       )}
 
