@@ -1181,3 +1181,88 @@ html[data-theme="light"] .title-keyboard i {
   .art-title .title-keyboard { right: 0; bottom: -38px; }
   .intro { padding-bottom: 56px; }
 }
+
+/* High-contrast light title and a clean, transparent keyboard stage */
+:root {
+  --accent-1: #8874ff;
+  --accent-2: #5d89f7;
+  --accent-3: #49d9bd;
+  --accent-4: #5d89f7;
+}
+html[data-theme="light"] {
+  --accent-1: #6350d4;
+  --accent-2: #416fc5;
+  --accent-3: #158f7c;
+  --accent-4: #416fc5;
+}
+html[data-theme="light"] .art-title .title-line:first-child .title-char {
+  color: #1d2540;
+  text-shadow: 0 4px 22px rgba(52, 54, 103, .12);
+}
+html[data-theme="light"] .art-title .title-line-accent .title-char {
+  color: transparent;
+  background: linear-gradient(105deg, #5139c8 0%, #6251d6 34%, #296ec1 67%, #117f73 100%);
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 14px rgba(58, 63, 154, .14));
+}
+html[data-theme="light"] .title-caret {
+  background: linear-gradient(180deg, #5b45d1, #168777);
+  box-shadow: 0 0 12px rgba(41, 103, 177, .28);
+}
+
+.keyboard,
+html[data-theme="light"] .keyboard {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.keyboard::before,
+html[data-theme="light"] .keyboard::before {
+  inset: -80px;
+  opacity: .78;
+  filter: none;
+  background:
+    radial-gradient(
+      230px circle at var(--kbd-glow-x, 50%) var(--kbd-glow-y, 50%),
+      color-mix(in srgb, var(--accent-2) 17%, transparent),
+      color-mix(in srgb, var(--accent-3) 7%, transparent) 46%,
+      transparent 72%
+    );
+  transition: opacity .35s ease;
+}
+.key-row > span {
+  border-color: rgba(255, 255, 255, .075);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .014));
+  box-shadow:
+    0 8px 0 rgba(4, 7, 18, .15),
+    0 12px 20px rgba(4, 7, 18, .1),
+    0 0 26px var(--key-accent, transparent);
+}
+.key-row > span.next {
+  border-color: color-mix(in srgb, var(--accent-3) 55%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-1) 24%, transparent),
+    color-mix(in srgb, var(--accent-2) 22%, transparent),
+    color-mix(in srgb, var(--accent-3) 18%, transparent)
+  );
+  box-shadow:
+    0 8px 0 color-mix(in srgb, var(--accent-1) 16%, rgba(4, 7, 18, .18)),
+    0 0 26px color-mix(in srgb, var(--accent-2) 24%, transparent),
+    0 0 38px color-mix(in srgb, var(--accent-3) 12%, transparent);
+}
+html[data-theme="light"] .key-row > span {
+  color: #5f6880;
+  border-color: rgba(74, 82, 124, .14);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .42), rgba(213, 223, 242, .18));
+  box-shadow:
+    0 7px 0 rgba(64, 72, 117, .11),
+    0 12px 20px rgba(64, 72, 117, .07),
+    0 0 24px var(--key-accent, transparent);
+}
+html[data-theme="light"] .key-row > span.next {
+  color: #202a48;
+}

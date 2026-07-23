@@ -430,7 +430,6 @@ export default function Home() {
     keyboard.style.setProperty("--kbd-rx", `${ny * -9}deg`);
     keyboard.style.setProperty("--kbd-glow-x", `${x}px`);
     keyboard.style.setProperty("--kbd-glow-y", `${y}px`);
-    keyboard.style.setProperty("--pointer-hue", `${Math.round(285 - (x / rect.width) * 120)}deg`);
 
     keyboard.querySelectorAll(".key-row > span").forEach((key) => {
       const keyRect = key.getBoundingClientRect();
@@ -440,13 +439,14 @@ export default function Home() {
       );
       const proximity = Math.max(0, 1 - distance / 175);
       const ratio = Math.min(1, Math.max(0, (keyRect.left + keyRect.width / 2 - rect.left) / rect.width));
-      const hue = ratio < .75 ? 285 - (ratio / .75) * 120 : 165 + ((ratio - .75) / .25) * 165;
-      const lightness = theme === "light" ? 48 : 70;
+      const hue = 255 - ratio * 90;
+      const lightness = theme === "light" ? 43 : 68;
+      const saturation = theme === "light" ? 76 : 88;
       key.style.setProperty("--key-y", `${proximity * -11}px`);
       key.style.setProperty("--key-z", `${proximity * 30}px`);
       key.style.setProperty("--key-light", proximity.toFixed(3));
-      key.style.setProperty("--key-accent", `hsla(${hue}, 92%, ${lightness}%, ${(proximity * .42).toFixed(3)})`);
-      key.style.setProperty("--key-border", `hsla(${hue}, 94%, ${lightness}%, ${(proximity * .78).toFixed(3)})`);
+      key.style.setProperty("--key-accent", `hsla(${hue}, ${saturation}%, ${lightness}%, ${(proximity * .3).toFixed(3)})`);
+      key.style.setProperty("--key-border", `hsla(${hue}, ${saturation}%, ${lightness}%, ${(proximity * .62).toFixed(3)})`);
     });
   }
 
