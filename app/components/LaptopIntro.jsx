@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 const GAP = { value: "gap", label: "", spacer: true, size: "cluster" };
 const BLANK = { value: "blank", label: "", spacer: true };
@@ -57,7 +57,8 @@ const INTRO_KEYS = [
 
 export default function LaptopIntro({ ready, leaving, onEnter }) {
   const keyboardRef = useRef(null);
-  const [pointedKey, setPointedKey] = useState("");
+  const keyRefs = useRef([]);
+  const activeKeyRef = useRef(null);
 
   function handlePointerMove(event) {
     if (!ready || leaving || !keyboardRef.current) return;
@@ -67,12 +68,27 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
     keyboardRef.current.style.setProperty("--intro-kbd-ry", `${nx * 3.2}deg`);
     keyboardRef.current.style.setProperty("--intro-kbd-rx", `${ny * -2.4}deg`);
 
-    const key = event.target.closest(".intro-key:not(.key-spacer)");
-    setPointedKey(key?.dataset.keyId || "");
+    const pointedKey = keyRefs.current.find((key) => {
+      if (!key) return false;
+      const keyRect = key.getBoundingClientRect();
+      return (
+        event.clientX >= keyRect.left &&
+        event.clientX <= keyRect.right &&
+        event.clientY >= keyRect.top &&
+        event.clientY <= keyRect.bottom
+      );
+    });
+
+    if (activeKeyRef.current !== pointedKey) {
+      activeKeyRef.current?.classList.remove("pointer-down");
+      pointedKey?.classList.add("pointer-down");
+      activeKeyRef.current = pointedKey || null;
+    }
   }
 
   function resetPointer() {
-    setPointedKey("");
+    activeKeyRef.current?.classList.remove("pointer-down");
+    activeKeyRef.current = null;
     if (!keyboardRef.current) return;
     keyboardRef.current.style.setProperty("--intro-kbd-ry", "0deg");
     keyboardRef.current.style.setProperty("--intro-kbd-rx", "0deg");
@@ -87,7 +103,7 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
         <div className="liquid-glass-highlight" aria-hidden="true" />
         <div className="entry-liquid-content">
           <span>KEYFLOW · FLOW STATE TRAINING</span>
-          <h1>找到你的<em>击键节奏。</em></h1>
+          <h1>找到你的<em>击键节奏</em></h1>
           <button
             type="button"
             disabled={!ready || leaving}
@@ -113,9 +129,10 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
                 const index = absoluteIndex++;
                 return (
                   <span
-                    className={`${key.spacer ? "key-spacer " : ""}${key.size ? `key-${key.size} ` : ""}${pointedKey === keyId ? "pointer-down" : ""}`}
+                    className={`${key.spacer ? "key-spacer " : ""}${key.size ? `key-${key.size} ` : ""}`}
                     data-key-id={keyId}
                     key={keyId}
+                    ref={key.spacer ? undefined : (node) => { keyRefs.current[index] = node; }}
                     style={{ "--intro-key-index": index }}
                   >
                     {key.label}

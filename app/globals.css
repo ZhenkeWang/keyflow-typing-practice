@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Nunito:wght@600;700;800&family=ZCOOL+KuaiLe&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=M+PLUS+Rounded+1c:wght@700;800;900&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Nunito:wght@600;700;800&family=ZCOOL+KuaiLe&display=swap');
 
 :root {
   --bg: #0c1020;
@@ -3683,4 +3683,157 @@ html[data-theme="light"] .keyboard-deck-wave {
   .app-shell:not(.immersive-mode) .page-footer {
     height: 96px;
   }
+}
+
+/* Entry refinements: explicit theme controls, larger glass display and exact key hit feedback. */
+.entry-split-stage {
+  grid-template-rows: minmax(285px, 45dvh) 350px 24px;
+}
+.entry-liquid-screen {
+  width: min(960px, 90vw);
+  height: min(420px, 43dvh);
+  min-height: 285px;
+}
+.entry-liquid-content h1 {
+  font-family: "M PLUS Rounded 1c", "Noto Sans SC", sans-serif;
+  font-size: clamp(54px, 5.7vw, 86px);
+  font-weight: 900;
+  line-height: .96;
+  letter-spacing: -.065em;
+}
+.entry-liquid-content h1 em {
+  font-family: inherit;
+  font-weight: inherit;
+  letter-spacing: -.075em;
+}
+.entry-keyboard-stage,
+.entry-full-keyboard,
+.entry-full-keyboard .key-row > span:not(.key-spacer) {
+  pointer-events: auto;
+  cursor: default;
+}
+.entry-split-stage.is-ready .entry-full-keyboard .key-row > span.pointer-down,
+html[data-theme="light"] .entry-split-stage.is-ready .entry-full-keyboard .key-row > span.pointer-down {
+  animation: none !important;
+  transform: translate3d(0, 10px, -3px) !important;
+}
+
+.entry-theme-control,
+.nav-theme-segmented {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.025)),
+    rgba(11,17,34,.28);
+  box-shadow: 0 10px 32px rgba(2,6,20,.13), inset 0 1px rgba(255,255,255,.17);
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+  backdrop-filter: blur(22px) saturate(1.45);
+}
+.entry-theme-control {
+  position: fixed;
+  top: max(22px, env(safe-area-inset-top));
+  right: max(26px, env(safe-area-inset-right));
+  z-index: 1300;
+  opacity: 0;
+  animation: entryThemeControlIn .6s cubic-bezier(.22,.82,.16,1) 2.15s both;
+}
+.entry-theme-control button,
+.nav-theme-segmented button {
+  min-width: 70px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  font: 800 11px Nunito, Manrope, sans-serif;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: color .25s, background .32s, box-shadow .32s, transform .38s cubic-bezier(.22,.82,.16,1);
+}
+.entry-theme-control button span {
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 13px;
+  transition: transform .48s cubic-bezier(.22,.82,.16,1);
+}
+.entry-theme-control button:hover,
+.nav-theme-segmented button:hover {
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.entry-theme-control button.active,
+.nav-theme-segmented button.active {
+  color: #f8faff;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-1) 42%, transparent), color-mix(in srgb, var(--accent-3) 25%, transparent)),
+    rgba(255,255,255,.08);
+  box-shadow: 0 7px 18px rgba(3,7,22,.14), inset 0 1px rgba(255,255,255,.22);
+}
+.entry-theme-control button.active span { transform: rotate(18deg) scale(1.08); }
+.nav-theme-segmented {
+  flex: 0 0 auto;
+  padding: 3px;
+}
+.nav-theme-segmented button {
+  min-width: 54px;
+  height: 30px;
+  padding-inline: 10px;
+  font-size: 10px;
+}
+html[data-theme="light"] .entry-theme-control,
+html[data-theme="light"] .nav-theme-segmented {
+  border-color: rgba(255,255,255,.75);
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.48), rgba(255,255,255,.13)),
+    rgba(225,233,248,.22);
+  box-shadow: 0 10px 28px rgba(65,71,117,.1), inset 0 1px rgba(255,255,255,.88);
+}
+html[data-theme="light"] .entry-theme-control button.active,
+html[data-theme="light"] .nav-theme-segmented button.active {
+  color: #303653;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 5px 15px rgba(72,79,126,.1), inset 0 1px #fff;
+}
+@keyframes entryThemeControlIn {
+  from { opacity: 0; transform: translate3d(0,-9px,0) scale(.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 760px) {
+  .entry-split-stage {
+    grid-template-rows: minmax(250px, 44dvh) 280px 20px;
+  }
+  .entry-liquid-screen {
+    width: 94vw;
+    height: min(360px, 42dvh);
+    min-height: 250px;
+  }
+  .entry-liquid-content h1 {
+    font-size: clamp(44px, 10.5vw, 68px);
+    letter-spacing: -.075em;
+  }
+  .entry-theme-control {
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+  }
+  .entry-theme-control button {
+    min-width: 62px;
+    height: 32px;
+    padding-inline: 9px;
+  }
+  .nav-theme-segmented button {
+    min-width: 46px;
+    padding-inline: 7px;
+  }
+}
+@media (max-width: 560px) {
+  .nav-theme-segmented { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry-theme-control { animation-duration: 1ms !important; animation-delay: 0ms !important; }
 }

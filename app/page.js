@@ -591,6 +591,13 @@ export default function Home() {
   const timeOptions = [15, 30, 60, 120];
   const wordOptions = [10, 25, 50, 100];
   const pkOptions = [15, 30, 60];
+  function chooseTheme(nextTheme) {
+    const resolvedTheme = nextTheme === "auto" ? getTimeBasedTheme() : nextTheme;
+    setThemePreference(nextTheme);
+    setTheme(resolvedTheme);
+    setThemeMenuOpen(false);
+  }
+
   function enterPractice(event) {
     event?.stopPropagation();
     if (!entryReady || entryLeaving) return;
@@ -637,6 +644,24 @@ export default function Home() {
           aria-label="Keyflow 入场动画"
         >
           <div className="entry-orbit" aria-hidden="true" />
+          <div className="entry-theme-control" onClick={(event) => event.stopPropagation()} aria-label="入场主题">
+            <button
+              className={theme === "light" ? "active" : ""}
+              type="button"
+              onClick={() => chooseTheme("light")}
+              aria-pressed={theme === "light"}
+            >
+              <span>☀</span> Light
+            </button>
+            <button
+              className={theme === "dark" ? "active" : ""}
+              type="button"
+              onClick={() => chooseTheme("dark")}
+              aria-pressed={theme === "dark"}
+            >
+              <span>◐</span> Dark
+            </button>
+          </div>
           <LaptopIntro ready={entryReady} leaving={entryLeaving} onEnter={enterPractice} />
         </section>
       )}
@@ -645,6 +670,24 @@ export default function Home() {
         <div className="nav-actions">
           <span className="sync-dot"><i /> 本地记录</span>
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
+          <div className="nav-theme-segmented" onClick={(event) => event.stopPropagation()} aria-label="快速切换主题">
+            <button
+              className={theme === "light" ? "active" : ""}
+              type="button"
+              onClick={() => chooseTheme("light")}
+              aria-pressed={theme === "light"}
+            >
+              Light
+            </button>
+            <button
+              className={theme === "dark" ? "active" : ""}
+              type="button"
+              onClick={() => chooseTheme("dark")}
+              aria-pressed={theme === "dark"}
+            >
+              Dark
+            </button>
+          </div>
           <div className={`theme-picker ${themeMenuOpen ? "open" : ""}`}>
             <button
               className="icon-button theme-toggle"
@@ -675,8 +718,7 @@ export default function Home() {
                   role="menuitemradio"
                   aria-checked={themePreference === option.id}
                   onClick={() => {
-                    setThemePreference(option.id);
-                    setThemeMenuOpen(false);
+                    chooseTheme(option.id);
                   }}
                 >
                   <span>{option.icon}</span>
