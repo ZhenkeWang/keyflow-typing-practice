@@ -657,6 +657,32 @@ export default function Home() {
         <p>让视觉反馈跟上每一次敲击。<br />放松、专注，然后自然加速。</p>
       </section>
 
+      {!immersive && (
+        <section className="hero-keyboard-stage" aria-label="交互式立体键盘">
+          <div className="keyboard-aura" />
+          <div className="keyboard-float-shell">
+            <div
+              className="keyboard hero-keyboard"
+              onPointerMove={handleKeyboardPointerMove}
+              onPointerLeave={resetKeyboardDepth}
+              aria-hidden="true"
+            >
+              {KEY_ROWS.map((row, rowIndex) => (
+                <div className="key-row" key={rowIndex}>
+                  {row.map((key, keyIndex) => (
+                    <span
+                      className={`${expectedKey === key.value ? "next " : ""}${key.size ? `key-${key.size}` : ""}`}
+                      key={`${rowIndex}-${keyIndex}-${key.value}`}
+                    >{key.label}</span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+          <p><span /> MOVE TO EXPLORE · TYPE TO RESPOND <span /></p>
+        </section>
+      )}
+
       <section className="control-deck">
         <div className="mode-grid">
           {MODES.map((item) => (
@@ -833,7 +859,8 @@ export default function Home() {
           )}
         </div>
 
-        {chineseContent && !immersive ? <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div> : <div
+        {chineseContent && !immersive && <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div>}
+        {immersive && <div
           className="keyboard"
           onPointerMove={handleKeyboardPointerMove}
           onPointerLeave={resetKeyboardDepth}

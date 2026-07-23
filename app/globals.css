@@ -1452,6 +1452,226 @@ html[data-theme="light"] .theme-menu {
   }
 }
 
+/* Product-stage layout: title, floating keyboard, practice, then controls */
+.app-shell:not(.immersive-mode) {
+  width: min(1380px, calc(100% - 40px));
+  display: flex;
+  flex-direction: column;
+}
+.app-shell:not(.immersive-mode) > .nav { order: 0; }
+.app-shell:not(.immersive-mode) > .intro { order: 1; }
+.app-shell:not(.immersive-mode) > .hero-keyboard-stage { order: 2; }
+.app-shell:not(.immersive-mode) > .practice-card { order: 3; }
+.app-shell:not(.immersive-mode) > .control-deck { order: 4; }
+.app-shell:not(.immersive-mode) > .history-section { order: 5; }
+.app-shell:not(.immersive-mode) > .page-footer { order: 6; }
+
+.app-shell:not(.immersive-mode) .practice-card {
+  min-height: 610px;
+  margin-top: 12px;
+}
+.app-shell:not(.immersive-mode) .typing-zone {
+  min-height: 375px;
+  padding: 48px clamp(38px, 5vw, 78px) 42px;
+}
+.app-shell:not(.immersive-mode) .passage {
+  max-height: 225px;
+  font-size: clamp(23px, 2.25vw, 32px);
+  line-height: 1.78;
+}
+.app-shell:not(.immersive-mode) .control-deck {
+  margin-top: 22px;
+  margin-bottom: 10px;
+}
+
+.hero-keyboard-stage {
+  position: relative;
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  margin: -14px 0 22px;
+  overflow: hidden;
+  perspective: 1500px;
+  isolation: isolate;
+}
+.hero-keyboard-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 75px;
+  width: min(860px, 74vw);
+  height: 82px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(3, 7, 20, .42), transparent 68%);
+  filter: blur(20px);
+  transform: translateX(-50%) rotateX(72deg);
+  animation: keyboardShadowFloat 5.6s ease-in-out infinite;
+}
+.keyboard-aura {
+  position: absolute;
+  inset: 8% 10% 4%;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 35% 52%, color-mix(in srgb, var(--accent-1) 16%, transparent), transparent 38%),
+    radial-gradient(circle at 68% 48%, color-mix(in srgb, var(--accent-3) 13%, transparent), transparent 42%);
+  filter: blur(26px);
+  animation: keyboardAuraDrift 7s ease-in-out infinite alternate;
+}
+.keyboard-float-shell {
+  position: relative;
+  width: min(1130px, calc(100% - 32px));
+  transform-style: preserve-3d;
+  animation: keyboardFloat 5.6s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+.keyboard-float-shell::before {
+  content: "";
+  position: absolute;
+  inset: 18% 6% 2%;
+  z-index: -1;
+  border-radius: 44px;
+  background: linear-gradient(110deg, rgba(134, 116, 255, .13), rgba(79, 142, 231, .06), rgba(73, 217, 189, .11));
+  filter: blur(38px);
+  transform: translateZ(-80px) translateY(44px);
+}
+.hero-keyboard-stage .hero-keyboard {
+  --hero-scale: 1;
+  width: 100%;
+  min-height: 292px;
+  display: grid;
+  padding: 28px 30px 32px;
+  overflow: visible;
+  border: 1px solid rgba(255, 255, 255, .17);
+  border-bottom-color: rgba(255, 255, 255, .08);
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .095), rgba(255, 255, 255, .018) 48%, rgba(111, 126, 176, .045)),
+    radial-gradient(circle at 50% -20%, rgba(255, 255, 255, .13), transparent 48%);
+  box-shadow:
+    0 5px 0 rgba(255, 255, 255, .05),
+    0 18px 0 rgba(3, 7, 20, .2),
+    0 46px 72px rgba(2, 5, 17, .25),
+    inset 0 1px rgba(255, 255, 255, .18),
+    inset 0 -1px rgba(255, 255, 255, .035);
+  -webkit-backdrop-filter: blur(32px) saturate(1.35);
+  backdrop-filter: blur(32px) saturate(1.35);
+  transform:
+    perspective(1400px)
+    rotateX(calc(35deg + var(--kbd-rx, 0deg)))
+    rotateY(var(--kbd-ry, 0deg))
+    scale(var(--hero-scale));
+  transform-origin: 50% 78%;
+  transition: transform 620ms cubic-bezier(.22, .82, .16, 1), border-color .35s, box-shadow .45s;
+}
+.hero-keyboard-stage:hover .hero-keyboard {
+  border-color: rgba(255, 255, 255, .24);
+  box-shadow:
+    0 5px 0 rgba(255, 255, 255, .065),
+    0 19px 0 rgba(3, 7, 20, .21),
+    0 54px 86px rgba(2, 5, 17, .3),
+    0 0 70px color-mix(in srgb, var(--accent-2) 8%, transparent),
+    inset 0 1px rgba(255, 255, 255, .22);
+}
+.hero-keyboard-stage .hero-keyboard::before {
+  inset: -46px;
+  opacity: .7;
+}
+.hero-keyboard-stage .key-row {
+  transform: translateZ(22px);
+}
+.hero-keyboard-stage .key-row > span {
+  transform: translate3d(0, var(--key-y), calc(18px + var(--key-z)));
+  border-color: rgba(255, 255, 255, .12);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .105), rgba(255, 255, 255, .025) 62%),
+    color-mix(in srgb, var(--accent-2) 2.5%, transparent);
+  box-shadow:
+    0 7px 0 rgba(3, 6, 18, .25),
+    0 13px 18px rgba(3, 6, 18, .17),
+    0 0 28px var(--key-accent, transparent),
+    inset 0 1px rgba(255, 255, 255, .14);
+}
+.hero-keyboard-stage .key-row > span.next {
+  box-shadow:
+    0 7px 0 color-mix(in srgb, var(--accent-1) 18%, rgba(3, 6, 18, .22)),
+    0 0 32px color-mix(in srgb, var(--accent-2) 30%, transparent),
+    0 0 52px color-mix(in srgb, var(--accent-3) 15%, transparent);
+}
+.hero-keyboard-stage > p {
+  position: absolute;
+  bottom: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--dim);
+  font: 700 9px "IBM Plex Mono", monospace;
+  letter-spacing: 1.5px;
+}
+.hero-keyboard-stage > p span {
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-2));
+}
+.hero-keyboard-stage > p span:last-child {
+  transform: scaleX(-1);
+}
+html[data-theme="light"] .hero-keyboard-stage::before {
+  background: radial-gradient(ellipse, rgba(68, 74, 125, .2), transparent 68%);
+}
+html[data-theme="light"] .hero-keyboard-stage .hero-keyboard {
+  border-color: rgba(255, 255, 255, .82);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .55), rgba(218, 228, 245, .18) 56%, rgba(255, 255, 255, .28)),
+    radial-gradient(circle at 50% -20%, rgba(255, 255, 255, .92), transparent 48%);
+  box-shadow:
+    0 5px 0 rgba(255, 255, 255, .64),
+    0 18px 0 rgba(74, 82, 129, .1),
+    0 46px 72px rgba(63, 69, 115, .14),
+    inset 0 1px rgba(255, 255, 255, .95);
+}
+html[data-theme="light"] .hero-keyboard-stage .key-row > span {
+  border-color: rgba(70, 80, 125, .13);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .62), rgba(208, 220, 241, .24));
+  box-shadow:
+    0 7px 0 rgba(72, 80, 124, .13),
+    0 13px 18px rgba(72, 80, 124, .08),
+    0 0 28px var(--key-accent, transparent),
+    inset 0 1px rgba(255, 255, 255, .96);
+}
+@keyframes keyboardFloat {
+  0%, 100% { transform: translate3d(0, -4px, 0); }
+  50% { transform: translate3d(0, 9px, 0); }
+}
+@keyframes keyboardShadowFloat {
+  0%, 100% { opacity: .62; transform: translateX(-50%) rotateX(72deg) scale(.94); }
+  50% { opacity: .42; transform: translateX(-50%) rotateX(72deg) scale(1.04); }
+}
+@keyframes keyboardAuraDrift {
+  from { transform: translate3d(-3%, -1%, 0) scale(.96); opacity: .72; }
+  to { transform: translate3d(4%, 2%, 0) scale(1.06); opacity: 1; }
+}
+
+@media (max-width: 980px) {
+  .hero-keyboard-stage { min-height: 360px; }
+  .keyboard-float-shell { width: 1080px; }
+  .hero-keyboard-stage .hero-keyboard { --hero-scale: .78; }
+}
+@media (max-width: 650px) {
+  .app-shell:not(.immersive-mode) { width: min(100% - 24px, 1380px); }
+  .hero-keyboard-stage { min-height: 285px; margin-top: 8px; }
+  .keyboard-float-shell { width: 980px; }
+  .hero-keyboard-stage .hero-keyboard { --hero-scale: .56; }
+  .hero-keyboard-stage > p { font-size: 7px; }
+  .app-shell:not(.immersive-mode) .typing-zone { min-height: 330px; padding-inline: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .keyboard-float-shell,
+  .hero-keyboard-stage::before,
+  .keyboard-aura {
+    animation: none;
+  }
+}
+
 /* Immersive fullscreen practice */
 .session-actions {
   display: flex;
