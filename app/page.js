@@ -72,6 +72,12 @@ const KEY_ROWS = [
   ["z", "x", "c", "v", "b", "n", "m"],
 ];
 
+const SPARKS = [
+  [-34, -22, 0, 5], [-12, -36, 18, 3], [15, -34, 30, 5], [36, -16, 12, 3],
+  [39, 12, 36, 4], [22, 33, 8, 3], [-5, 38, 26, 5], [-31, 27, 40, 3],
+  [-42, 3, 22, 4], [-21, -8, 46, 3], [18, 8, 32, 4], [2, -18, 14, 3],
+];
+
 function makeText(mode, minLength = 1600) {
   const source = TEXT_BANK[mode];
   let result = "";
@@ -134,6 +140,7 @@ export default function Home() {
   const [newsSource, setNewsSource] = useState("news");
   const [feedStatus, setFeedStatus] = useState("idle");
   const [feedUpdated, setFeedUpdated] = useState("");
+  const [theme, setTheme] = useState("dark");
 
   const inputRef = useRef(null);
   const startedAt = useRef(0);
@@ -203,8 +210,15 @@ export default function Home() {
     } catch {
       setHistory([]);
     }
+    const savedTheme = localStorage.getItem("keyflow-theme");
+    setTheme(savedTheme || "dark");
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("keyflow-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     if (mode !== "news") return;
@@ -349,8 +363,14 @@ export default function Home() {
   const focusEnd = nextSpace === -1 ? text.length : nextSpace;
 
   return (
-    <main className="app-shell" onClick={() => status !== "finished" && inputRef.current?.focus()}>
-      <div className="aurora-backdrop"><Aurora /></div>
+    <main className={`app-shell theme-${theme}`} onClick={() => status !== "finished" && inputRef.current?.focus()}>
+      <div className="aurora-backdrop">
+        <Aurora
+          colorStops={theme === "light" ? ["#b8a9ff", "#8de5d1", "#b9c8ff"] : ["#7667ff", "#47d7bf", "#5363e8"]}
+          amplitude={theme === "light" ? 0.56 : 0.72}
+          blend={theme === "light" ? 0.48 : 0.58}
+        />
+      </div>
       <div className="background-wash" />
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
@@ -363,6 +383,15 @@ export default function Home() {
         <div className="nav-actions">
           <span className="sync-dot"><i /> 本地记录</span>
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
+          <button
+            className="icon-button theme-toggle"
+            onClick={(event) => {
+              event.stopPropagation();
+              setTheme((current) => current === "dark" ? "light" : "dark");
+            }}
+            aria-label={theme === "dark" ? "切换到浅色主题" : "切换到深色主题"}
+            title={theme === "dark" ? "浅色主题" : "深色主题"}
+          >{theme === "dark" ? "☼" : "☾"}</button>
           <button className="icon-button" onClick={(event) => { event.stopPropagation(); reset(); }} aria-label="重新开始">↻</button>
         </div>
       </header>
@@ -475,6 +504,18 @@ export default function Home() {
           </div>
 
           {pulse > 0 && status === "running" && <span className={`key-burst ${feedback}`} key={pulse}>{feedback === "correct" ? "+1" : "×"}</span>}
+          {pulse > 0 && status === "running" && (
+            <span className={`spark-burst ${feedback}`} key={`spark-${pulse}`} aria-hidden="true">
+              <i className="spark-core" />
+              {SPARKS.map(([x, y, delay, size], index) => (
+                <i
+                  className="spark"
+                  key={index}
+                  style={{ "--spark-x": `${x}px`, "--spark-y": `${y}px`, "--spark-delay": `${delay}ms`, "--spark-size": `${size}px` }}
+                />
+              ))}
+            </span>
+          )}
 
           <div className={`passage ${mode}`} aria-hidden="true">
             {visibleText.split("").map((char, index) => {

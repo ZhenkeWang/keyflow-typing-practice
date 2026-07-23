@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Unbounded:wght@500;600&family=ZCOOL+XiaoWei&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Nunito:wght@600;700;800&family=ZCOOL+KuaiLe&display=swap');
 
 :root {
   --bg: #0c1020;
@@ -349,4 +349,174 @@ body { font-family: Manrope, "Noto Sans SC", "Microsoft YaHei UI", sans-serif; }
   .typing-zone { min-height: 285px; }
   .stat strong { font-size: 34px; }
   .ime-panel { text-align: left; }
+}
+
+/* Balanced themes, rounded display type, and keystroke stardust */
+html, body { min-height: 100%; }
+body {
+  background: linear-gradient(135deg, #151a35 0%, #191a38 44%, #1e1a3a 100%);
+  background-size: cover;
+  background-attachment: fixed;
+  transition: color .35s ease, background .55s ease;
+}
+.aurora-backdrop {
+  height: 100vh;
+  opacity: .4;
+  filter: saturate(.86);
+  transition: opacity .4s ease, filter .4s ease;
+}
+.background-wash {
+  background: linear-gradient(135deg, rgba(12,16,32,.32), rgba(24,20,47,.3));
+  transition: background .45s ease;
+}
+.ambient-one { top: -260px; opacity: .28; }
+.ambient-two { top: 34%; opacity: .3; }
+
+.art-title {
+  font-family: "ZCOOL KuaiLe", "Noto Sans SC", sans-serif;
+  font-weight: 400;
+  letter-spacing: .015em;
+  text-wrap: balance;
+}
+.art-title span {
+  background-image: linear-gradient(105deg, #a996ff 4%, #f1efff 32%, #70efd1 54%, #a996ff 78%);
+  filter: drop-shadow(0 10px 28px rgba(105,83,244,.14));
+}
+.stat strong,
+.result-overlay > strong,
+.pk-result b,
+.history-item strong,
+.best-pill strong,
+.key-burst {
+  font-family: Nunito, Manrope, "Noto Sans SC", sans-serif;
+  font-weight: 800;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+}
+.stat strong { font-size: 43px; }
+.result-overlay > strong { font-size: 62px; }
+.theme-toggle { font-family: Nunito, sans-serif; font-size: 20px; line-height: 1; }
+
+.spark-burst {
+  position: absolute;
+  z-index: 4;
+  left: 76%;
+  top: 54%;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.spark-burst .spark,
+.spark-burst .spark-core {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  pointer-events: none;
+}
+.spark-burst .spark-core {
+  width: 18px;
+  height: 18px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: sparkRing .48s cubic-bezier(.2,.8,.2,1) forwards;
+}
+.spark-burst .spark {
+  width: var(--spark-size);
+  height: var(--spark-size);
+  border-radius: 1px 70% 1px 70%;
+  background: currentColor;
+  box-shadow: 0 0 9px currentColor;
+  transform: translate(-50%, -50%) rotate(45deg);
+  animation: sparkFly .62s cubic-bezier(.12,.72,.22,1) var(--spark-delay) forwards;
+}
+.spark-burst.correct { color: var(--mint); }
+.spark-burst.correct .spark:nth-child(3n) { color: var(--violet); }
+.spark-burst.correct .spark:nth-child(4n) { color: #d7cfff; }
+.spark-burst.wrong { color: var(--red); }
+.spark-burst.wrong .spark:nth-child(3n) { color: #ffb278; }
+@keyframes sparkFly {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(.2); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--spark-x) - 50%), calc(var(--spark-y) - 50%)) rotate(155deg) scale(.72); }
+}
+@keyframes sparkRing {
+  0% { opacity: .9; transform: translate(-50%, -50%) scale(.25); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.7); }
+}
+
+html[data-theme="light"] {
+  --bg: #edf1fb;
+  --panel: #f7f8fe;
+  --panel-2: #eef1fb;
+  --line: rgba(57, 54, 105, .11);
+  --line-strong: rgba(72, 61, 139, .2);
+  --text: #252640;
+  --muted: #69718d;
+  --dim: #939bb4;
+  --violet: #745be7;
+  --violet-soft: rgba(116, 91, 231, .11);
+  --mint: #24ac91;
+  --red: #df5369;
+}
+html[data-theme="light"] body {
+  background: linear-gradient(135deg, #eef1fb 0%, #f4f0fb 48%, #edf7f5 100%);
+}
+html[data-theme="light"] body::before { opacity: .018; mix-blend-mode: multiply; }
+html[data-theme="light"] .aurora-backdrop { opacity: .3; filter: saturate(.68); }
+html[data-theme="light"] .background-wash {
+  background: linear-gradient(135deg, rgba(245,247,255,.52), rgba(250,247,255,.48));
+}
+html[data-theme="light"] .ambient-one { background: radial-gradient(circle, rgba(126,101,239,.1), transparent 68%); }
+html[data-theme="light"] .ambient-two { background: radial-gradient(circle, rgba(36,172,145,.09), transparent 70%); }
+html[data-theme="light"] .mode-card,
+html[data-theme="light"] .session-controls {
+  background: rgba(250,251,255,.76);
+  box-shadow: 0 12px 38px rgba(65,64,114,.06);
+}
+html[data-theme="light"] .mode-card:hover { background: rgba(255,255,255,.92); }
+html[data-theme="light"] .mode-card.active {
+  background: linear-gradient(135deg, rgba(116,91,231,.12), rgba(255,255,255,.72));
+  box-shadow: 0 12px 32px rgba(89,72,177,.09), inset 0 1px rgba(255,255,255,.82);
+}
+html[data-theme="light"] .type-switch,
+html[data-theme="light"] .goal-options,
+html[data-theme="light"] .interaction-switch { background: rgba(88,81,135,.065); }
+html[data-theme="light"] .practice-card {
+  background: linear-gradient(145deg, rgba(255,255,255,.91), rgba(244,246,253,.94));
+  box-shadow: 0 34px 90px rgba(68,69,112,.12), inset 0 1px rgba(255,255,255,.9);
+}
+html[data-theme="light"] .feed-bar {
+  background: linear-gradient(90deg, rgba(237,250,247,.9), rgba(244,241,255,.9));
+}
+html[data-theme="light"] .passage .pending { color: #a8afc1; }
+html[data-theme="light"] .passage .correct { color: #35364f; text-shadow: none; }
+html[data-theme="light"] .passage .current { color: #707891; }
+html[data-theme="light"] .keyboard,
+html[data-theme="light"] .ime-panel { background: rgba(94,91,139,.035); }
+html[data-theme="light"] .key-row > span {
+  border-color: rgba(66,65,106,.1);
+  border-bottom-color: rgba(66,65,106,.19);
+  background: rgba(255,255,255,.42);
+  color: #9aa1b4;
+}
+html[data-theme="light"] .result-overlay {
+  background: rgba(246,247,253,.94);
+}
+html[data-theme="light"] .result-glow {
+  background: radial-gradient(circle, rgba(116,91,231,.15), transparent 68%);
+}
+html[data-theme="light"] .pk-result > div,
+html[data-theme="light"] .best-pill,
+html[data-theme="light"] .icon-button { background: rgba(255,255,255,.4); }
+html[data-theme="light"] .interaction-focus .passage .focus-range {
+  color: #34354e;
+  text-shadow: 0 0 18px rgba(116,91,231,.1);
+}
+
+@media (max-width: 650px) {
+  .spark-burst { left: 72%; top: 55%; }
+  .stat strong { font-size: 36px; }
+  .result-overlay > strong { font-size: 54px; }
 }
