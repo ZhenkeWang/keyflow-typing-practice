@@ -153,6 +153,11 @@ function makeLiveText(items, source, minLength = 1600) {
   return result;
 }
 
+function getTimeBasedTheme() {
+  const hour = new Date().getHours();
+  return hour >= 7 && hour < 19 ? "light" : "dark";
+}
+
 export default function Home() {
   const [mode, setMode] = useState("focus");
   const [testType, setTestType] = useState("time");
@@ -173,7 +178,9 @@ export default function Home() {
   const [newsSource, setNewsSource] = useState("news");
   const [feedStatus, setFeedStatus] = useState("idle");
   const [feedUpdated, setFeedUpdated] = useState("");
+  const [themePreference, setThemePreference] = useState("auto");
   const [theme, setTheme] = useState("dark");
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [burstPosition, setBurstPosition] = useState({ x: 0, y: 0 });
   const [titleCycle, setTitleCycle] = useState(0);
 
@@ -186,6 +193,7 @@ export default function Home() {
   const intervals = useRef([]);
   const recorded = useRef(false);
   const composing = useRef(false);
+  const appliedTheme = useRef(null);
 
   const correct = useMemo(
     () => [...typed].reduce((sum, char, index) => sum + (char === text[index] ? 1 : 0), 0),
@@ -247,14 +255,42 @@ export default function Home() {
     } catch {
       setHistory([]);
     }
-    const savedTheme = localStorage.getItem("keyflow-theme");
-    setTheme(savedTheme || "dark");
+    const savedPreference = localStorage.getItem("keyflow-theme-mode");
+    const legacyTheme = localStorage.getItem("keyflow-theme");
+    setThemePreference(
+      ["auto", "light", "dark"].includes(savedPreference)
+        ? savedPreference
+        : ["light", "dark"].includes(legacyTheme) ? legacyTheme : "auto"
+    );
     inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    const resolveTheme = () => setTheme(
+      themePreference === "auto" ? getTimeBasedTheme() : themePreference
+    );
+    resolveTheme();
+    localStorage.setItem("keyflow-theme-mode", themePreference);
+    const timer = themePreference === "auto"
+      ? window.setInterval(resolveTheme, 60_000)
+      : null;
+    return () => timer && window.clearInterval(timer);
+  }, [themePreference]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const changed = appliedTheme.current && appliedTheme.current !== theme;
+    let timer;
+    if (changed) {
+      root.classList.remove("theme-changing");
+      void root.offsetWidth;
+      root.classList.add("theme-changing");
+      timer = window.setTimeout(() => root.classList.remove("theme-changing"), 1100);
+    }
+    root.dataset.theme = theme;
     localStorage.setItem("keyflow-theme", theme);
+    appliedTheme.current = theme;
+    return () => timer && window.clearTimeout(timer);
   }, [theme]);
 
   useEffect(() => {
@@ -480,7 +516,13 @@ export default function Home() {
   const focusEnd = nextSpace === -1 ? text.length : nextSpace;
 
   return (
-    <main className={`app-shell theme-${theme}`} onClick={() => status !== "finished" && inputRef.current?.focus()}>
+    <main
+      className={`app-shell theme-${theme}`}
+      onClick={() => {
+        setThemeMenuOpen(false);
+        if (status !== "finished") inputRef.current?.focus();
+      }}
+    >
       <div className="aurora-backdrop">
         <Aurora
           colorStops={theme === "light" ? ["#b8a9ff", "#8de5d1", "#b9c8ff"] : ["#7667ff", "#47d7bf", "#5363e8"]}
@@ -501,15 +543,47 @@ export default function Home() {
         <div className="nav-actions">
           <span className="sync-dot"><i /> 本地记录</span>
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
-          <button
-            className="icon-button theme-toggle"
-            onClick={(event) => {
-              event.stopPropagation();
-              setTheme((current) => current === "dark" ? "light" : "dark");
-            }}
-            aria-label={theme === "dark" ? "切换到浅色主题" : "切换到深色主题"}
-            title={theme === "dark" ? "浅色主题" : "深色主题"}
-          >{theme === "dark" ? "☼" : "☾"}</button>
+          <div className={`theme-picker ${themeMenuOpen ? "open" : ""}`}>
+            <button
+              className="icon-button theme-toggle"
+              onClick={(event) => {
+                event.stopPropagation();
+                setThemeMenuOpen((open) => !open);
+              }}
+              aria-label="选择主题"
+              aria-expanded={themeMenuOpen}
+              title={`主题：${themePreference === "auto" ? "自动" : themePreference === "light" ? "浅色" : "深色"}`}
+            >
+              <span>{themePreference === "auto" ? "◐" : theme === "dark" ? "☾" : "☼"}</span>
+              {themePreference === "auto" && <i aria-hidden="true" />}
+            </button>
+            <div className="theme-menu" role="menu" onClick={(event) => event.stopPropagation()}>
+              <div className="theme-menu-heading">
+                <strong>外观</strong>
+                <small>自动：07:00—19:00 浅色</small>
+              </div>
+              {[
+                { id: "auto", icon: "◐", label: "自动", detail: "跟随本地时间" },
+                { id: "light", icon: "☼", label: "浅色", detail: "始终使用 Light" },
+                { id: "dark", icon: "☾", label: "深色", detail: "始终使用 Dark" },
+              ].map((option) => (
+                <button
+                  className={themePreference === option.id ? "active" : ""}
+                  key={option.id}
+                  role="menuitemradio"
+                  aria-checked={themePreference === option.id}
+                  onClick={() => {
+                    setThemePreference(option.id);
+                    setThemeMenuOpen(false);
+                  }}
+                >
+                  <span>{option.icon}</span>
+                  <b>{option.label}<small>{option.detail}</small></b>
+                  <i />
+                </button>
+              ))}
+            </div>
+          </div>
           <button className="icon-button" onClick={(event) => { event.stopPropagation(); reset(); }} aria-label="重新开始">↻</button>
         </div>
       </header>
