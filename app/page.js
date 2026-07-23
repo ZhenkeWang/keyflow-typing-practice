@@ -60,6 +60,14 @@ const INTERACTIONS = [
   { id: "zen", label: "禅意", desc: "隐藏数据" },
 ];
 
+const LAPTOP_KEYS = [
+  ["esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "del"],
+  ["tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]"],
+  ["caps", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "enter"],
+  ["shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "shift"],
+  ["fn", "ctrl", "opt", "cmd", "space", "cmd", "opt", "left", "up", "down", "right"],
+];
+
 const FEED_SOURCES = [
   { id: "news", label: "全球新闻", detail: "实时媒体标题" },
   { id: "hot", label: "中文热榜", detail: "近期关注话题" },
@@ -202,7 +210,9 @@ export default function Home() {
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [immersive, setImmersive] = useState(false);
   const [burstPosition, setBurstPosition] = useState({ x: 0, y: 0 });
-  const [titleCycle, setTitleCycle] = useState(0);
+  const [entryReady, setEntryReady] = useState(false);
+  const [entered, setEntered] = useState(false);
+  const [entryLeaving, setEntryLeaving] = useState(false);
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -282,7 +292,6 @@ export default function Home() {
         ? savedPreference
         : ["light", "dark"].includes(legacyTheme) ? legacyTheme : "auto"
     );
-    inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -314,8 +323,9 @@ export default function Home() {
   }, [theme]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setTitleCycle((cycle) => cycle + 1), 6200);
-    return () => clearInterval(timer);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => setEntryReady(true), reducedMotion ? 60 : 3500);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useLayoutEffect(() => {
@@ -588,6 +598,17 @@ export default function Home() {
   const timeOptions = [15, 30, 60, 120];
   const wordOptions = [10, 25, 50, 100];
   const pkOptions = [15, 30, 60];
+  function enterPractice(event) {
+    event?.stopPropagation();
+    if (!entryReady || entryLeaving) return;
+    setEntryLeaving(true);
+    window.setTimeout(() => {
+      setEntered(true);
+      setEntryLeaving(false);
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }, 920);
+  }
+
   const pkWinner = pkScores[1] && pkScores[2]
     ? pkScores[1].wpm === pkScores[2].wpm
       ? pkScores[1].accuracy === pkScores[2].accuracy ? 0 : pkScores[1].accuracy > pkScores[2].accuracy ? 1 : 2
@@ -599,10 +620,10 @@ export default function Home() {
 
   return (
     <main
-      className={`app-shell theme-${theme} ${immersive ? "immersive-mode" : ""}`}
+      className={`app-shell theme-${theme} ${immersive ? "immersive-mode" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
       onClick={() => {
         setThemeMenuOpen(false);
-        if (status !== "finished") inputRef.current?.focus();
+        if (entered && status !== "finished") inputRef.current?.focus();
       }}
     >
       <div className="aurora-backdrop">
@@ -617,11 +638,61 @@ export default function Home() {
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
 
+      {!entered && (
+        <section
+          className={`entry-gate ${entryReady ? "is-ready" : ""} ${entryLeaving ? "is-leaving" : ""}`}
+          aria-label="Keyflow 入场动画"
+        >
+          <div className="entry-orbit" aria-hidden="true" />
+          <div className="entry-laptop-scene">
+            <div className="entry-laptop">
+              <div className="entry-laptop-screen">
+                <div className="entry-screen-bezel">
+                  <span className="entry-camera" />
+                  <div className="entry-screen-content">
+                    <span className="entry-screen-kicker">KEYFLOW · FLOW STATE TRAINING</span>
+                    <h1>
+                      {TITLE_LINES.map((line) => <span key={line}>{line}</span>)}
+                    </h1>
+                    <button
+                      type="button"
+                      className="entry-cta"
+                      disabled={!entryReady || entryLeaving}
+                      onClick={enterPractice}
+                    >
+                      点击进入练习 <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="entry-hinge" aria-hidden="true" />
+              <div className="entry-laptop-base" aria-hidden="true">
+                <div className="entry-keyboard">
+                  {LAPTOP_KEYS.map((row, rowIndex) => (
+                    <div className="entry-key-row" key={rowIndex}>
+                      {row.map((key, keyIndex) => (
+                        <i
+                          className={`entry-key entry-key-${key}`}
+                          style={{ "--entry-key-index": rowIndex * 14 + keyIndex }}
+                          key={`${rowIndex}-${keyIndex}-${key}`}
+                        >
+                          {key === "left" ? "←" : key === "right" ? "→" : key === "up" ? "↑" : key === "down" ? "↓" : key}
+                        </i>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="entry-trackpad" />
+              </div>
+              <div className="entry-laptop-lip" aria-hidden="true" />
+            </div>
+          </div>
+          <p className="entry-caption">一台电脑，一段节奏。准备好后，从第一键开始。</p>
+        </section>
+      )}
+
       <header className="nav">
-        <a className="brand" href="#" aria-label="Keyflow 首页">
-          <span className="brand-mark"><i /><i /><i /></span>
-          <span>keyflow<small>LAB</small></span>
-        </a>
         <div className="nav-actions">
           <span className="sync-dot"><i /> 本地记录</span>
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
@@ -669,61 +740,6 @@ export default function Home() {
           <button className="icon-button" onClick={(event) => { event.stopPropagation(); reset(); }} aria-label="重新开始">↻</button>
         </div>
       </header>
-
-      <section className="intro">
-        <div>
-          <p className="eyebrow"><span /> FLOW STATE TRAINING</p>
-          <h1 className="art-title" aria-label="找到你的击键节奏。">
-            {TITLE_LINES.map((line, lineIndex) => (
-              <span className={`title-line ${lineIndex ? "title-line-accent" : ""}`} key={`${titleCycle}-${lineIndex}`}>
-                {[...line].map((char, charIndex) => (
-                  <span
-                    className="title-char"
-                    style={{ "--char-delay": `${(lineIndex * 4 + charIndex) * 92}ms` }}
-                    key={`${titleCycle}-${lineIndex}-${charIndex}`}
-                  >{char}</span>
-                ))}
-                {lineIndex === 1 && <i className="title-caret" aria-hidden="true" />}
-              </span>
-            ))}
-            <span className="title-keyboard" key={`keyboard-${titleCycle}`} aria-hidden="true">
-              <i>A</i><i>中</i><i>↵</i>
-            </span>
-          </h1>
-        </div>
-        <p>让视觉反馈跟上每一次敲击。<br />放松、专注，然后自然加速。</p>
-      </section>
-
-      {!immersive && (
-        <section
-          className="hero-keyboard-stage"
-          aria-label="交互式立体键盘"
-          onPointerMove={handleKeyboardPointerMove}
-          onPointerLeave={resetKeyboardDepth}
-        >
-          <div className="keyboard-aura" />
-          <div className="keyboard-float-shell">
-            <div
-              className="keyboard hero-keyboard full-keyboard"
-              aria-hidden="true"
-            >
-              {KEY_ROWS.map((row, rowIndex) => (
-                <div className="key-row" key={rowIndex}>
-                  {row.map((key, keyIndex) => (
-                    <span
-                      className={`${key.spacer ? "key-spacer " : ""}${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
-                      key={`${rowIndex}-${keyIndex}-${key.value}-${lastTypedKey === key.value ? pulse : "idle"}`}
-                    >{key.label}</span>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-          {pulse > 0 && status === "running" && (
-            <span className={`keyboard-input-wave ${feedback}`} key={`keyboard-wave-${pulse}`} aria-hidden="true" />
-          )}
-        </section>
-      )}
 
       <section className="control-deck">
         <div className="mode-grid">

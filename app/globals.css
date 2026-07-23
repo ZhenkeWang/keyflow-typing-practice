@@ -1452,6 +1452,473 @@ html[data-theme="light"] .theme-menu {
   }
 }
 
+/* Cinematic laptop entry */
+body:has(.entry-gate) {
+  overflow: hidden;
+}
+.entry-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent-1) 12%, transparent), transparent 34%),
+    linear-gradient(135deg, #10172b, #17172e 48%, #112626);
+  perspective: 1800px;
+  isolation: isolate;
+}
+.entry-gate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .28;
+  background:
+    linear-gradient(115deg, transparent 28%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 68%);
+  background-size: 220% 100%;
+  animation: entryAtmosphere 7s ease-in-out infinite alternate;
+}
+.entry-gate::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 5vh;
+  width: min(900px, 82vw);
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(2, 5, 16, .46);
+  filter: blur(44px);
+  transform: translateX(-50%) rotateX(72deg);
+  animation: entryShadowIn 1.4s cubic-bezier(.22, .8, .2, 1) both;
+}
+.entry-orbit {
+  position: absolute;
+  z-index: -1;
+  width: min(980px, 90vw);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 10%, transparent);
+  border-radius: 50%;
+  opacity: .55;
+  transform: rotateX(72deg);
+}
+.entry-orbit::before,
+.entry-orbit::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border: 1px solid color-mix(in srgb, var(--accent-3) 9%, transparent);
+  border-radius: inherit;
+}
+.entry-orbit::after {
+  inset: 28%;
+}
+.entry-laptop-scene {
+  position: relative;
+  z-index: 2;
+  width: min(920px, 94vw);
+  height: min(700px, 84dvh);
+  perspective: 1700px;
+  transform-style: preserve-3d;
+}
+.entry-laptop {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: entryLaptopArrive 1.15s cubic-bezier(.22, .82, .16, 1) both;
+}
+.entry-laptop-screen {
+  position: absolute;
+  left: 11%;
+  bottom: 28%;
+  width: 78%;
+  height: 54%;
+  z-index: 3;
+  padding: 10px;
+  border-radius: 28px 28px 15px 15px;
+  background: linear-gradient(145deg, #475063, #161b27 42%, #070b12);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.18),
+    inset 0 1px rgba(255,255,255,.36),
+    0 38px 80px rgba(2,5,16,.36);
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  animation: entryLaptopOpen 1.55s cubic-bezier(.2, .86, .18, 1) .32s both;
+}
+.entry-screen-bezel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 20px 20px 9px 9px;
+  background:
+    radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 44%),
+    linear-gradient(145deg, #0d1427, #111529 48%, #0b1e20);
+  box-shadow: inset 0 0 70px rgba(2,5,16,.55);
+}
+.entry-screen-bezel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(108deg, transparent 35%, rgba(255,255,255,.12) 49%, transparent 62%);
+  transform: translateX(-70%);
+  animation: entryScreenWake 1.05s ease-out 1.65s both;
+}
+.entry-camera {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  z-index: 3;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #05070c;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.04);
+  transform: translateX(-50%);
+}
+.entry-screen-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 34px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(15px) scale(.985);
+  animation: entryScreenContentIn .9s cubic-bezier(.22, .82, .16, 1) 2.72s both;
+}
+.entry-screen-kicker {
+  margin-bottom: 16px;
+  color: color-mix(in srgb, var(--accent-3) 88%, white);
+  font: 700 clamp(8px, .9vw, 11px) "IBM Plex Mono", monospace;
+  letter-spacing: clamp(1.5px, .25vw, 3px);
+}
+.entry-screen-content h1 {
+  margin: 0;
+  color: #f3f5ff;
+  font-family: "ZCOOL KuaiLe", "Nunito", sans-serif;
+  font-size: clamp(42px, 5.6vw, 76px);
+  font-weight: 400;
+  line-height: .95;
+  letter-spacing: -.04em;
+  text-shadow: 0 8px 30px rgba(5,8,24,.38);
+}
+.entry-screen-content h1 span {
+  display: block;
+}
+.entry-screen-content h1 span:last-child {
+  color: transparent;
+  background: linear-gradient(90deg, #a99aff, #7fa5ff 48%, #70e4c8);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+.entry-cta {
+  position: relative;
+  min-width: 176px;
+  height: 48px;
+  margin-top: 28px;
+  padding: 0 20px;
+  border: 1px solid color-mix(in srgb, var(--accent-3) 38%, transparent);
+  border-radius: 999px;
+  color: #f4f7ff;
+  background: linear-gradient(135deg, rgba(139,116,255,.22), rgba(94,233,197,.12));
+  box-shadow: 0 12px 34px rgba(3,7,22,.24), inset 0 1px rgba(255,255,255,.15);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: entryCtaIn .65s cubic-bezier(.22, .82, .16, 1) 3.12s both;
+  transition: transform .45s cubic-bezier(.22, .82, .16, 1), border-color .25s, box-shadow .25s;
+}
+.entry-cta span {
+  display: inline-block;
+  margin-left: 13px;
+  transition: transform .4s cubic-bezier(.22, .82, .16, 1);
+}
+.entry-cta:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  border-color: color-mix(in srgb, var(--accent-3) 68%, transparent);
+  box-shadow: 0 16px 42px rgba(3,7,22,.28), 0 0 24px color-mix(in srgb, var(--accent-2) 18%, transparent);
+}
+.entry-cta:hover:not(:disabled) span {
+  transform: translateX(4px);
+}
+.entry-cta:disabled {
+  cursor: default;
+}
+.entry-hinge {
+  position: absolute;
+  left: 19%;
+  right: 19%;
+  bottom: 27.5%;
+  z-index: 5;
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #687184, #151a25 58%, #05070c);
+  box-shadow: 0 2px 8px rgba(2,5,16,.6), inset 0 1px rgba(255,255,255,.22);
+}
+.entry-laptop-base {
+  position: absolute;
+  left: 3%;
+  bottom: 5%;
+  z-index: 4;
+  width: 94%;
+  height: 32%;
+  padding: 20px 34px 32px;
+  border-radius: 18px 18px 32px 32px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.18), transparent 18%),
+    linear-gradient(155deg, #596275, #2e3544 43%, #171d28);
+  box-shadow:
+    0 28px 30px rgba(2,5,16,.42),
+    inset 0 2px rgba(255,255,255,.35),
+    inset 0 -3px rgba(3,6,15,.4);
+  transform-origin: 50% 100%;
+  transform: rotateX(58deg) translateZ(-3px);
+  transform-style: preserve-3d;
+}
+.entry-keyboard {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  transform: translateZ(13px);
+}
+.entry-key-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.entry-key {
+  min-width: 0;
+  height: clamp(19px, 2.4vw, 27px);
+  flex: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 5px;
+  color: rgba(235,241,255,.58);
+  background: linear-gradient(145deg, #222a38, #101621);
+  box-shadow:
+    0 4px 0 #080c13,
+    0 5px 8px rgba(2,5,14,.32),
+    inset 0 1px rgba(255,255,255,.1);
+  font: 600 clamp(5px, .7vw, 8px) "IBM Plex Mono", monospace;
+  font-style: normal;
+  text-transform: uppercase;
+  transform: translateZ(7px);
+  animation: entryKeyTap .46s cubic-bezier(.2, .8, .2, 1) calc(1.68s + (var(--entry-key-index) * 8ms)) both;
+}
+.entry-key-space { flex: 5; }
+.entry-key-shift,
+.entry-key-enter,
+.entry-key-caps,
+.entry-key-tab { flex: 1.65; }
+.entry-key-del { flex: 1.35; }
+.entry-trackpad {
+  width: 34%;
+  height: 48px;
+  margin: 14px auto 0;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 8px;
+  background: rgba(9,13,21,.08);
+  box-shadow: inset 0 1px rgba(255,255,255,.08);
+  transform: translateZ(5px);
+}
+.entry-laptop-lip {
+  position: absolute;
+  left: 37%;
+  bottom: 3.8%;
+  z-index: 6;
+  width: 26%;
+  height: 10px;
+  border-radius: 0 0 14px 14px;
+  background: linear-gradient(180deg, #5e6678, #202735);
+  transform: rotateX(58deg);
+}
+.entry-caption {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(22px, 4vh, 44px);
+  z-index: 4;
+  width: max-content;
+  max-width: calc(100vw - 40px);
+  margin: 0;
+  color: color-mix(in srgb, var(--muted) 86%, transparent);
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  animation: entryCaptionIn .7s ease-out 3.28s both;
+}
+.entry-gate.is-leaving {
+  animation: entryGateLeave .92s cubic-bezier(.32, .72, 0, 1) both;
+}
+.entry-gate.is-leaving .entry-laptop {
+  animation: entryLaptopThrough .92s cubic-bezier(.32, .72, 0, 1) both;
+}
+.entry-gate.is-leaving .entry-orbit {
+  animation: entryOrbitThrough .92s ease-out both;
+}
+
+.practice-entered:not(.immersive-mode) > .nav,
+.practice-entered:not(.immersive-mode) > .practice-card,
+.practice-entered:not(.immersive-mode) > .control-deck,
+.practice-entered:not(.immersive-mode) > .history-section,
+.practice-entered:not(.immersive-mode) > .page-footer {
+  animation: practicePageEnter .9s cubic-bezier(.22, .82, .16, 1) both;
+}
+.practice-entered:not(.immersive-mode) > .practice-card { animation-delay: 80ms; }
+.practice-entered:not(.immersive-mode) > .control-deck { animation-delay: 150ms; }
+.practice-entered:not(.immersive-mode) > .history-section { animation-delay: 210ms; }
+.practice-entered:not(.immersive-mode) > .page-footer { animation-delay: 260ms; }
+.app-shell:not(.immersive-mode) > .nav {
+  justify-content: flex-end;
+}
+.app-shell:not(.immersive-mode) > .practice-card {
+  margin-top: 34px;
+}
+
+html[data-theme="light"] .entry-gate {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(113,96,214,.16), transparent 35%),
+    linear-gradient(135deg, #e7ecf7, #eeeaf6 50%, #e6f1ef);
+}
+html[data-theme="light"] .entry-gate::after {
+  background: rgba(68,76,115,.17);
+}
+html[data-theme="light"] .entry-screen-bezel {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(109,126,223,.22), transparent 44%),
+    linear-gradient(145deg, #27304b, #252947 48%, #1c393a);
+}
+
+@keyframes entryLaptopArrive {
+  from { opacity: 0; transform: translateY(70px) scale(.88); filter: blur(12px); }
+  72% { opacity: 1; transform: translateY(-4px) scale(1.006); filter: blur(0); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes entryLaptopOpen {
+  0% { transform: rotateX(-88deg) translateZ(-8px); }
+  68% { transform: rotateX(2deg) translateZ(0); }
+  84% { transform: rotateX(-10deg); }
+  100% { transform: rotateX(-6deg); }
+}
+@keyframes entryScreenWake {
+  0% { opacity: 0; transform: translateX(-70%); }
+  38% { opacity: .85; }
+  100% { opacity: 0; transform: translateX(80%); }
+}
+@keyframes entryScreenContentIn {
+  0% { opacity: 0; transform: translateY(15px) scale(.985); filter: blur(8px); }
+  72% { opacity: 1; transform: translateY(-1px) scale(1.002); filter: blur(0); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+@keyframes entryCtaIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes entryKeyTap {
+  0%, 28%, 100% {
+    color: rgba(235,241,255,.58);
+    box-shadow: 0 4px 0 #080c13, 0 5px 8px rgba(2,5,14,.32), inset 0 1px rgba(255,255,255,.1);
+    transform: translateZ(7px);
+  }
+  48% {
+    color: #fff;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--accent-2) 24%, #222a38), #101621);
+    box-shadow: 0 1px 0 #080c13, 0 0 11px color-mix(in srgb, var(--accent-2) 22%, transparent);
+    transform: translateY(3px) translateZ(1px);
+  }
+}
+@keyframes entryCaptionIn {
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes entryShadowIn {
+  from { opacity: 0; transform: translateX(-50%) rotateX(72deg) scale(.7); }
+  to { opacity: 1; transform: translateX(-50%) rotateX(72deg) scale(1); }
+}
+@keyframes entryAtmosphere {
+  to { background-position: 100% 50%; }
+}
+@keyframes entryGateLeave {
+  0% { opacity: 1; }
+  62% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+@keyframes entryLaptopThrough {
+  0% { opacity: 1; transform: none; filter: blur(0); }
+  100% { opacity: 0; transform: translateY(-28px) scale(1.16); filter: blur(12px); }
+}
+@keyframes entryOrbitThrough {
+  to { opacity: 0; transform: rotateX(72deg) scale(1.35); }
+}
+@keyframes practicePageEnter {
+  from { opacity: 0; transform: translateY(26px) scale(.99); filter: blur(9px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@media (max-width: 720px) {
+  .entry-laptop-scene {
+    width: 98vw;
+    height: min(620px, 80dvh);
+  }
+  .entry-laptop-screen {
+    left: 6%;
+    bottom: 34%;
+    width: 88%;
+    height: 46%;
+    padding: 7px;
+    border-radius: 20px 20px 11px 11px;
+  }
+  .entry-screen-bezel { border-radius: 14px 14px 6px 6px; }
+  .entry-laptop-base {
+    left: 1%;
+    bottom: 12%;
+    width: 98%;
+    height: 28%;
+    padding: 14px 18px 24px;
+  }
+  .entry-hinge {
+    left: 14%;
+    right: 14%;
+    bottom: 33.5%;
+  }
+  .entry-laptop-lip { bottom: 10.8%; }
+  .entry-keyboard,
+  .entry-key-row { gap: 3px; }
+  .entry-trackpad { height: 34px; margin-top: 9px; }
+  .entry-screen-content { padding: 22px; }
+  .entry-screen-content h1 { font-size: clamp(36px, 11vw, 56px); }
+  .entry-screen-kicker { margin-bottom: 10px; }
+  .entry-cta { height: 44px; margin-top: 20px; }
+  .entry-caption { bottom: 18px; font-size: 10px; }
+  .app-shell:not(.immersive-mode) > .practice-card { margin-top: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-laptop,
+  .entry-laptop-screen,
+  .entry-screen-bezel::before,
+  .entry-screen-content,
+  .entry-cta,
+  .entry-key,
+  .entry-caption,
+  .entry-gate::before,
+  .entry-gate::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+  .entry-laptop-screen { transform: rotateX(-6deg); }
+}
+
 /* Complete desktop keyboard: function, navigation, arrows and numpad */
 .hero-keyboard-stage {
   min-height: 480px;
