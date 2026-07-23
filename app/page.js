@@ -66,40 +66,59 @@ const FEED_SOURCES = [
   { id: "tech", label: "科技趋势", detail: "开发者热议" },
 ];
 
+const KEY_GAP = { value: "gap", label: "", size: "cluster", spacer: true };
+const KEY_BLANK = { value: "blank", label: "", spacer: true };
+
 const KEY_ROWS = [
+  [
+    { value: "escape", label: "Esc" }, KEY_GAP,
+    { value: "f1", label: "F1" }, { value: "f2", label: "F2" }, { value: "f3", label: "F3" }, { value: "f4", label: "F4" }, KEY_GAP,
+    { value: "f5", label: "F5" }, { value: "f6", label: "F6" }, { value: "f7", label: "F7" }, { value: "f8", label: "F8" }, KEY_GAP,
+    { value: "f9", label: "F9" }, { value: "f10", label: "F10" }, { value: "f11", label: "F11" }, { value: "f12", label: "F12" }, KEY_GAP,
+    { value: "printscreen", label: "PrtSc" }, { value: "scrolllock", label: "ScrLk" }, { value: "pause", label: "Pause" },
+  ],
   [
     { value: "`", label: "`" }, { value: "1", label: "1" }, { value: "2", label: "2" },
     { value: "3", label: "3" }, { value: "4", label: "4" }, { value: "5", label: "5" },
     { value: "6", label: "6" }, { value: "7", label: "7" }, { value: "8", label: "8" },
     { value: "9", label: "9" }, { value: "0", label: "0" }, { value: "-", label: "−" },
-    { value: "=", label: "=" }, { value: "backspace", label: "⌫", size: "wide" },
+    { value: "=", label: "=" }, { value: "backspace", label: "⌫", size: "wide" }, KEY_GAP,
+    { value: "insert", label: "Ins" }, { value: "home", label: "Home" }, { value: "pageup", label: "PgUp" }, KEY_GAP,
+    { value: "numlock", label: "Num" }, { value: "num-divide", label: "/" }, { value: "num-multiply", label: "×" }, { value: "num-minus", label: "−" },
   ],
   [
     { value: "tab", label: "Tab", size: "wide" }, { value: "q", label: "Q" }, { value: "w", label: "W" },
     { value: "e", label: "E" }, { value: "r", label: "R" }, { value: "t", label: "T" },
     { value: "y", label: "Y" }, { value: "u", label: "U" }, { value: "i", label: "I" },
     { value: "o", label: "O" }, { value: "p", label: "P" }, { value: "[", label: "[" },
-    { value: "]", label: "]" }, { value: "\\", label: "\\" },
+    { value: "]", label: "]" }, { value: "\\", label: "\\", size: "wide" }, KEY_GAP,
+    { value: "delete", label: "Del" }, { value: "end", label: "End" }, { value: "pagedown", label: "PgDn" }, KEY_GAP,
+    { value: "num7", label: "7" }, { value: "num8", label: "8" }, { value: "num9", label: "9" }, { value: "num-plus", label: "+" },
   ],
   [
     { value: "caps", label: "Caps", size: "wide" }, { value: "a", label: "A" }, { value: "s", label: "S" },
     { value: "d", label: "D" }, { value: "f", label: "F" }, { value: "g", label: "G" },
     { value: "h", label: "H" }, { value: "j", label: "J" }, { value: "k", label: "K" },
     { value: "l", label: "L" }, { value: ";", label: ";" }, { value: "'", label: "'" },
-    { value: "enter", label: "Enter", size: "enter" },
+    { value: "enter", label: "Enter", size: "enter" }, KEY_GAP,
+    KEY_BLANK, KEY_BLANK, KEY_BLANK, KEY_GAP,
+    { value: "num4", label: "4" }, { value: "num5", label: "5" }, { value: "num6", label: "6" }, { value: "num-plus-lower", label: "+" },
   ],
   [
     { value: "shift", label: "Shift", size: "shift" }, { value: "z", label: "Z" }, { value: "x", label: "X" },
     { value: "c", label: "C" }, { value: "v", label: "V" }, { value: "b", label: "B" },
     { value: "n", label: "N" }, { value: "m", label: "M" }, { value: ",", label: "," },
-    { value: ".", label: "." }, { value: "/", label: "/" }, { value: "shift-right", label: "Shift", size: "shift" },
+    { value: ".", label: "." }, { value: "/", label: "/" }, { value: "shift-right", label: "Shift", size: "shift" }, KEY_GAP,
+    KEY_BLANK, { value: "arrow-up", label: "↑" }, KEY_BLANK, KEY_GAP,
+    { value: "num1", label: "1" }, { value: "num2", label: "2" }, { value: "num3", label: "3" }, { value: "num-enter", label: "Enter" },
   ],
   [
-    { value: "ctrl", label: "Ctrl", size: "meta" }, { value: "alt", label: "Alt", size: "meta" },
-    { value: "meta", label: "◆", size: "meta" }, { value: " ", label: "Space", size: "space" },
-    { value: "meta-right", label: "◆", size: "meta" }, { value: "alt-right", label: "Alt", size: "meta" },
-    { value: "arrow-left", label: "←", size: "arrow" }, { value: "arrow-up", label: "↑", size: "arrow" },
-    { value: "arrow-down", label: "↓", size: "arrow" }, { value: "arrow-right", label: "→", size: "arrow" },
+    { value: "ctrl", label: "Ctrl", size: "meta" }, { value: "meta", label: "◆", size: "meta" },
+    { value: "alt", label: "Alt", size: "meta" }, { value: " ", label: "Space", size: "space" },
+    { value: "alt-right", label: "Alt", size: "meta" }, { value: "fn", label: "Fn", size: "meta" },
+    { value: "menu", label: "Menu", size: "meta" }, { value: "ctrl-right", label: "Ctrl", size: "meta" }, KEY_GAP,
+    { value: "arrow-left", label: "←" }, { value: "arrow-down", label: "↓" }, { value: "arrow-right", label: "→" }, KEY_GAP,
+    { value: "num0", label: "0", size: "wide" }, { value: "num-decimal", label: "." }, { value: "num-enter-lower", label: "Enter" },
   ],
 ];
 
@@ -517,7 +536,7 @@ export default function Home() {
     keyboard.style.setProperty("--kbd-glow-x", `${event.clientX - keyboardRect.left}px`);
     keyboard.style.setProperty("--kbd-glow-y", `${event.clientY - keyboardRect.top}px`);
 
-    keyboard.querySelectorAll(".key-row > span").forEach((key) => {
+    keyboard.querySelectorAll(".key-row > span:not(.key-spacer)").forEach((key) => {
       const keyRect = key.getBoundingClientRect();
       const distance = Math.hypot(
         event.clientX - (keyRect.left + keyRect.width / 2),
@@ -551,7 +570,7 @@ export default function Home() {
     surface.style.setProperty("--kbd-rx", "0deg");
     keyboard.style.setProperty("--kbd-ry", "0deg");
     keyboard.style.setProperty("--kbd-rx", "0deg");
-    keyboard.querySelectorAll(".key-row > span").forEach((key) => {
+    keyboard.querySelectorAll(".key-row > span:not(.key-spacer)").forEach((key) => {
       key.style.setProperty("--key-y", "0px");
       key.style.setProperty("--key-z", "0px");
       key.style.setProperty("--key-light", "0");
@@ -685,14 +704,14 @@ export default function Home() {
           <div className="keyboard-aura" />
           <div className="keyboard-float-shell">
             <div
-              className="keyboard hero-keyboard"
+              className="keyboard hero-keyboard full-keyboard"
               aria-hidden="true"
             >
               {KEY_ROWS.map((row, rowIndex) => (
                 <div className="key-row" key={rowIndex}>
                   {row.map((key, keyIndex) => (
                     <span
-                      className={`${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
+                      className={`${key.spacer ? "key-spacer " : ""}${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
                       key={`${rowIndex}-${keyIndex}-${key.value}-${lastTypedKey === key.value ? pulse : "idle"}`}
                     >{key.label}</span>
                   ))}
@@ -886,7 +905,7 @@ export default function Home() {
 
         {chineseContent && !immersive && <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div>}
         {immersive && <div
-          className="keyboard"
+          className="keyboard full-keyboard"
           onPointerMove={handleKeyboardPointerMove}
           onPointerLeave={resetKeyboardDepth}
           aria-hidden="true"
@@ -895,7 +914,7 @@ export default function Home() {
             <div className="key-row" key={rowIndex}>
               {row.map((key, keyIndex) => (
                 <span
-                  className={`${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
+                  className={`${key.spacer ? "key-spacer " : ""}${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
                   key={`${rowIndex}-${keyIndex}-${key.value}-${lastTypedKey === key.value ? pulse : "idle"}`}
                 >{key.label}</span>
               ))}

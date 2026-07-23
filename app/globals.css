@@ -1452,6 +1452,104 @@ html[data-theme="light"] .theme-menu {
   }
 }
 
+/* Complete desktop keyboard: function, navigation, arrows and numpad */
+.hero-keyboard-stage {
+  min-height: 480px;
+}
+.keyboard-float-shell {
+  width: min(1280px, calc(100% - 18px));
+}
+.hero-keyboard-stage .hero-keyboard.full-keyboard {
+  min-height: 342px;
+  padding: 25px 20px 30px;
+}
+.full-keyboard .key-row {
+  gap: 5px;
+}
+.full-keyboard .key-row > span {
+  width: 40px;
+  height: 35px;
+  flex: 0 0 40px;
+  font-size: 9px;
+  letter-spacing: -.1px;
+}
+.full-keyboard .key-row > .key-wide {
+  width: 62px;
+  flex-basis: 62px;
+}
+.full-keyboard .key-row > .key-enter {
+  width: 75px;
+  flex-basis: 75px;
+}
+.full-keyboard .key-row > .key-shift {
+  width: 90px;
+  flex-basis: 90px;
+}
+.full-keyboard .key-row > .key-meta {
+  width: 50px;
+  flex-basis: 50px;
+}
+.full-keyboard .key-row > .key-space {
+  width: 225px;
+  flex-basis: 225px;
+}
+.full-keyboard .key-row > .key-cluster {
+  width: 21px;
+  flex-basis: 21px;
+}
+.full-keyboard .key-row > .key-spacer {
+  visibility: hidden;
+  pointer-events: none;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Dark key legends use a restrained blue-white backlight */
+html:not([data-theme="light"]) .keyboard .key-row > span:not(.key-spacer) {
+  color: #dbe9ff;
+  text-shadow:
+    0 0 3px rgba(222, 237, 255, .72),
+    0 0 8px rgba(104, 157, 255, .58),
+    0 0 16px rgba(91, 130, 255, .22);
+}
+html:not([data-theme="light"]) .keyboard .key-row > span.next {
+  color: #fff;
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, .9),
+    0 0 10px var(--accent-3),
+    0 0 20px var(--accent-2);
+}
+
+/* Light theme keeps the keyboard grounded without a moving bottom shadow */
+html[data-theme="light"] .hero-keyboard-stage::before {
+  display: none;
+}
+html[data-theme="light"] .keyboard-float-shell::after,
+html[data-theme="light"] .hero-keyboard-stage:hover .keyboard-float-shell::after {
+  box-shadow:
+    inset 0 2px rgba(255, 255, 255, .94),
+    inset 0 -2px rgba(73, 82, 126, .14);
+}
+html[data-theme="light"] .hero-keyboard-stage .hero-keyboard,
+html[data-theme="light"] .hero-keyboard-stage:hover .hero-keyboard {
+  box-shadow:
+    0 5px 0 rgba(255, 255, 255, .58),
+    inset 0 1px rgba(255, 255, 255, .95),
+    inset 0 -1px rgba(73, 82, 126, .08);
+}
+
+@media (max-width: 1120px) {
+  .hero-keyboard-stage { min-height: 410px; }
+  .keyboard-float-shell { width: 1240px; }
+  .hero-keyboard-stage .hero-keyboard { --hero-scale: .78; }
+}
+@media (max-width: 650px) {
+  .hero-keyboard-stage { min-height: 300px; }
+  .keyboard-float-shell { width: 1220px; }
+  .hero-keyboard-stage .hero-keyboard { --hero-scale: .5; }
+}
+
 /* Product-stage layout: title, floating keyboard, practice, then controls */
 .app-shell:not(.immersive-mode) {
   width: min(1380px, calc(100% - 40px));
