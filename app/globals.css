@@ -1672,6 +1672,227 @@ html[data-theme="light"] .hero-keyboard-stage .key-row > span {
   }
 }
 
+/* Deeper chassis, full-stage interaction and richer typing motion */
+.hero-keyboard-stage {
+  cursor: crosshair;
+}
+.keyboard-float-shell::after {
+  content: "";
+  position: absolute;
+  inset: 38px 24px 15px;
+  z-index: 0;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(160, 171, 203, .16), rgba(18, 24, 44, .72) 22%, rgba(4, 8, 20, .88)),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-1) 14%, transparent), transparent 42%, color-mix(in srgb, var(--accent-3) 11%, transparent));
+  box-shadow:
+    0 22px 0 rgba(2, 5, 16, .34),
+    0 42px 56px rgba(2, 5, 16, .32),
+    inset 0 2px rgba(255, 255, 255, .11),
+    inset 0 -2px rgba(0, 0, 0, .35);
+  transform:
+    perspective(1400px)
+    rotateX(calc(35deg + var(--kbd-rx, 0deg)))
+    rotateY(var(--kbd-ry, 0deg))
+    translate3d(0, 28px, -54px);
+  transform-origin: 50% 78%;
+  transition: transform 620ms cubic-bezier(.22, .82, .16, 1), box-shadow .42s ease;
+}
+.hero-keyboard-stage .hero-keyboard {
+  position: relative;
+  z-index: 1;
+}
+.hero-keyboard-stage:hover .keyboard-float-shell::after {
+  box-shadow:
+    0 24px 0 rgba(2, 5, 16, .38),
+    0 50px 68px rgba(2, 5, 16, .38),
+    0 0 54px color-mix(in srgb, var(--accent-2) 10%, transparent),
+    inset 0 2px rgba(255, 255, 255, .13),
+    inset 0 -2px rgba(0, 0, 0, .38);
+}
+.hero-keyboard-stage .hero-keyboard {
+  background-size: 220% 220%, 160% 160%;
+  animation: keyboardMetalFlow 8s ease-in-out infinite alternate;
+}
+.hero-keyboard-stage:not(:hover) .key-row > span {
+  background-size: 220% 220%;
+  animation: keyIdleBreath 5.4s ease-in-out infinite;
+}
+.hero-keyboard-stage .key-row:nth-child(1) > span { animation-delay: -.2s; }
+.hero-keyboard-stage .key-row:nth-child(2) > span { animation-delay: -.8s; }
+.hero-keyboard-stage .key-row:nth-child(3) > span { animation-delay: -1.4s; }
+.hero-keyboard-stage .key-row:nth-child(4) > span { animation-delay: -2s; }
+.hero-keyboard-stage .key-row:nth-child(5) > span { animation-delay: -2.6s; }
+.hero-keyboard-stage .key-row > span:nth-child(3n) { animation-delay: -3.2s; }
+.hero-keyboard-stage .key-row > span:nth-child(4n) { animation-delay: -4.1s; }
+.key-row > span.pressed {
+  z-index: 4;
+  color: #fff;
+  border-color: color-mix(in srgb, var(--accent-3) 72%, transparent);
+  animation: keyboardKeyStrike 620ms cubic-bezier(.18, .82, .18, 1) both !important;
+}
+.key-row > span.pressed::after {
+  border-color: color-mix(in srgb, var(--accent-2) 78%, transparent);
+  opacity: 1;
+  animation: pressedKeyRing 640ms ease-out both;
+}
+@keyframes keyboardMetalFlow {
+  0% { background-position: 0% 20%, 30% 10%; filter: saturate(.96); }
+  50% { background-position: 100% 70%, 60% 45%; filter: saturate(1.12); }
+  100% { background-position: 20% 100%, 100% 70%; filter: saturate(1.02); }
+}
+@keyframes keyIdleBreath {
+  0%, 100% { background-position: 0% 50%; filter: brightness(.96); }
+  50% { background-position: 100% 50%; filter: brightness(1.12); }
+}
+@keyframes keyboardKeyStrike {
+  0% {
+    transform: translate3d(0, -2px, 26px) scale(1);
+    box-shadow: 0 7px 0 rgba(3, 6, 18, .25), 0 0 0 transparent;
+  }
+  24% {
+    transform: translate3d(0, 5px, 8px) scale(.94);
+    background: linear-gradient(135deg, rgba(134, 103, 255, .48), rgba(74, 137, 255, .4), rgba(70, 225, 190, .42));
+    box-shadow:
+      0 2px 0 rgba(3, 6, 18, .22),
+      0 0 26px color-mix(in srgb, var(--accent-2) 56%, transparent),
+      0 0 54px color-mix(in srgb, var(--accent-3) 28%, transparent);
+  }
+  58% { transform: translate3d(0, -15px, 58px) scale(1.1); }
+  100% { transform: translate3d(0, 0, 18px) scale(1); }
+}
+@keyframes pressedKeyRing {
+  0% { transform: scale(.78); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-2) 54%, transparent); }
+  70% { transform: scale(1.34); box-shadow: 0 0 0 9px transparent; opacity: .9; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.keyboard-input-wave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  width: min(820px, 68vw);
+  height: 160px;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotateX(64deg);
+  transform-style: preserve-3d;
+}
+.keyboard-input-wave::before,
+.keyboard-input-wave::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.keyboard-input-wave::before {
+  width: 80px;
+  height: 80px;
+  border: 2px solid var(--accent-3);
+  box-shadow: 0 0 32px var(--accent-2), inset 0 0 22px var(--accent-1);
+  animation: keyboardWaveRing 780ms cubic-bezier(.12, .72, .2, 1) both;
+}
+.keyboard-input-wave::after {
+  width: 38%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--accent-1), #69a5ff, var(--accent-3), transparent);
+  filter: blur(1px);
+  box-shadow: 0 0 18px var(--accent-2);
+  animation: keyboardWaveSweep 720ms cubic-bezier(.12, .72, .2, 1) both;
+}
+.keyboard-input-wave > i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-3);
+  box-shadow: 0 0 14px currentColor;
+  animation: keyboardWaveParticle 740ms cubic-bezier(.12, .72, .2, 1) both;
+}
+.keyboard-input-wave > i:nth-child(2n) { color: var(--accent-1); background: currentColor; }
+.keyboard-input-wave > i:nth-child(3n) { color: #6da8ff; background: currentColor; }
+.keyboard-input-wave > i:nth-child(1) { --px: -260px; --py: -56px; }
+.keyboard-input-wave > i:nth-child(2) { --px: -175px; --py: 72px; }
+.keyboard-input-wave > i:nth-child(3) { --px: -82px; --py: -88px; }
+.keyboard-input-wave > i:nth-child(4) { --px: 55px; --py: 86px; }
+.keyboard-input-wave > i:nth-child(5) { --px: 145px; --py: -72px; }
+.keyboard-input-wave > i:nth-child(6) { --px: 235px; --py: 52px; }
+.keyboard-input-wave > i:nth-child(7) { --px: 310px; --py: -32px; }
+.keyboard-input-wave.wrong {
+  filter: hue-rotate(115deg) saturate(1.25);
+}
+@keyframes keyboardWaveRing {
+  from { opacity: .9; transform: translate(-50%, -50%) scale(.25); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(7.6); }
+}
+@keyframes keyboardWaveSweep {
+  0% { opacity: 0; transform: translate(-50%, -50%) scaleX(.1); }
+  28% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scaleX(2.7); }
+}
+@keyframes keyboardWaveParticle {
+  0% { opacity: 0; transform: translate(-50%, -50%) translateZ(0) scale(.3); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py))) translateZ(80px) scale(.7); }
+}
+
+.keyboard-deck-wave {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+.keyboard-deck-wave::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 25%, color-mix(in srgb, var(--accent-1) 20%, transparent), color-mix(in srgb, var(--accent-3) 18%, transparent), transparent 74%);
+  transform: translateX(-100%);
+  animation: deckPrismSweep 720ms cubic-bezier(.2, .8, .2, 1) both;
+}
+.keyboard-deck-wave > i {
+  position: absolute;
+  inset: 12%;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 34%, transparent);
+  border-radius: 22px;
+  animation: deckPulse 680ms ease-out both;
+}
+.keyboard-deck-wave > i:last-child { animation-delay: 90ms; }
+@keyframes deckPrismSweep {
+  to { transform: translateX(100%); }
+}
+@keyframes deckPulse {
+  from { opacity: .8; transform: scale(.92); }
+  to { opacity: 0; transform: scale(1.08); }
+}
+
+html[data-theme="light"] .keyboard-float-shell::after {
+  border-color: rgba(255, 255, 255, .74);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .8), rgba(183, 196, 221, .42) 26%, rgba(115, 128, 166, .3)),
+    linear-gradient(90deg, rgba(99, 77, 210, .12), transparent 44%, rgba(33, 151, 130, .1));
+  box-shadow:
+    0 20px 0 rgba(78, 86, 130, .12),
+    0 42px 56px rgba(72, 79, 125, .16),
+    inset 0 2px rgba(255, 255, 255, .94),
+    inset 0 -2px rgba(73, 82, 126, .16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-keyboard-stage .hero-keyboard,
+  .hero-keyboard-stage:not(:hover) .key-row > span,
+  .key-row > span.pressed,
+  .keyboard-input-wave,
+  .keyboard-deck-wave {
+    animation-duration: 1ms;
+  }
+}
+
 /* Immersive fullscreen practice */
 .session-actions {
   display: flex;

@@ -501,16 +501,21 @@ export default function Home() {
   }
 
   function handleKeyboardPointerMove(event) {
-    const keyboard = event.currentTarget;
-    const rect = keyboard.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const nx = x / rect.width - .5;
-    const ny = y / rect.height - .5;
+    const surface = event.currentTarget;
+    const keyboard = surface.matches(".keyboard") ? surface : surface.querySelector(".keyboard");
+    if (!keyboard) return;
+    const surfaceRect = surface.getBoundingClientRect();
+    const keyboardRect = keyboard.getBoundingClientRect();
+    const x = event.clientX - surfaceRect.left;
+    const y = event.clientY - surfaceRect.top;
+    const nx = x / surfaceRect.width - .5;
+    const ny = y / surfaceRect.height - .5;
+    surface.style.setProperty("--kbd-ry", `${nx * 11}deg`);
+    surface.style.setProperty("--kbd-rx", `${ny * -9}deg`);
     keyboard.style.setProperty("--kbd-ry", `${nx * 11}deg`);
     keyboard.style.setProperty("--kbd-rx", `${ny * -9}deg`);
-    keyboard.style.setProperty("--kbd-glow-x", `${x}px`);
-    keyboard.style.setProperty("--kbd-glow-y", `${y}px`);
+    keyboard.style.setProperty("--kbd-glow-x", `${event.clientX - keyboardRect.left}px`);
+    keyboard.style.setProperty("--kbd-glow-y", `${event.clientY - keyboardRect.top}px`);
 
     keyboard.querySelectorAll(".key-row > span").forEach((key) => {
       const keyRect = key.getBoundingClientRect();
@@ -518,8 +523,8 @@ export default function Home() {
         event.clientX - (keyRect.left + keyRect.width / 2),
         event.clientY - (keyRect.top + keyRect.height / 2)
       );
-      const proximity = Math.max(0, 1 - distance / 175);
-      const ratio = Math.min(1, Math.max(0, (keyRect.left + keyRect.width / 2 - rect.left) / rect.width));
+      const proximity = Math.max(0, 1 - distance / 235);
+      const ratio = Math.min(1, Math.max(0, (keyRect.left + keyRect.width / 2 - keyboardRect.left) / keyboardRect.width));
       const hue = 255 - ratio * 90;
       const lightness = theme === "light" ? 43 : 68;
       const saturation = theme === "light" ? 76 : 88;
@@ -532,7 +537,11 @@ export default function Home() {
   }
 
   function resetKeyboardDepth(event) {
-    const keyboard = event.currentTarget;
+    const surface = event.currentTarget;
+    const keyboard = surface.matches(".keyboard") ? surface : surface.querySelector(".keyboard");
+    if (!keyboard) return;
+    surface.style.setProperty("--kbd-ry", "0deg");
+    surface.style.setProperty("--kbd-rx", "0deg");
     keyboard.style.setProperty("--kbd-ry", "0deg");
     keyboard.style.setProperty("--kbd-rx", "0deg");
     keyboard.querySelectorAll(".key-row > span").forEach((key) => {
@@ -547,6 +556,7 @@ export default function Home() {
   const visibleStart = Math.max(0, typed.length - 85);
   const visibleText = text.slice(visibleStart, visibleStart + 360);
   const expectedKey = (text[typed.length] || "").toLowerCase();
+  const lastTypedKey = (typed.at(-1) || "").toLowerCase();
   const modeLabel = MODES.find((item) => item.id === mode)?.label;
   const timeOptions = [15, 30, 60, 120];
   const wordOptions = [10, 25, 50, 100];
@@ -658,27 +668,35 @@ export default function Home() {
       </section>
 
       {!immersive && (
-        <section className="hero-keyboard-stage" aria-label="交互式立体键盘">
+        <section
+          className="hero-keyboard-stage"
+          aria-label="交互式立体键盘"
+          onPointerMove={handleKeyboardPointerMove}
+          onPointerLeave={resetKeyboardDepth}
+        >
           <div className="keyboard-aura" />
           <div className="keyboard-float-shell">
             <div
               className="keyboard hero-keyboard"
-              onPointerMove={handleKeyboardPointerMove}
-              onPointerLeave={resetKeyboardDepth}
               aria-hidden="true"
             >
               {KEY_ROWS.map((row, rowIndex) => (
                 <div className="key-row" key={rowIndex}>
                   {row.map((key, keyIndex) => (
                     <span
-                      className={`${expectedKey === key.value ? "next " : ""}${key.size ? `key-${key.size}` : ""}`}
-                      key={`${rowIndex}-${keyIndex}-${key.value}`}
+                      className={`${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
+                      key={`${rowIndex}-${keyIndex}-${key.value}-${lastTypedKey === key.value ? pulse : "idle"}`}
                     >{key.label}</span>
                   ))}
                 </div>
               ))}
             </div>
           </div>
+          {pulse > 0 && status === "running" && (
+            <span className={`keyboard-input-wave ${feedback}`} key={`keyboard-wave-${pulse}`} aria-hidden="true">
+              <i /><i /><i /><i /><i /><i /><i />
+            </span>
+          )}
           <p><span /> MOVE TO EXPLORE · TYPE TO RESPOND <span /></p>
         </section>
       )}
@@ -870,12 +888,15 @@ export default function Home() {
             <div className="key-row" key={rowIndex}>
               {row.map((key, keyIndex) => (
                 <span
-                  className={`${expectedKey === key.value ? "next " : ""}${key.size ? `key-${key.size}` : ""}`}
-                  key={`${rowIndex}-${keyIndex}-${key.value}`}
+                  className={`${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
+                  key={`${rowIndex}-${keyIndex}-${key.value}-${lastTypedKey === key.value ? pulse : "idle"}`}
                 >{key.label}</span>
               ))}
             </div>
           ))}
+          {pulse > 0 && status === "running" && (
+            <span className={`keyboard-deck-wave ${feedback}`} key={`deck-wave-${pulse}`} aria-hidden="true"><i /><i /></span>
+          )}
         </div>}
 
         <footer className="card-footer">
