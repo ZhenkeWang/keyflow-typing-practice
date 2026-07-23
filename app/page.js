@@ -67,10 +67,40 @@ const FEED_SOURCES = [
 ];
 
 const KEY_ROWS = [
-  ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
-  ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
-  ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-  ["z", "x", "c", "v", "b", "n", "m"],
+  [
+    { value: "`", label: "`" }, { value: "1", label: "1" }, { value: "2", label: "2" },
+    { value: "3", label: "3" }, { value: "4", label: "4" }, { value: "5", label: "5" },
+    { value: "6", label: "6" }, { value: "7", label: "7" }, { value: "8", label: "8" },
+    { value: "9", label: "9" }, { value: "0", label: "0" }, { value: "-", label: "−" },
+    { value: "=", label: "=" }, { value: "backspace", label: "⌫", size: "wide" },
+  ],
+  [
+    { value: "tab", label: "Tab", size: "wide" }, { value: "q", label: "Q" }, { value: "w", label: "W" },
+    { value: "e", label: "E" }, { value: "r", label: "R" }, { value: "t", label: "T" },
+    { value: "y", label: "Y" }, { value: "u", label: "U" }, { value: "i", label: "I" },
+    { value: "o", label: "O" }, { value: "p", label: "P" }, { value: "[", label: "[" },
+    { value: "]", label: "]" }, { value: "\\", label: "\\" },
+  ],
+  [
+    { value: "caps", label: "Caps", size: "wide" }, { value: "a", label: "A" }, { value: "s", label: "S" },
+    { value: "d", label: "D" }, { value: "f", label: "F" }, { value: "g", label: "G" },
+    { value: "h", label: "H" }, { value: "j", label: "J" }, { value: "k", label: "K" },
+    { value: "l", label: "L" }, { value: ";", label: ";" }, { value: "'", label: "'" },
+    { value: "enter", label: "Enter", size: "enter" },
+  ],
+  [
+    { value: "shift", label: "Shift", size: "shift" }, { value: "z", label: "Z" }, { value: "x", label: "X" },
+    { value: "c", label: "C" }, { value: "v", label: "V" }, { value: "b", label: "B" },
+    { value: "n", label: "N" }, { value: "m", label: "M" }, { value: ",", label: "," },
+    { value: ".", label: "." }, { value: "/", label: "/" }, { value: "shift-right", label: "Shift", size: "shift" },
+  ],
+  [
+    { value: "ctrl", label: "Ctrl", size: "meta" }, { value: "alt", label: "Alt", size: "meta" },
+    { value: "meta", label: "◆", size: "meta" }, { value: " ", label: "Space", size: "space" },
+    { value: "meta-right", label: "◆", size: "meta" }, { value: "alt-right", label: "Alt", size: "meta" },
+    { value: "arrow-left", label: "←", size: "arrow" }, { value: "arrow-up", label: "↑", size: "arrow" },
+    { value: "arrow-down", label: "↓", size: "arrow" }, { value: "arrow-right", label: "→", size: "arrow" },
+  ],
 ];
 
 const SPARKS = [
@@ -368,12 +398,15 @@ export default function Home() {
       reset({ mode: nextMode });
       return;
     }
-    document.documentElement.classList.add("mode-transitioning");
+    const currentIndex = MODES.findIndex((item) => item.id === mode);
+    const nextIndex = MODES.findIndex((item) => item.id === nextMode);
+    const directionClass = nextIndex > currentIndex ? "transition-forward" : "transition-backward";
+    document.documentElement.classList.add("mode-transitioning", directionClass);
     const transition = document.startViewTransition(() => {
       flushSync(() => reset({ mode: nextMode }));
     });
     const finishTransition = () => {
-      document.documentElement.classList.remove("mode-transitioning");
+      document.documentElement.classList.remove("mode-transitioning", "transition-forward", "transition-backward");
     };
     transition.finished.then(finishTransition, finishTransition);
   }
@@ -385,10 +418,11 @@ export default function Home() {
     const y = event.clientY - rect.top;
     const nx = x / rect.width - .5;
     const ny = y / rect.height - .5;
-    keyboard.style.setProperty("--kbd-ry", `${nx * 7}deg`);
-    keyboard.style.setProperty("--kbd-rx", `${ny * -6}deg`);
+    keyboard.style.setProperty("--kbd-ry", `${nx * 11}deg`);
+    keyboard.style.setProperty("--kbd-rx", `${ny * -9}deg`);
     keyboard.style.setProperty("--kbd-glow-x", `${x}px`);
     keyboard.style.setProperty("--kbd-glow-y", `${y}px`);
+    keyboard.style.setProperty("--pointer-hue", `${Math.round(285 - (x / rect.width) * 120)}deg`);
 
     keyboard.querySelectorAll(".key-row > span").forEach((key) => {
       const keyRect = key.getBoundingClientRect();
@@ -396,11 +430,15 @@ export default function Home() {
         event.clientX - (keyRect.left + keyRect.width / 2),
         event.clientY - (keyRect.top + keyRect.height / 2)
       );
-      const proximity = Math.max(0, 1 - distance / 125);
-      key.style.setProperty("--key-y", `${proximity * -7}px`);
-      key.style.setProperty("--key-z", `${proximity * 18}px`);
+      const proximity = Math.max(0, 1 - distance / 175);
+      const ratio = Math.min(1, Math.max(0, (keyRect.left + keyRect.width / 2 - rect.left) / rect.width));
+      const hue = ratio < .75 ? 285 - (ratio / .75) * 120 : 165 + ((ratio - .75) / .25) * 165;
+      const lightness = theme === "light" ? 48 : 70;
+      key.style.setProperty("--key-y", `${proximity * -11}px`);
+      key.style.setProperty("--key-z", `${proximity * 30}px`);
       key.style.setProperty("--key-light", proximity.toFixed(3));
-      key.style.setProperty("--key-glow-alpha", (proximity * .2).toFixed(3));
+      key.style.setProperty("--key-accent", `hsla(${hue}, 92%, ${lightness}%, ${(proximity * .42).toFixed(3)})`);
+      key.style.setProperty("--key-border", `hsla(${hue}, 94%, ${lightness}%, ${(proximity * .78).toFixed(3)})`);
     });
   }
 
@@ -412,7 +450,8 @@ export default function Home() {
       key.style.setProperty("--key-y", "0px");
       key.style.setProperty("--key-z", "0px");
       key.style.setProperty("--key-light", "0");
-      key.style.setProperty("--key-glow-alpha", "0");
+      key.style.setProperty("--key-accent", "transparent");
+      key.style.setProperty("--key-border", "transparent");
     });
   }
 
@@ -642,10 +681,14 @@ export default function Home() {
         >
           {KEY_ROWS.map((row, rowIndex) => (
             <div className="key-row" key={rowIndex}>
-              {row.map((key) => <span className={expectedKey === key ? "next" : ""} key={key}>{key}</span>)}
+              {row.map((key, keyIndex) => (
+                <span
+                  className={`${expectedKey === key.value ? "next " : ""}${key.size ? `key-${key.size}` : ""}`}
+                  key={`${rowIndex}-${keyIndex}-${key.value}`}
+                >{key.label}</span>
+              ))}
             </div>
           ))}
-          <div className="key-row"><span className={`space-key ${expectedKey === " " ? "next" : ""}`}>SPACE</span></div>
         </div>}
 
         <footer className="card-footer">
