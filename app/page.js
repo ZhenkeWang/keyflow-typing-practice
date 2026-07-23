@@ -181,6 +181,7 @@ export default function Home() {
   const [themePreference, setThemePreference] = useState("auto");
   const [theme, setTheme] = useState("dark");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [immersive, setImmersive] = useState(false);
   const [burstPosition, setBurstPosition] = useState({ x: 0, y: 0 });
   const [titleCycle, setTitleCycle] = useState(0);
 
@@ -371,12 +372,21 @@ export default function Home() {
         tabPressed = false;
         reset();
       } else if (event.key === "Escape") {
-        reset();
+        if (immersive) setImmersive(false);
+        else reset();
       }
     }
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [reset]);
+  }, [immersive, reset]);
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement) setImmersive(false);
+    }
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   function finish() {
     finishedAt.current = Date.now();
@@ -455,6 +465,41 @@ export default function Home() {
     transition.finished.then(finishTransition, finishTransition);
   }
 
+  function changeInteraction(nextInteraction) {
+    if (nextInteraction === interaction) return;
+    const applyChange = () => {
+      setInteraction(nextInteraction);
+      reset();
+    };
+    if (typeof document.startViewTransition !== "function") {
+      applyChange();
+      return;
+    }
+    const currentIndex = INTERACTIONS.findIndex((item) => item.id === interaction);
+    const nextIndex = INTERACTIONS.findIndex((item) => item.id === nextInteraction);
+    const directionClass = nextIndex > currentIndex ? "transition-forward" : "transition-backward";
+    document.documentElement.classList.add("interaction-transitioning", directionClass);
+    const transition = document.startViewTransition(() => {
+      flushSync(applyChange);
+    });
+    const finishTransition = () => {
+      document.documentElement.classList.remove("interaction-transitioning", "transition-forward", "transition-backward");
+    };
+    transition.finished.then(finishTransition, finishTransition);
+  }
+
+  async function toggleImmersive() {
+    const next = !immersive;
+    setImmersive(next);
+    try {
+      if (next && !document.fullscreenElement) await document.documentElement.requestFullscreen();
+      if (!next && document.fullscreenElement) await document.exitFullscreen();
+    } catch {
+      // CSS immersive mode remains available when the browser blocks the Fullscreen API.
+    }
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
   function handleKeyboardPointerMove(event) {
     const keyboard = event.currentTarget;
     const rect = keyboard.getBoundingClientRect();
@@ -517,7 +562,7 @@ export default function Home() {
 
   return (
     <main
-      className={`app-shell theme-${theme}`}
+      className={`app-shell theme-${theme} ${immersive ? "immersive-mode" : ""}`}
       onClick={() => {
         setThemeMenuOpen(false);
         if (status !== "finished") inputRef.current?.focus();
@@ -659,7 +704,7 @@ export default function Home() {
                 key={item.id}
                 className={interaction === item.id ? "active" : ""}
                 title={item.desc}
-                onClick={(event) => { event.stopPropagation(); setInteraction(item.id); reset(); }}
+                onClick={(event) => { event.stopPropagation(); changeInteraction(item.id); }}
               ><strong>{item.label}</strong><small>{item.desc}</small></button>
             ))}
           </div>
@@ -685,8 +730,24 @@ export default function Home() {
         <div className="card-topline">
           <span className={`live-status ${status}`}><i /> {status === "idle" ? "READY" : status === "running" ? "LIVE SESSION" : "SESSION COMPLETE"}</span>
           <span>{modeLabel} · {INTERACTIONS.find((item) => item.id === interaction)?.label} · {testType !== "words" ? `${goal} 秒` : `${goal} ${chineseContent ? "字" : "词"}`}</span>
-          <span className="session-index">{testType === "pk" ? `PLAYER ${pkPlayer} / 2` : `SESSION / ${String(history.length + 1).padStart(2, "0")}`}</span>
+          <div className="session-actions">
+            <span className="session-index">{testType === "pk" ? `PLAYER ${pkPlayer} / 2` : `SESSION / ${String(history.length + 1).padStart(2, "0")}`}</span>
+            <button
+              className="immersive-enter"
+              onClick={(event) => { event.stopPropagation(); toggleImmersive(); }}
+              aria-label="进入沉浸式全屏"
+              title="沉浸式全屏"
+            ><i /> 全屏</button>
+          </div>
         </div>
+
+        {immersive && (
+          <button
+            className="immersive-exit"
+            onClick={(event) => { event.stopPropagation(); toggleImmersive(); }}
+            aria-label="退出沉浸式全屏"
+          >退出全屏 <kbd>Esc</kbd></button>
+        )}
 
         <div className="stats">
           <div className="stat primary" key={`wpm-${pulse}`}><span>{metric}</span><strong>{wpm}</strong><small>速度</small></div>
@@ -772,7 +833,7 @@ export default function Home() {
           )}
         </div>
 
-        {chineseContent ? <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div> : <div
+        {chineseContent && !immersive ? <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div> : <div
           className="keyboard"
           onPointerMove={handleKeyboardPointerMove}
           onPointerLeave={resetKeyboardDepth}
