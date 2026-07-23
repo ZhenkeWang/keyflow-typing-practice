@@ -1,232 +1,133 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Html, RoundedBox } from "@react-three/drei";
-import { useMemo, useRef } from "react";
-import * as THREE from "three";
+import { useRef, useState } from "react";
 
-const KEY_ROWS_3D = [
-  ["esc", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "del"],
-  ["tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]"],
-  ["caps", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "enter"],
-  ["shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "shift"],
-  ["fn", "ctrl", "opt", "cmd", "space", "cmd", "opt", "←", "↑", "↓", "→"],
+const GAP = { value: "gap", label: "", spacer: true, size: "cluster" };
+const BLANK = { value: "blank", label: "", spacer: true };
+
+const INTRO_KEYS = [
+  [
+    { value: "escape", label: "Esc" }, GAP,
+    { value: "f1", label: "F1" }, { value: "f2", label: "F2" }, { value: "f3", label: "F3" }, { value: "f4", label: "F4" }, GAP,
+    { value: "f5", label: "F5" }, { value: "f6", label: "F6" }, { value: "f7", label: "F7" }, { value: "f8", label: "F8" }, GAP,
+    { value: "f9", label: "F9" }, { value: "f10", label: "F10" }, { value: "f11", label: "F11" }, { value: "f12", label: "F12" }, GAP,
+    { value: "print", label: "PrtSc" }, { value: "scroll", label: "ScrLk" }, { value: "pause", label: "Pause" },
+  ],
+  [
+    { value: "`", label: "`" }, { value: "1", label: "1" }, { value: "2", label: "2" }, { value: "3", label: "3" },
+    { value: "4", label: "4" }, { value: "5", label: "5" }, { value: "6", label: "6" }, { value: "7", label: "7" },
+    { value: "8", label: "8" }, { value: "9", label: "9" }, { value: "0", label: "0" }, { value: "-", label: "−" },
+    { value: "=", label: "=" }, { value: "backspace", label: "⌫", size: "wide" }, GAP,
+    { value: "insert", label: "Ins" }, { value: "home", label: "Home" }, { value: "pageup", label: "PgUp" }, GAP,
+    { value: "num", label: "Num" }, { value: "divide", label: "/" }, { value: "multiply", label: "×" }, { value: "minus", label: "−" },
+  ],
+  [
+    { value: "tab", label: "Tab", size: "wide" }, { value: "q", label: "Q" }, { value: "w", label: "W" },
+    { value: "e", label: "E" }, { value: "r", label: "R" }, { value: "t", label: "T" }, { value: "y", label: "Y" },
+    { value: "u", label: "U" }, { value: "i", label: "I" }, { value: "o", label: "O" }, { value: "p", label: "P" },
+    { value: "[", label: "[" }, { value: "]", label: "]" }, { value: "\\", label: "\\", size: "wide" }, GAP,
+    { value: "delete", label: "Del" }, { value: "end", label: "End" }, { value: "pagedown", label: "PgDn" }, GAP,
+    { value: "num7", label: "7" }, { value: "num8", label: "8" }, { value: "num9", label: "9" }, { value: "plus", label: "+" },
+  ],
+  [
+    { value: "caps", label: "Caps", size: "wide" }, { value: "a", label: "A" }, { value: "s", label: "S" },
+    { value: "d", label: "D" }, { value: "f", label: "F" }, { value: "g", label: "G" }, { value: "h", label: "H" },
+    { value: "j", label: "J" }, { value: "k", label: "K" }, { value: "l", label: "L" }, { value: ";", label: ";" },
+    { value: "'", label: "'" }, { value: "enter", label: "Enter", size: "enter" }, GAP,
+    BLANK, BLANK, BLANK, GAP,
+    { value: "num4", label: "4" }, { value: "num5", label: "5" }, { value: "num6", label: "6" }, { value: "plus-lower", label: "+" },
+  ],
+  [
+    { value: "shift", label: "Shift", size: "shift" }, { value: "z", label: "Z" }, { value: "x", label: "X" },
+    { value: "c", label: "C" }, { value: "v", label: "V" }, { value: "b", label: "B" }, { value: "n", label: "N" },
+    { value: "m", label: "M" }, { value: ",", label: "," }, { value: ".", label: "." }, { value: "/", label: "/" },
+    { value: "shift-right", label: "Shift", size: "shift" }, GAP,
+    BLANK, { value: "up", label: "↑" }, BLANK, GAP,
+    { value: "num1", label: "1" }, { value: "num2", label: "2" }, { value: "num3", label: "3" }, { value: "num-enter", label: "Enter" },
+  ],
+  [
+    { value: "ctrl", label: "Ctrl", size: "meta" }, { value: "meta", label: "◆", size: "meta" },
+    { value: "alt", label: "Alt", size: "meta" }, { value: "space", label: "Space", size: "space" },
+    { value: "alt-right", label: "Alt", size: "meta" }, { value: "fn", label: "Fn", size: "meta" },
+    { value: "menu", label: "Menu", size: "meta" }, { value: "ctrl-right", label: "Ctrl", size: "meta" }, GAP,
+    { value: "left", label: "←" }, { value: "down", label: "↓" }, { value: "right", label: "→" }, GAP,
+    { value: "num0", label: "0", size: "wide" }, { value: "decimal", label: "." }, { value: "num-enter-lower", label: "Enter" },
+  ],
 ];
 
-const WIDTHS = {
-  esc: 1.18,
-  del: 1.35,
-  tab: 1.45,
-  caps: 1.62,
-  enter: 1.72,
-  shift: 1.82,
-  fn: 1.05,
-  ctrl: 1.12,
-  opt: 1.08,
-  cmd: 1.18,
-  space: 4.45,
-};
-
-function easeInOut(value) {
-  const t = THREE.MathUtils.clamp(value, 0, 1);
-  return t * t * (3 - 2 * t);
-}
-
-function KeyRow({ row, rowIndex, keyRefs }) {
-  const layout = useMemo(() => {
-    const gap = .08;
-    const units = row.map((key) => WIDTHS[key] || 1);
-    const total = units.reduce((sum, unit) => sum + unit, 0) + gap * (row.length - 1);
-    let cursor = -total / 2;
-    return row.map((key, index) => {
-      const width = units[index];
-      const item = { key, width, x: cursor + width / 2 };
-      cursor += width + gap;
-      return item;
-    });
-  }, [row]);
-
-  return layout.map(({ key, width, x }, keyIndex) => {
-    const absoluteIndex = rowIndex * 14 + keyIndex;
-    return (
-      <group
-        key={`${rowIndex}-${keyIndex}-${key}`}
-        position={[x * .48, .2, -1.52 + rowIndex * .61]}
-        ref={(node) => { keyRefs.current[absoluteIndex] = node; }}
-      >
-        <RoundedBox args={[width * .45, .14, .48]} radius={.05} smoothness={3}>
-          <meshStandardMaterial
-            color="#07090d"
-            metalness={.32}
-            roughness={.28}
-            emissive="#7794e8"
-            emissiveIntensity={.025}
-          />
-        </RoundedBox>
-      </group>
-    );
-  });
-}
-
-function LaptopModel({ ready, leaving, onEnter }) {
-  const root = useRef();
-  const lid = useRef();
-  const keyRefs = useRef([]);
-  const screenGlow = useRef();
-
-  useFrame((state, delta) => {
-    const time = state.clock.getElapsedTime();
-    const open = easeInOut((time - .42) / 1.42);
-    const typingTime = time - 1.82;
-
-    if (lid.current) {
-      lid.current.rotation.x = THREE.MathUtils.lerp(-Math.PI / 2 + .025, -.105, open);
-    }
-
-    keyRefs.current.forEach((key, index) => {
-      if (!key) return;
-      const local = typingTime - index * .0085;
-      const press = local > 0 && local < .24 ? Math.sin((local / .24) * Math.PI) : 0;
-      key.position.y = .2 - press * .08;
-      const material = key.children[0]?.material;
-      if (material) material.emissiveIntensity = .035 + press * .32;
-    });
-
-    if (screenGlow.current) {
-      screenGlow.current.material.emissiveIntensity = THREE.MathUtils.damp(
-        screenGlow.current.material.emissiveIntensity,
-        time > 2.3 ? .4 : .025,
-        3.2,
-        delta
-      );
-    }
-
-    if (root.current) {
-      const fittedScale = Math.min(1.02, state.viewport.width / 10, state.viewport.height / 7.4);
-      const targetScale = leaving ? fittedScale * 1.14 : fittedScale;
-      root.current.scale.setScalar(THREE.MathUtils.damp(root.current.scale.x, targetScale, leaving ? 4.4 : 3.2, delta));
-      root.current.position.z = THREE.MathUtils.damp(root.current.position.z, leaving ? 1.15 : 0, 4.2, delta);
-      root.current.position.y = THREE.MathUtils.damp(
-        root.current.position.y,
-        leaving ? .12 : Math.sin(time * .72) * .025,
-        3.4,
-        delta
-      );
-      root.current.rotation.y = THREE.MathUtils.damp(
-        root.current.rotation.y,
-        leaving ? 0 : state.pointer.x * .045,
-        2.6,
-        delta
-      );
-      root.current.rotation.x = THREE.MathUtils.damp(
-        root.current.rotation.x,
-        leaving ? -.018 : state.pointer.y * -.02,
-        2.6,
-        delta
-      );
-    }
-  });
-
-  return (
-    <group ref={root} position={[0, 0, 0]} rotation={[0, 0, 0]}>
-      <group>
-        <RoundedBox args={[8.6, .2, 5.08]} radius={.22} smoothness={5}>
-          <meshPhysicalMaterial color="#b9bdc4" metalness={.94} roughness={.2} clearcoat={.82} clearcoatRoughness={.16} />
-        </RoundedBox>
-        <RoundedBox args={[8.18, .035, 4.7]} radius={.15} smoothness={4} position={[0, .12, -.08]}>
-          <meshStandardMaterial color="#adb2ba" metalness={.9} roughness={.22} />
-        </RoundedBox>
-
-        <RoundedBox args={[.58, .018, 2.92]} radius={.12} smoothness={3} position={[-3.66, .15, -.18]}>
-          <meshStandardMaterial color="#858b94" metalness={.75} roughness={.32} />
-        </RoundedBox>
-        <RoundedBox args={[.58, .018, 2.92]} radius={.12} smoothness={3} position={[3.66, .15, -.18]}>
-          <meshStandardMaterial color="#858b94" metalness={.75} roughness={.32} />
-        </RoundedBox>
-
-        {KEY_ROWS_3D.map((row, rowIndex) => (
-          <KeyRow row={row} rowIndex={rowIndex} key={rowIndex} keyRefs={keyRefs} />
-        ))}
-
-        <RoundedBox args={[4.15, .025, 1.38]} radius={.12} smoothness={4} position={[0, .16, 1.72]}>
-          <meshPhysicalMaterial color="#9da3ac" metalness={.88} roughness={.24} />
-        </RoundedBox>
-        <RoundedBox args={[2.2, .05, .15]} radius={.07} smoothness={3} position={[0, -.03, 2.54]}>
-          <meshStandardMaterial color="#777d86" metalness={.86} roughness={.25} />
-        </RoundedBox>
-        <mesh position={[0, .13, -2.51]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[.105, .105, 6.3, 32]} />
-          <meshStandardMaterial color="#17191d" metalness={.86} roughness={.24} />
-        </mesh>
-      </group>
-
-      <group ref={lid} position={[0, .08, -2.52]} rotation={[-Math.PI / 2 + .025, 0, 0]}>
-        <RoundedBox args={[8.35, 5.12, .14]} radius={.23} smoothness={5} position={[0, 2.55, 0]}>
-          <meshPhysicalMaterial color="#b7bbc2" metalness={.95} roughness={.18} clearcoat={.86} clearcoatRoughness={.14} />
-        </RoundedBox>
-        <RoundedBox args={[8.04, 4.8, .045]} radius={.17} smoothness={4} position={[0, 2.55, .09]}>
-          <meshStandardMaterial color="#040506" metalness={.3} roughness={.3} />
-        </RoundedBox>
-        <RoundedBox
-          ref={screenGlow}
-          args={[7.78, 4.5, .025]}
-          radius={.13}
-          smoothness={4}
-          position={[0, 2.55, .122]}
-        >
-          <meshStandardMaterial color="#09101f" emissive="#274892" emissiveIntensity={.025} roughness={.21} />
-        </RoundedBox>
-        <RoundedBox args={[1.02, .23, .035]} radius={.1} smoothness={4} position={[0, 4.75, .145]}>
-          <meshStandardMaterial color="#020304" roughness={.22} />
-        </RoundedBox>
-
-        <Html
-          transform
-          center
-          position={[0, 2.55, .155]}
-          distanceFactor={1.02}
-          zIndexRange={[120, 60]}
-          style={{ pointerEvents: "auto" }}
-        >
-          <div className={`webgl-screen-ui ${ready ? "is-ready" : ""}`}>
-            <span>KEYFLOW · FLOW STATE TRAINING</span>
-            <h1>找到你的<em>击键节奏。</em></h1>
-            <button
-              type="button"
-              disabled={!ready || leaving}
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={onEnter}
-            >
-              点击进入练习 <i>→</i>
-            </button>
-          </div>
-        </Html>
-      </group>
-    </group>
-  );
-}
-
 export default function LaptopIntro({ ready, leaving, onEnter }) {
+  const keyboardRef = useRef(null);
+  const [pointedKey, setPointedKey] = useState("");
+
+  function handlePointerMove(event) {
+    if (!ready || leaving || !keyboardRef.current) return;
+    const rect = keyboardRef.current.getBoundingClientRect();
+    const nx = (event.clientX - rect.left) / rect.width - .5;
+    const ny = (event.clientY - rect.top) / rect.height - .5;
+    keyboardRef.current.style.setProperty("--intro-kbd-ry", `${nx * 3.2}deg`);
+    keyboardRef.current.style.setProperty("--intro-kbd-rx", `${ny * -2.4}deg`);
+
+    const key = event.target.closest(".intro-key:not(.key-spacer)");
+    setPointedKey(key?.dataset.keyId || "");
+  }
+
+  function resetPointer() {
+    setPointedKey("");
+    if (!keyboardRef.current) return;
+    keyboardRef.current.style.setProperty("--intro-kbd-ry", "0deg");
+    keyboardRef.current.style.setProperty("--intro-kbd-rx", "0deg");
+  }
+
+  let absoluteIndex = 0;
+
   return (
-    <div className={`entry-laptop-webgl ${leaving ? "is-leaving" : ""}`}>
-      <Canvas
-        dpr={[1, 1.35]}
-        camera={{ position: [0, 4.7, 14.2], fov: 32 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-        onCreated={({ camera }) => camera.lookAt(0, 1.35, 0)}
+    <div className={`entry-split-stage ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
+      <section className="entry-liquid-screen" aria-label="Keyflow 欢迎屏幕">
+        <div className="liquid-glass-refraction" aria-hidden="true" />
+        <div className="liquid-glass-highlight" aria-hidden="true" />
+        <div className="entry-liquid-content">
+          <span>KEYFLOW · FLOW STATE TRAINING</span>
+          <h1>找到你的<em>击键节奏。</em></h1>
+          <button
+            type="button"
+            disabled={!ready || leaving}
+            onClick={onEnter}
+          >
+            点击进入练习 <i>→</i>
+          </button>
+        </div>
+      </section>
+
+      <section
+        className="entry-keyboard-stage"
+        aria-label="可交互的悬浮全尺寸键盘"
+        onPointerMove={handlePointerMove}
+        onPointerLeave={resetPointer}
       >
-        <ambientLight intensity={.86} />
-        <hemisphereLight args={["#f1f4ff", "#111726", 1.45]} />
-        <directionalLight position={[6, 10, 8]} intensity={2.8} color="#f5f7ff" />
-        <directionalLight position={[-7, 4, 2]} intensity={1.5} color="#8293ff" />
-        <pointLight position={[0, 3, -5]} intensity={14} color="#63e7c5" />
-        <LaptopModel ready={ready} leaving={leaving} onEnter={onEnter} />
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -.18, .32]} scale={[1.65, 1, 1]}>
-          <circleGeometry args={[3.8, 64]} />
-          <meshBasicMaterial color="#02050d" transparent opacity={.22} depthWrite={false} />
-        </mesh>
-      </Canvas>
-      <p className="entry-webgl-caption">一台电脑，一段节奏。准备好后，从第一键开始。</p>
+        <div className="entry-keyboard-aura" aria-hidden="true" />
+        <div className="entry-full-keyboard keyboard full-keyboard" ref={keyboardRef}>
+          {INTRO_KEYS.map((row, rowIndex) => (
+            <div className="key-row" key={rowIndex}>
+              {row.map((key, keyIndex) => {
+                const keyId = `${rowIndex}-${keyIndex}-${key.value}`;
+                const index = absoluteIndex++;
+                return (
+                  <span
+                    className={`${key.spacer ? "key-spacer " : ""}${key.size ? `key-${key.size} ` : ""}${pointedKey === keyId ? "pointer-down" : ""}`}
+                    data-key-id={keyId}
+                    key={keyId}
+                    style={{ "--intro-key-index": index }}
+                  >
+                    {key.label}
+                  </span>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <p className="entry-split-caption">让指尖先认识节奏，再进入专注练习。</p>
     </div>
   );
 }
