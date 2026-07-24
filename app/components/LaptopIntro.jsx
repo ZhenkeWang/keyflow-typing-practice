@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const GAP = { value: "gap", label: "", spacer: true, size: "cluster" };
 const BLANK = { value: "blank", label: "", spacer: true };
@@ -59,6 +59,17 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
   const keyboardRef = useRef(null);
   const keyRefs = useRef([]);
   const activeKeyRef = useRef(null);
+
+  useEffect(() => {
+    if (!ready || leaving) return undefined;
+    const handleAnyKey = (event) => {
+      if (event.repeat) return;
+      event.preventDefault();
+      onEnter(event);
+    };
+    window.addEventListener("keydown", handleAnyKey);
+    return () => window.removeEventListener("keydown", handleAnyKey);
+  }, [ready, leaving, onEnter]);
 
   function handlePointerMove(event) {
     if (!ready || leaving || !keyboardRef.current) return;
@@ -129,13 +140,7 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
               Keyflow
             </text>
           </svg>
-          <button
-            type="button"
-            disabled={!ready || leaving}
-            onClick={onEnter}
-          >
-            点击进入 <i>→</i>
-          </button>
+          <p className="entry-any-key-hint">按任意键进入</p>
         </div>
       </section>
 
@@ -158,6 +163,9 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
                     data-key-id={keyId}
                     key={keyId}
                     ref={key.spacer ? undefined : (node) => { keyRefs.current[index] = node; }}
+                    onPointerDown={key.spacer ? undefined : (event) => {
+                      if (ready && !leaving) onEnter(event);
+                    }}
                     style={{ "--intro-key-index": index }}
                   >
                     {key.label}

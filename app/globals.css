@@ -3993,3 +3993,54 @@ html.theme-changing .key-row > span {
     border-color 1600ms cubic-bezier(.32, .72, 0, 1),
     box-shadow 1600ms cubic-bezier(.32, .72, 0, 1);
 }
+
+/* Keyboard-first entry: larger 5/7 wordmark and a plain text cue. */
+.entry-keyflow-mark {
+  width: 71.428%;
+  height: auto;
+  aspect-ratio: 700 / 230;
+  max-width: none;
+}
+.entry-any-key-hint {
+  margin: 28px 0 0;
+  padding: 0;
+  border: 0;
+  color: color-mix(in srgb, var(--text) 64%, transparent);
+  background: none;
+  box-shadow: none;
+  font: 700 11px "IBM Plex Mono", monospace;
+  letter-spacing: .18em;
+  opacity: 0;
+  transform: translateY(7px);
+  animation: anyKeyHintIn .68s cubic-bezier(.22, .82, .16, 1) 4.08s both;
+}
+.entry-split-stage.is-ready .entry-any-key-hint {
+  color: color-mix(in srgb, var(--accent-3) 76%, var(--text));
+  text-shadow: 0 0 16px color-mix(in srgb, var(--accent-3) 22%, transparent);
+  animation:
+    anyKeyHintIn .68s cubic-bezier(.22, .82, .16, 1) 4.08s both,
+    anyKeyHintBreathe 2.4s ease-in-out 4.7s infinite;
+}
+@keyframes anyKeyHintIn {
+  to { opacity: 1; transform: none; }
+}
+@keyframes anyKeyHintBreathe {
+  0%, 100% { opacity: .72; }
+  50% { opacity: 1; }
+}
+@media (max-width: 760px) {
+  .entry-keyflow-mark {
+    width: 71.428%;
+    height: auto;
+  }
+  .entry-any-key-hint {
+    margin-top: 20px;
+    font-size: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry-any-key-hint {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
