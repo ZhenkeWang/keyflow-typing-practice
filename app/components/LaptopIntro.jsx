@@ -129,12 +129,21 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
                 <rect className="entry-keyflow-fill-reveal" x="-120" y="-100" width="940" height="400" rx="24" />
               </clipPath>
             </defs>
-            <text className="entry-keyflow-outline" x="350" y="137" textAnchor="middle">Keyflow</text>
+            <text
+              className="entry-keyflow-outline"
+              x="350"
+              y="137"
+              textAnchor="middle"
+              transform="translate(350 115) scale(2.15 1.5) translate(-350 -115)"
+            >
+              Keyflow
+            </text>
             <text
               className="entry-keyflow-fill"
               x="350"
               y="137"
               textAnchor="middle"
+              transform="translate(350 115) scale(2.15 1.5) translate(-350 -115)"
               clipPath="url(#keyflow-fill-clip)"
             >
               Keyflow
