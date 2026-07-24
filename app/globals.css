@@ -4129,7 +4129,7 @@ html[data-theme="light"] .entry-split-stage.is-ready .entry-any-key-hint {
   overflow: visible;
 }
 .entry-keyflow-mark text {
-  font-size: 170px;
+  font-size: 200px;
 }
 .entry-any-key-hint {
   margin-top: 36px;
@@ -4148,7 +4148,7 @@ html[data-theme="light"] .entry-split-stage.is-ready .entry-any-key-hint {
     height: auto;
   }
   .entry-keyflow-mark text {
-    font-size: 160px;
+    font-size: 186px;
   }
   .entry-any-key-hint {
     margin-top: 28px;
