@@ -4089,3 +4089,33 @@ html[data-theme="light"] .entry-split-stage.is-ready .entry-any-key-hint {
     font-size: 11px;
   }
 }
+
+/* Make the visible Keyflow strokes occupy at least roughly 65% of the display. */
+.entry-liquid-content {
+  padding: 12px 20px;
+}
+.entry-keyflow-mark {
+  width: 94%;
+  height: auto;
+  max-width: none;
+}
+.entry-keyflow-mark text {
+  font-size: 200px;
+}
+.entry-any-key-hint {
+  margin-top: 10px;
+}
+@media (max-width: 760px) {
+  .entry-liquid-content {
+    padding: 10px 14px;
+  }
+  .entry-keyflow-mark {
+    width: 94%;
+  }
+  .entry-keyflow-mark text {
+    font-size: 190px;
+  }
+  .entry-any-key-hint {
+    margin-top: 8px;
+  }
+}
