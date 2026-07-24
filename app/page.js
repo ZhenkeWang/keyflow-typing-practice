@@ -6,6 +6,13 @@ import Aurora from "./components/Aurora";
 import LandingHero from "./components/LandingHero";
 import ErrorAnalysis from "./components/ErrorAnalysis";
 import SessionResult from "./components/SessionResult";
+import TrainingDashboard from "./components/TrainingDashboard";
+import {
+  appendMistakes,
+  calculateConsistency,
+  calculateTypingMetrics,
+  normalizeHistory,
+} from "./utils/typingEngine";
 
 const TEXT_BANK = {
   focus: [
@@ -260,38 +267,41 @@ export default function Home() {
   const finishedAt = useRef(0);
   const lastKeyAt = useRef(0);
   const intervals = useRef([]);
+  const keystrokes = useRef({ total: 0, incorrect: 0, corrected: 0 });
   const recorded = useRef(false);
   const composing = useRef(false);
   const appliedTheme = useRef(null);
 
-  const correct = useMemo(
-    () => [...typed].reduce((sum, char, index) => sum + (char === text[index] ? 1 : 0), 0),
-    [typed, text]
-  );
-  const errors = typed.length - correct;
-  const accuracy = typed.length ? Math.round((correct / typed.length) * 100) : 100;
-  const errorRate = typed.length ? Math.round((errors / typed.length) * 100) : 0;
   const elapsedMs = startedAt.current
     ? Math.max(0, (status === "finished" ? finishedAt.current : now) - startedAt.current)
     : 0;
   const elapsedSeconds = elapsedMs / 1000;
+  const typingMetrics = useMemo(() => calculateTypingMetrics({
+    typed,
+    target: text,
+    elapsedMs,
+    totalKeystrokes: keystrokes.current.total,
+    incorrectKeystrokes: keystrokes.current.incorrect,
+  }), [elapsedMs, pulse, text, typed]);
+  const {
+    correct,
+    incorrect: errors,
+    wpm,
+    rawWpm,
+    cpm,
+    accuracy,
+    errorRate,
+  } = typingMetrics;
+  const totalErrors = keystrokes.current.incorrect;
   const chineseContent = isChineseContent(mode, newsSource);
   const metric = chineseContent ? "CPM" : "WPM";
-  const cpm = elapsedSeconds > 0 ? Math.round(correct / (elapsedSeconds / 60)) : 0;
-  const wpm = elapsedSeconds > 0 ? Math.round((correct / 5) / (elapsedSeconds / 60)) : 0;
   const speed = chineseContent ? cpm : wpm;
   const words = unitCount(typed, mode, newsSource);
   const timeLeft = testType !== "words" ? Math.max(0, Math.ceil(goal - elapsedSeconds)) : 0;
   const progress = testType !== "words"
     ? Math.min(100, (elapsedSeconds / goal) * 100)
     : Math.min(100, (words / goal) * 100);
-  const consistency = useMemo(() => {
-    if (intervals.current.length < 4) return 100;
-    const recent = intervals.current.slice(-40);
-    const mean = recent.reduce((sum, item) => sum + item, 0) / recent.length;
-    const variance = recent.reduce((sum, item) => sum + (item - mean) ** 2, 0) / recent.length;
-    return Math.max(35, Math.round(100 - (Math.sqrt(variance) / mean) * 55));
-  }, [typed]);
+  const consistency = useMemo(() => calculateConsistency(intervals.current), [pulse, typed]);
 
   const reset = useCallback((options = {}) => {
     const nextMode = options.mode ?? mode;
@@ -321,6 +331,7 @@ export default function Home() {
     finishedAt.current = 0;
     lastKeyAt.current = 0;
     intervals.current = [];
+    keystrokes.current = { total: 0, incorrect: 0, corrected: 0 };
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
   }, [codeLanguage, goal, mode, numberPreset, testType]);
@@ -328,7 +339,7 @@ export default function Home() {
   useEffect(() => {
     setBest(Number(localStorage.getItem("keyflow-best-focus")) || Number(localStorage.getItem("keyflow-best")) || 0);
     try {
-      setHistory(JSON.parse(localStorage.getItem("keyflow-history") || "[]"));
+      setHistory(normalizeHistory(JSON.parse(localStorage.getItem("keyflow-history") || "[]")));
     } catch {
       setHistory([]);
     }
@@ -421,7 +432,7 @@ export default function Home() {
   useEffect(() => {
     if (status !== "running") return;
     const timer = window.setInterval(() => {
-      const stamp = Date.now();
+      const stamp = performance.now();
       setNow(stamp);
       if (testType !== "words" && stamp - startedAt.current >= goal * 1000) {
         finishedAt.current = startedAt.current + goal * 1000;
@@ -440,7 +451,7 @@ export default function Home() {
       cpm,
       accuracy,
       errorRate,
-      errors,
+      errors: totalErrors,
       duration: Math.round(elapsedSeconds),
       mode,
       metric,
@@ -449,7 +460,7 @@ export default function Home() {
       at: Date.now(),
       player: testType === "pk" ? pkPlayer : null,
     };
-    const nextHistory = [entry, ...history].slice(0, 5);
+    const nextHistory = [entry, ...history].slice(0, 50);
     setHistory(nextHistory);
     localStorage.setItem("keyflow-history", JSON.stringify(nextHistory));
     if (testType === "pk") setPkScores((scores) => ({ ...scores, [pkPlayer]: entry }));
@@ -465,7 +476,7 @@ export default function Home() {
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
       if (mode === "focus") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, consistency, correct, cpm, elapsedSeconds, errorRate, errors, history, metric, mode, pkPlayer, speed, status, testType]);
+  }, [accuracy, best, consistency, correct, cpm, elapsedSeconds, errorRate, history, metric, mode, pkPlayer, speed, status, testType, totalErrors]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -496,7 +507,7 @@ export default function Home() {
   }, []);
 
   function finish() {
-    finishedAt.current = Date.now();
+    finishedAt.current = performance.now();
     setNow(finishedAt.current);
     setStatus("finished");
   }
@@ -505,7 +516,7 @@ export default function Home() {
     if (status === "finished") return;
     value = value.replace(/[\r\n]/g, "").slice(0, text.length);
     if (interaction === "sprint" && value.length < typed.length) return;
-    const stamp = Date.now();
+    const stamp = performance.now();
     if (status === "idle" && value.length) {
       startedAt.current = stamp;
       lastKeyAt.current = stamp;
@@ -521,33 +532,20 @@ export default function Home() {
       const isCorrect = value[index] === text[index];
       const newMistakes = [];
       for (let cursor = typed.length; cursor < value.length; cursor += 1) {
+        keystrokes.current.total += 1;
         if (value[cursor] !== text[cursor]) {
+          keystrokes.current.incorrect += 1;
           newMistakes.push({ expected: text[cursor] || "∅", typed: value[cursor] || "∅", index: cursor });
         }
       }
       if (newMistakes.length) {
-        setMistakeLog((current) => {
-          const next = [...current];
-          newMistakes.forEach((mistake) => {
-            const key = `${mistake.expected}→${mistake.typed}`;
-            const matchIndex = next.findIndex((item) => item.key === key);
-            if (matchIndex >= 0) {
-              next[matchIndex] = {
-                ...next[matchIndex],
-                count: next[matchIndex].count + 1,
-                positions: [...next[matchIndex].positions, mistake.index],
-              };
-            } else {
-              next.push({ ...mistake, key, count: 1, positions: [mistake.index] });
-            }
-          });
-          return next.sort((a, b) => b.count - a.count || b.index - a.index).slice(0, 8);
-        });
+        setMistakeLog((current) => appendMistakes(current, newMistakes));
       }
       setCombo((current) => isCorrect ? current + 1 : 0);
       setFeedback(isCorrect ? "correct" : "wrong");
       setPulse((current) => current + 1);
     } else if (value.length < typed.length) {
+      keystrokes.current.corrected += typed.length - value.length;
       setCombo(0);
     }
 
@@ -575,6 +573,7 @@ export default function Home() {
     finishedAt.current = 0;
     lastKeyAt.current = 0;
     intervals.current = [];
+    keystrokes.current = { total: 0, incorrect: 0, corrected: 0 };
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
   }
@@ -944,7 +943,7 @@ export default function Home() {
           <div className="stat primary" key={`wpm-${pulse}`}><span>WPM</span><strong>{wpm}</strong><small>单词速度</small></div>
           <div className="stat"><span>CPM</span><strong>{cpm}</strong><small>字符速度</small></div>
           <div className="stat"><span>ACCURACY</span><strong>{accuracy}<small>%</small></strong><small>准确率</small></div>
-          <div className="stat"><span>ERROR RATE</span><strong>{errorRate}<small>%</small></strong><small>{errors} 次错误</small></div>
+          <div className="stat"><span>ERROR RATE</span><strong>{errorRate}<small>%</small></strong><small>{totalErrors} 次错误</small></div>
           <div className="stat"><span>{testType === "words" ? (chineseContent ? "CHARS" : "WORDS") : "TIME"}</span><strong>{testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}</strong><small>{testType === "words" ? "训练进度" : "剩余时间"}</small></div>
         </div>
 
@@ -959,6 +958,13 @@ export default function Home() {
               setDraft("");
               processInput(event.currentTarget.value);
             }}
+            onBeforeInput={(event) => {
+              if (["insertFromPaste", "insertFromDrop"].includes(event.nativeEvent.inputType)) {
+                event.preventDefault();
+              }
+            }}
+            onPaste={(event) => event.preventDefault()}
+            onDrop={(event) => event.preventDefault()}
             disabled={status === "finished"}
             aria-label="打字输入区域"
             autoCapitalize="none"
@@ -967,7 +973,9 @@ export default function Home() {
           />
 
           <div className="typing-meta">
-            <span>ERRORS <b>{errors}</b></span>
+            <span>ERRORS <b>{totalErrors}</b></span>
+            <span>RAW <b>{rawWpm}</b></span>
+            <span>CORRECTED <b>{keystrokes.current.corrected}</b></span>
             <span className={`combo ${combo >= 5 ? "hot" : ""}`}>COMBO <b>{combo}</b></span>
             <span className="interaction-label">{INTERACTIONS.find((item) => item.id === interaction)?.desc}</span>
           </div>
@@ -1011,7 +1019,7 @@ export default function Home() {
               metric={metric}
               accuracy={accuracy}
               consistency={consistency}
-              errors={errors}
+              errors={totalErrors}
               gainedXp={lastXpAward}
               level={level}
               leveledUp={leveledUp}
@@ -1054,6 +1062,8 @@ export default function Home() {
           <span>每一次敲击，都是进步。</span>
         </footer>
       </section>
+
+      <TrainingDashboard history={history} level={level} xpTotal={xpTotal} />
 
       <section className="history-section">
         <div className="section-heading"><span>RECENT SESSIONS</span><small>最近记录保存在此设备</small></div>

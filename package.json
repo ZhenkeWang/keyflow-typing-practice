@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build && node scripts/package-sites.mjs",
+    "test": "node --test tests/*.test.js",
     "start": "vinext start",
     "lint": "next lint",
     "dev:vinext": "vinext dev --port 3001",

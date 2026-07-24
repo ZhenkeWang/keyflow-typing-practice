@@ -13,11 +13,15 @@ export default function ErrorAnalysis({ mistakes, typed, text }) {
     );
   }
 
-  const latest = mistakes.at(-1);
-  const contextStart = Math.max(0, latest.index - 8);
-  const contextEnd = Math.min(text.length, latest.index + 12);
+  const latest = mistakes.reduce((result, item) => (
+    item.lastIndex > result.lastIndex ? item : result
+  ), mistakes[0]);
+  const contextStart = Math.max(0, latest.lastIndex - 8);
+  const contextEnd = Math.min(text.length, latest.lastIndex + 12);
   const expectedContext = text.slice(contextStart, contextEnd);
-  const typedContext = typed.slice(contextStart, Math.min(typed.length, contextEnd));
+  const typedSnapshot = Array.from(expectedContext);
+  typedSnapshot[latest.lastIndex - contextStart] = latest.typed;
+  const typedContext = typedSnapshot.join("") || typed.slice(contextStart, Math.min(typed.length, contextEnd));
 
   return (
     <section className="error-analysis">
@@ -35,7 +39,7 @@ export default function ErrorAnalysis({ mistakes, typed, text }) {
             <b>{item.expected === " " ? "Space" : item.expected}</b>
             <i>→</i>
             <b>{item.typed === " " ? "Space" : item.typed}</b>
-            <small>×{item.count} · #{item.index + 1}</small>
+            <small>×{item.count} · {item.positions.slice(-3).map((position) => `#${position + 1}`).join(", ")}</small>
           </span>
         ))}
       </div>
