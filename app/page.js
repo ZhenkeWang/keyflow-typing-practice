@@ -7,10 +7,14 @@ import LandingHero from "./components/LandingHero";
 import ErrorAnalysis from "./components/ErrorAnalysis";
 import SessionResult from "./components/SessionResult";
 import TrainingDashboard from "./components/TrainingDashboard";
+import AITrainingReport from "./components/AITrainingReport";
 import {
   appendMistakes,
+  buildTrainingReport,
   calculateConsistency,
   calculateTypingMetrics,
+  calculateXpAward,
+  getLevelInfo,
   normalizeHistory,
 } from "./utils/typingEngine";
 
@@ -70,6 +74,11 @@ const CODE_BANK = {
     "git status --short && npm run build",
     "find ./src -type f -name '*.js' | sort",
     "for file in *.log; do echo \"$file\"; done",
+  ],
+  sql: [
+    "SELECT user_id, COUNT(*) AS sessions FROM practice_records GROUP BY user_id ORDER BY sessions DESC;",
+    "WITH recent AS (SELECT * FROM sessions WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') SELECT AVG(wpm) FROM recent;",
+    "UPDATE typing_profiles SET level = level + 1, xp = xp - 1000 WHERE user_id = 42;",
   ],
 };
 
@@ -259,6 +268,7 @@ export default function Home() {
   const [xpTotal, setXpTotal] = useState(0);
   const [lastXpAward, setLastXpAward] = useState(0);
   const [leveledUp, setLeveledUp] = useState(false);
+  const [resultView, setResultView] = useState("summary");
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -268,6 +278,7 @@ export default function Home() {
   const lastKeyAt = useRef(0);
   const intervals = useRef([]);
   const keystrokes = useRef({ total: 0, incorrect: 0, corrected: 0 });
+  const characterStats = useRef({});
   const recorded = useRef(false);
   const composing = useRef(false);
   const appliedTheme = useRef(null);
@@ -302,6 +313,15 @@ export default function Home() {
     ? Math.min(100, (elapsedSeconds / goal) * 100)
     : Math.min(100, (words / goal) * 100);
   const consistency = useMemo(() => calculateConsistency(intervals.current), [pulse, typed]);
+  const trainingReport = useMemo(() => buildTrainingReport({
+    mistakes: mistakeLog,
+    characterStats: characterStats.current,
+    accuracy,
+    wpm: speed,
+    mode,
+  }), [accuracy, mistakeLog, mode, pulse, speed]);
+  const levelInfo = useMemo(() => getLevelInfo(xpTotal), [xpTotal]);
+  const level = levelInfo.level;
 
   const reset = useCallback((options = {}) => {
     const nextMode = options.mode ?? mode;
@@ -324,6 +344,7 @@ export default function Home() {
     setMistakeLog([]);
     setLastXpAward(0);
     setLeveledUp(false);
+    setResultView("summary");
     setPkPlayer(1);
     setPkScores({ 1: null, 2: null });
     setBest(Number(localStorage.getItem(`keyflow-best-${nextMode}`)) || (nextMode === "focus" ? Number(localStorage.getItem("keyflow-best")) || 0 : 0));
@@ -332,6 +353,7 @@ export default function Home() {
     lastKeyAt.current = 0;
     intervals.current = [];
     keystrokes.current = { total: 0, incorrect: 0, corrected: 0 };
+    characterStats.current = {};
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
   }, [codeLanguage, goal, mode, numberPreset, testType]);
@@ -445,7 +467,12 @@ export default function Home() {
   useEffect(() => {
     if (status !== "finished" || recorded.current) return;
     recorded.current = true;
-    const xpGain = Math.max(20, correct + Math.round(accuracy / 2));
+    const xpGain = calculateXpAward({
+      correctCharacters: correct,
+      accuracy,
+      duration: elapsedSeconds,
+      errorRate,
+    });
     const entry = {
       wpm: speed,
       cpm,
@@ -459,6 +486,15 @@ export default function Home() {
       timestamp: Date.now(),
       at: Date.now(),
       player: testType === "pk" ? pkPlayer : null,
+      xp: xpGain,
+      mistakes: mistakeLog.map((item) => ({
+        key: item.key,
+        expected: item.expected,
+        typed: item.typed,
+        count: item.count,
+        positions: item.positions,
+      })),
+      handStats: trainingReport.hands,
     };
     const nextHistory = [entry, ...history].slice(0, 50);
     setHistory(nextHistory);
@@ -476,7 +512,7 @@ export default function Home() {
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
       if (mode === "focus") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, consistency, correct, cpm, elapsedSeconds, errorRate, history, metric, mode, pkPlayer, speed, status, testType, totalErrors]);
+  }, [accuracy, best, consistency, correct, cpm, elapsedSeconds, errorRate, history, metric, mistakeLog, mode, pkPlayer, speed, status, testType, totalErrors, trainingReport.hands]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -532,10 +568,17 @@ export default function Home() {
       const isCorrect = value[index] === text[index];
       const newMistakes = [];
       for (let cursor = typed.length; cursor < value.length; cursor += 1) {
+        const expectedCharacter = text[cursor] || "∅";
+        const isCharacterCorrect = value[cursor] === text[cursor];
+        const stats = characterStats.current[expectedCharacter] || { attempts: 0, errors: 0 };
+        characterStats.current[expectedCharacter] = {
+          attempts: stats.attempts + 1,
+          errors: stats.errors + (isCharacterCorrect ? 0 : 1),
+        };
         keystrokes.current.total += 1;
-        if (value[cursor] !== text[cursor]) {
+        if (!isCharacterCorrect) {
           keystrokes.current.incorrect += 1;
-          newMistakes.push({ expected: text[cursor] || "∅", typed: value[cursor] || "∅", index: cursor });
+          newMistakes.push({ expected: expectedCharacter, typed: value[cursor] || "∅", index: cursor });
         }
       }
       if (newMistakes.length) {
@@ -574,6 +617,9 @@ export default function Home() {
     lastKeyAt.current = 0;
     intervals.current = [];
     keystrokes.current = { total: 0, incorrect: 0, corrected: 0 };
+    characterStats.current = {};
+    setMistakeLog([]);
+    setResultView("summary");
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
   }
@@ -725,7 +771,6 @@ export default function Home() {
   const focusStart = chineseContent ? typed.length : text.lastIndexOf(" ", Math.max(0, typed.length - 1)) + 1;
   const nextSpace = chineseContent ? typed.length + 8 : text.indexOf(" ", typed.length);
   const focusEnd = nextSpace === -1 ? text.length : nextSpace;
-  const level = Math.floor(xpTotal / 1000) + 1;
 
   return (
     <main
@@ -870,6 +915,7 @@ export default function Home() {
                 ["python", "Python"],
                 ["javascript", "JavaScript"],
                 ["cpp", "C++"],
+                ["sql", "SQL"],
                 ["shell", "Shell"],
               ].map(([id, label]) => (
                 <button
@@ -998,21 +1044,30 @@ export default function Home() {
               ))}
             </span>
           )}
+          {combo >= 5 && status === "running" && (
+            <span
+              className="flow-cursor-trail"
+              key={`flow-${pulse}`}
+              style={{ left: `${burstPosition.x}px`, top: `${burstPosition.y}px` }}
+              aria-hidden="true"
+            />
+          )}
 
-          <div className={`passage ${mode}`} ref={passageRef} aria-hidden="true">
+          <div className={`passage ${mode} ${combo >= 5 ? "is-flowing" : ""}`} ref={passageRef} aria-hidden="true">
             {visibleText.split("").map((char, index) => {
               const absolute = visibleStart + index;
               let className = "pending";
               if (absolute < typed.length) className = typed[absolute] === char ? "correct" : "wrong";
               if (absolute === typed.length && status !== "finished") className += " current";
+              if (absolute === typed.length - 1 && typed[absolute] !== char) className += " latest-error";
               if (absolute >= focusStart && absolute <= focusEnd) className += " focus-range";
-              return <span className={className} data-absolute={absolute} key={`${absolute}-${char}`}>{char}</span>;
+              return <span className={className} data-absolute={absolute} data-error-position={absolute + 1} key={`${absolute}-${char}`}>{char}</span>;
             })}
           </div>
 
           {status === "idle" && <div className="start-hint"><span>{testType === "pk" ? `玩家 ${pkPlayer} 准备好后开始输入` : "点击这里或直接开始输入"}</span><small>{chineseContent ? "支持拼音与五笔输入法" : interaction === "sprint" ? "冲刺模式无法使用退格键" : "首个按键后自动计时"}</small></div>}
 
-          {status === "finished" && (
+          {status === "finished" && resultView === "summary" && (
             <SessionResult
               wpm={speed}
               cpm={cpm}
@@ -1029,6 +1084,18 @@ export default function Home() {
               pkScores={pkScores}
               onAdvancePk={(event) => { event.stopPropagation(); advancePk(); }}
               onRestart={(event) => { event.stopPropagation(); reset(); }}
+              onViewReport={(event) => { event.stopPropagation(); setResultView("report"); }}
+            />
+          )}
+          {status === "finished" && resultView === "report" && (
+            <AITrainingReport
+              report={trainingReport}
+              onBack={(event) => { event.stopPropagation(); setResultView("summary"); }}
+              onRestart={(event) => { event.stopPropagation(); reset(); }}
+              onApplyRecommendation={(event) => {
+                event.stopPropagation();
+                reset({ mode: trainingReport.recommendation.mode });
+              }}
             />
           )}
         </div>
@@ -1063,7 +1130,7 @@ export default function Home() {
         </footer>
       </section>
 
-      <TrainingDashboard history={history} level={level} xpTotal={xpTotal} />
+      <TrainingDashboard history={history} levelInfo={levelInfo} />
 
       <section className="history-section">
         <div className="section-heading"><span>RECENT SESSIONS</span><small>最近记录保存在此设备</small></div>

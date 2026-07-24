@@ -2,10 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   appendMistakes,
+  buildTrainingReport,
   calculateConsistency,
   calculateTypingMetrics,
+  calculateXpAward,
   compareInput,
+  getHandForCharacter,
+  getLevelInfo,
   normalizeHistory,
+  summarizeHandPerformance,
 } from "../app/utils/typingEngine.js";
 
 test("compareInput counts correct and incorrect Unicode characters", () => {
@@ -72,4 +77,41 @@ test("consistency stays bounded and history records are migrated", () => {
   const [record] = normalizeHistory([{ wpm: 60, accuracy: 98, at: 123 }]);
   assert.equal(record.cpm, 300);
   assert.equal(record.timestamp, 123);
+});
+
+test("maps characters to hands and calculates hand accuracy", () => {
+  assert.equal(getHandForCharacter("R"), "left");
+  assert.equal(getHandForCharacter("j"), "right");
+  assert.equal(getHandForCharacter(" "), "neutral");
+  assert.deepEqual(summarizeHandPerformance({
+    r: { attempts: 10, errors: 2 },
+    j: { attempts: 8, errors: 0 },
+  }), {
+    left: { attempts: 10, errors: 2, accuracy: 80 },
+    right: { attempts: 8, errors: 0, accuracy: 100 },
+  });
+});
+
+test("training report identifies weak hand and recommends targeted drills", () => {
+  const report = buildTrainingReport({
+    mistakes: [{ key: "1→2", expected: "1", typed: "2", count: 3, lastIndex: 8, positions: [2, 5, 8] }],
+    characterStats: { 1: { attempts: 5, errors: 3 }, j: { attempts: 5, errors: 0 } },
+    accuracy: 90,
+    wpm: 45,
+  });
+  assert.equal(report.weakerHand, "left");
+  assert.equal(report.recommendation.mode, "numbers");
+  assert.equal(report.topMistakes[0].count, 3);
+});
+
+test("XP awards are bounded and level progress is deterministic", () => {
+  const xp = calculateXpAward({ correctCharacters: 100, accuracy: 98, duration: 60, errorRate: 2 });
+  assert.ok(xp > 20);
+  assert.deepEqual(getLevelInfo(1250), {
+    level: 2,
+    title: "Rhythm Builder",
+    currentXp: 250,
+    nextLevelXp: 1000,
+    progress: 0.25,
+  });
 });

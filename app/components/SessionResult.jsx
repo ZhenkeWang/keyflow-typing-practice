@@ -16,6 +16,7 @@ export default function SessionResult({
   pkScores,
   onAdvancePk,
   onRestart,
+  onViewReport,
 }) {
   return (
     <div className="result-overlay phase-one-result">
@@ -44,7 +45,10 @@ export default function SessionResult({
       )}
       {testType === "pk" && pkPlayer === 1
         ? <button onClick={onAdvancePk}>交给玩家 2 <span>→</span></button>
-        : <button onClick={onRestart}>{testType === "pk" ? "再战一局" : "开始下一轮"} <span>↗</span></button>}
+        : <div className="result-actions">
+            <button className="report-button" onClick={onViewReport}>查看 AI 报告</button>
+            <button onClick={onRestart}>{testType === "pk" ? "再战一局" : "开始下一轮"} <span>↗</span></button>
+          </div>}
     </div>
   );
 }
