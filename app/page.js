@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Aurora from "./components/Aurora";
-import LaptopIntro from "./components/LaptopIntro";
+import LandingHero from "./components/LandingHero";
+import ErrorAnalysis from "./components/ErrorAnalysis";
+import SessionResult from "./components/SessionResult";
 
 const TEXT_BANK = {
   focus: [
@@ -42,6 +44,41 @@ const TEXT_BANK = {
     "城市公共空间正在变得更加开放与友好，新的生活方式也在街巷之间自然生长。",
     "人工智能工具逐渐融入日常工作，人们开始重新思考效率、创造力与协作的关系。",
     "健康生活、绿色出行和周末短途旅行，正在成为越来越多人关注的生活话题。",
+  ],
+};
+
+const CODE_BANK = {
+  python: [
+    "def train_model(data): return model.fit(data)",
+    "scores = [value * 2 for value in results if value > 0]",
+    "with open('notes.txt', 'r') as file: content = file.read()",
+  ],
+  javascript: TEXT_BANK.code,
+  cpp: [
+    "std::vector<int> values = {1, 2, 3};",
+    "for (const auto& item : values) { std::cout << item; }",
+    "int clamp(int value, int low, int high) { return std::min(std::max(value, low), high); }",
+  ],
+  shell: [
+    "git status --short && npm run build",
+    "find ./src -type f -name '*.js' | sort",
+    "for file in *.log; do echo \"$file\"; done",
+  ],
+};
+
+const NUMBER_BANK = {
+  mixed: TEXT_BANK.numbers,
+  network: [
+    "192.168.1.100 10.0.0.24 255.255.255.0 172.16.0.1 8.8.8.8",
+    "2001:0db8:85a3:0000:0000:8a2e:0370:7334 127.0.0.1 8080 443 3000",
+  ],
+  date: [
+    "2026-07-24 09:30 2027-01-01 18:45 2025-12-31 23:59",
+    "07/24/2026 24-07-2026 2026.07.24 09:30:45 UTC+8",
+  ],
+  formula: [
+    "E = mc^2 x = (-b + sqrt(b^2 - 4ac)) / 2a 3.14159 * r^2",
+    "a^2 + b^2 = c^2 f(x) = 2x + 1 12.5% + 87.5% = 100%",
   ],
 };
 
@@ -131,8 +168,12 @@ const SPARKS = [
 
 const TITLE_LINES = ["找到你的", "击键节奏。"];
 
-function makeText(mode, minLength = 1600) {
-  const source = TEXT_BANK[mode];
+function makeText(mode, minLength = 1600, variant = "") {
+  const source = mode === "code"
+    ? CODE_BANK[variant] || CODE_BANK.javascript
+    : mode === "numbers"
+      ? NUMBER_BANK[variant] || NUMBER_BANK.mixed
+      : TEXT_BANK[mode];
   let result = "";
   let index = Math.floor(Math.random() * source.length);
   while (result.length < minLength) {
@@ -205,6 +246,12 @@ export default function Home() {
   const [entryReady, setEntryReady] = useState(false);
   const [entered, setEntered] = useState(false);
   const [entryLeaving, setEntryLeaving] = useState(false);
+  const [codeLanguage, setCodeLanguage] = useState("javascript");
+  const [numberPreset, setNumberPreset] = useState("mixed");
+  const [mistakeLog, setMistakeLog] = useState([]);
+  const [xpTotal, setXpTotal] = useState(0);
+  const [lastXpAward, setLastXpAward] = useState(0);
+  const [leveledUp, setLeveledUp] = useState(false);
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -223,15 +270,16 @@ export default function Home() {
   );
   const errors = typed.length - correct;
   const accuracy = typed.length ? Math.round((correct / typed.length) * 100) : 100;
+  const errorRate = typed.length ? Math.round((errors / typed.length) * 100) : 0;
   const elapsedMs = startedAt.current
     ? Math.max(0, (status === "finished" ? finishedAt.current : now) - startedAt.current)
     : 0;
   const elapsedSeconds = elapsedMs / 1000;
   const chineseContent = isChineseContent(mode, newsSource);
   const metric = chineseContent ? "CPM" : "WPM";
-  const wpm = elapsedSeconds > 0
-    ? Math.round((chineseContent ? correct : correct / 5) / (elapsedSeconds / 60))
-    : 0;
+  const cpm = elapsedSeconds > 0 ? Math.round(correct / (elapsedSeconds / 60)) : 0;
+  const wpm = elapsedSeconds > 0 ? Math.round((correct / 5) / (elapsedSeconds / 60)) : 0;
+  const speed = chineseContent ? cpm : wpm;
   const words = unitCount(typed, mode, newsSource);
   const timeLeft = testType !== "words" ? Math.max(0, Math.ceil(goal - elapsedSeconds)) : 0;
   const progress = testType !== "words"
@@ -249,16 +297,23 @@ export default function Home() {
     const nextMode = options.mode ?? mode;
     const nextType = options.testType ?? testType;
     const nextGoal = options.goal ?? goal;
+    const nextCodeLanguage = options.codeLanguage ?? codeLanguage;
+    const nextNumberPreset = options.numberPreset ?? numberPreset;
     setMode(nextMode);
     setTestType(nextType);
     setGoal(nextGoal);
-    setText(makeText(nextMode));
+    setCodeLanguage(nextCodeLanguage);
+    setNumberPreset(nextNumberPreset);
+    setText(makeText(nextMode, 1600, nextMode === "code" ? nextCodeLanguage : nextNumberPreset));
     setTyped("");
     setDraft("");
     setStatus("idle");
     setNow(0);
     setCombo(0);
     setFeedback("correct");
+    setMistakeLog([]);
+    setLastXpAward(0);
+    setLeveledUp(false);
     setPkPlayer(1);
     setPkScores({ 1: null, 2: null });
     setBest(Number(localStorage.getItem(`keyflow-best-${nextMode}`)) || (nextMode === "focus" ? Number(localStorage.getItem("keyflow-best")) || 0 : 0));
@@ -268,7 +323,7 @@ export default function Home() {
     intervals.current = [];
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
-  }, [goal, mode, testType]);
+  }, [codeLanguage, goal, mode, numberPreset, testType]);
 
   useEffect(() => {
     setBest(Number(localStorage.getItem("keyflow-best-focus")) || Number(localStorage.getItem("keyflow-best")) || 0);
@@ -277,6 +332,7 @@ export default function Home() {
     } catch {
       setHistory([]);
     }
+    setXpTotal(Number(localStorage.getItem("keyflow-xp")) || 0);
     const savedPreference = localStorage.getItem("keyflow-theme-mode");
     const legacyTheme = localStorage.getItem("keyflow-theme");
     setThemePreference(
@@ -316,9 +372,18 @@ export default function Home() {
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => setEntryReady(true), reducedMotion ? 60 : 4400);
+    const timer = window.setTimeout(() => setEntryReady(true), reducedMotion ? 60 : 720);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (entered || !entryReady || entryLeaving) return;
+    function handleLandingShortcut(event) {
+      if (event.key === "Enter") enterPractice(event);
+    }
+    window.addEventListener("keydown", handleLandingShortcut);
+    return () => window.removeEventListener("keydown", handleLandingShortcut);
+  }, [entered, entryLeaving, entryReady]);
 
   useLayoutEffect(() => {
     if (!pulse || !typed.length) return;
@@ -369,17 +434,38 @@ export default function Home() {
   useEffect(() => {
     if (status !== "finished" || recorded.current) return;
     recorded.current = true;
-    const entry = { wpm, accuracy, mode, metric, consistency, at: Date.now(), player: testType === "pk" ? pkPlayer : null };
+    const xpGain = Math.max(20, correct + Math.round(accuracy / 2));
+    const entry = {
+      wpm: speed,
+      cpm,
+      accuracy,
+      errorRate,
+      errors,
+      duration: Math.round(elapsedSeconds),
+      mode,
+      metric,
+      consistency,
+      timestamp: Date.now(),
+      at: Date.now(),
+      player: testType === "pk" ? pkPlayer : null,
+    };
     const nextHistory = [entry, ...history].slice(0, 5);
     setHistory(nextHistory);
     localStorage.setItem("keyflow-history", JSON.stringify(nextHistory));
     if (testType === "pk") setPkScores((scores) => ({ ...scores, [pkPlayer]: entry }));
-    if (wpm > best) {
-      setBest(wpm);
-      localStorage.setItem(`keyflow-best-${mode}`, String(wpm));
-      if (mode === "focus") localStorage.setItem("keyflow-best", String(wpm));
+    setLastXpAward(xpGain);
+    setXpTotal((current) => {
+      const next = current + xpGain;
+      setLeveledUp(Math.floor(current / 1000) < Math.floor(next / 1000));
+      localStorage.setItem("keyflow-xp", String(next));
+      return next;
+    });
+    if (speed > best) {
+      setBest(speed);
+      localStorage.setItem(`keyflow-best-${mode}`, String(speed));
+      if (mode === "focus") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, consistency, history, metric, mode, pkPlayer, status, testType, wpm]);
+  }, [accuracy, best, consistency, correct, cpm, elapsedSeconds, errorRate, errors, history, metric, mode, pkPlayer, speed, status, testType]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -433,6 +519,31 @@ export default function Home() {
     if (value.length > typed.length) {
       const index = value.length - 1;
       const isCorrect = value[index] === text[index];
+      const newMistakes = [];
+      for (let cursor = typed.length; cursor < value.length; cursor += 1) {
+        if (value[cursor] !== text[cursor]) {
+          newMistakes.push({ expected: text[cursor] || "∅", typed: value[cursor] || "∅", index: cursor });
+        }
+      }
+      if (newMistakes.length) {
+        setMistakeLog((current) => {
+          const next = [...current];
+          newMistakes.forEach((mistake) => {
+            const key = `${mistake.expected}→${mistake.typed}`;
+            const matchIndex = next.findIndex((item) => item.key === key);
+            if (matchIndex >= 0) {
+              next[matchIndex] = {
+                ...next[matchIndex],
+                count: next[matchIndex].count + 1,
+                positions: [...next[matchIndex].positions, mistake.index],
+              };
+            } else {
+              next.push({ ...mistake, key, count: 1, positions: [mistake.index] });
+            }
+          });
+          return next.sort((a, b) => b.count - a.count || b.index - a.index).slice(0, 8);
+        });
+      }
       setCombo((current) => isCorrect ? current + 1 : 0);
       setFeedback(isCorrect ? "correct" : "wrong");
       setPulse((current) => current + 1);
@@ -615,6 +726,7 @@ export default function Home() {
   const focusStart = chineseContent ? typed.length : text.lastIndexOf(" ", Math.max(0, typed.length - 1)) + 1;
   const nextSpace = chineseContent ? typed.length + 8 : text.indexOf(" ", typed.length);
   const focusEnd = nextSpace === -1 ? text.length : nextSpace;
+  const level = Math.floor(xpTotal / 1000) + 1;
 
   return (
     <main
@@ -637,37 +749,16 @@ export default function Home() {
 
       {(!entered || entryLeaving) && (
         <section
-          className={`entry-gate ${entryReady ? "is-ready" : ""} ${entryLeaving ? "is-leaving" : ""}`}
+          className={`entry-gate saas-entry-gate ${entryReady ? "is-ready" : ""} ${entryLeaving ? "is-leaving" : ""}`}
           aria-label="Keyflow 入场动画"
         >
-          <div className="entry-orbit" aria-hidden="true" />
-          <div className="entry-theme-control" onClick={(event) => event.stopPropagation()} aria-label="入场主题">
-            <button
-              className={themePreference === "auto" ? "active" : ""}
-              type="button"
-              onClick={() => chooseTheme("auto")}
-              aria-pressed={themePreference === "auto"}
-            >
-              <span>◒</span> Auto
-            </button>
-            <button
-              className={themePreference === "light" ? "active" : ""}
-              type="button"
-              onClick={() => chooseTheme("light")}
-              aria-pressed={themePreference === "light"}
-            >
-              <span>☀</span> Light
-            </button>
-            <button
-              className={themePreference === "dark" ? "active" : ""}
-              type="button"
-              onClick={() => chooseTheme("dark")}
-              aria-pressed={themePreference === "dark"}
-            >
-              <span>◐</span> Dark
-            </button>
-          </div>
-          <LaptopIntro ready={entryReady} leaving={entryLeaving} onEnter={enterPractice} />
+          <LandingHero
+            ready={entryReady}
+            leaving={entryLeaving}
+            themePreference={themePreference}
+            onThemeChange={chooseTheme}
+            onEnter={enterPractice}
+          />
         </section>
       )}
 
@@ -771,6 +862,58 @@ export default function Home() {
             <span>{feedUpdated ? `更新于 ${new Date(feedUpdated).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}` : "连接公开数据源"}</span>
           </div>
         )}
+
+        {mode === "code" && (
+          <div className="specialty-bar" aria-label="代码语言">
+            <span><i>{"</>"}</i> Code language</span>
+            <div>
+              {[
+                ["python", "Python"],
+                ["javascript", "JavaScript"],
+                ["cpp", "C++"],
+                ["shell", "Shell"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  className={codeLanguage === id ? "active" : ""}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    reset({ mode: "code", codeLanguage: id });
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <small>为程序员优化的符号与语法训练</small>
+          </div>
+        )}
+
+        {mode === "numbers" && (
+          <div className="specialty-bar" aria-label="数字训练类型">
+            <span><i>123</i> Number drill</span>
+            <div>
+              {[
+                ["mixed", "综合"],
+                ["network", "IP 地址"],
+                ["date", "日期时间"],
+                ["formula", "数学公式"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  className={numberPreset === id ? "active" : ""}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    reset({ mode: "numbers", numberPreset: id });
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <small>强化数字行、符号与结构化数据输入</small>
+          </div>
+        )}
       </section>
 
       <section className={`practice-card ${status} interaction-${interaction} ${errors > 0 && typed.at(-1) !== text[typed.length - 1] ? "has-error" : ""}`}>
@@ -797,11 +940,12 @@ export default function Home() {
           >退出全屏 <kbd>Esc</kbd></button>
         )}
 
-        <div className="stats">
-          <div className="stat primary" key={`wpm-${pulse}`}><span>{metric}</span><strong>{wpm}</strong><small>速度</small></div>
-          <div className="stat"><span>ACC</span><strong>{accuracy}<small>%</small></strong><small>准确率</small></div>
-          <div className="stat"><span>FLOW</span><strong>{consistency}<small>%</small></strong><small>稳定度</small></div>
-          <div className="stat"><span>{testType === "words" ? (chineseContent ? "CHARS" : "WORDS") : "TIME"}</span><strong>{testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}</strong><small>{testType === "words" ? "进度" : "剩余"}</small></div>
+        <div className="stats phase-one-stats">
+          <div className="stat primary" key={`wpm-${pulse}`}><span>WPM</span><strong>{wpm}</strong><small>单词速度</small></div>
+          <div className="stat"><span>CPM</span><strong>{cpm}</strong><small>字符速度</small></div>
+          <div className="stat"><span>ACCURACY</span><strong>{accuracy}<small>%</small></strong><small>准确率</small></div>
+          <div className="stat"><span>ERROR RATE</span><strong>{errorRate}<small>%</small></strong><small>{errors} 次错误</small></div>
+          <div className="stat"><span>{testType === "words" ? (chineseContent ? "CHARS" : "WORDS") : "TIME"}</span><strong>{testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}</strong><small>{testType === "words" ? "训练进度" : "剩余时间"}</small></div>
         </div>
 
         <div className="typing-zone" ref={typingZoneRef}>
@@ -861,26 +1005,27 @@ export default function Home() {
           {status === "idle" && <div className="start-hint"><span>{testType === "pk" ? `玩家 ${pkPlayer} 准备好后开始输入` : "点击这里或直接开始输入"}</span><small>{chineseContent ? "支持拼音与五笔输入法" : interaction === "sprint" ? "冲刺模式无法使用退格键" : "首个按键后自动计时"}</small></div>}
 
           {status === "finished" && (
-            <div className="result-overlay">
-              <div className="result-glow" />
-              <p>{testType === "pk" ? `PLAYER ${pkPlayer} COMPLETE` : "SESSION COMPLETE"}</p>
-              <strong>{wpm}<span>{metric}</span></strong>
-              <div className="result-details"><span>{accuracy}% 准确</span><i /> <span>{consistency}% 稳定</span><i /> <span>{errors} 错误</span></div>
-              {testType === "pk" && pkPlayer === 2 && (
-                <div className="pk-result">
-                  <div className={pkWinner === 1 ? "winner" : ""}><small>玩家 1</small><b>{pkScores[1]?.wpm ?? 0}</b><span>{metric}</span></div>
-                  <i>VS</i>
-                  <div className={pkWinner === 2 ? "winner" : ""}><small>玩家 2</small><b>{pkScores[2]?.wpm ?? wpm}</b><span>{metric}</span></div>
-                  <p>{pkWinner === 0 ? "平局！节奏完全一致" : pkWinner ? `玩家 ${pkWinner} 获胜` : "正在计算结果"}</p>
-                </div>
-              )}
-              {testType === "pk" && pkPlayer === 1
-                ? <button onClick={(event) => { event.stopPropagation(); advancePk(); }}>交给玩家 2 <span>→</span></button>
-                : <button onClick={(event) => { event.stopPropagation(); reset(); }}>{testType === "pk" ? "再战一局" : "再来一次"} <span>↗</span></button>}
-            </div>
+            <SessionResult
+              wpm={speed}
+              cpm={cpm}
+              metric={metric}
+              accuracy={accuracy}
+              consistency={consistency}
+              errors={errors}
+              gainedXp={lastXpAward}
+              level={level}
+              leveledUp={leveledUp}
+              testType={testType}
+              pkPlayer={pkPlayer}
+              pkWinner={pkWinner}
+              pkScores={pkScores}
+              onAdvancePk={(event) => { event.stopPropagation(); advancePk(); }}
+              onRestart={(event) => { event.stopPropagation(); reset(); }}
+            />
           )}
         </div>
 
+        {!immersive && <ErrorAnalysis mistakes={mistakeLog} typed={typed} text={text} />}
         {chineseContent && !immersive && <div className="ime-panel"><span>中</span><div><strong>{mode === "news" ? "实时中文内容已就绪" : "中文输入已就绪"}</strong><small>使用系统输入法完成文字上屏后，系统将逐字计算速度与准确率。</small></div></div>}
         {immersive && <div
           className="keyboard full-keyboard"
