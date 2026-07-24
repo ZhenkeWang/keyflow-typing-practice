@@ -134,7 +134,6 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
               x="350"
               y="137"
               textAnchor="middle"
-              transform="translate(350 115) scale(2.15 1.5) translate(-350 -115)"
             >
               Keyflow
             </text>
@@ -143,7 +142,6 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
               x="350"
               y="137"
               textAnchor="middle"
-              transform="translate(350 115) scale(2.15 1.5) translate(-350 -115)"
               clipPath="url(#keyflow-fill-clip)"
             >
               Keyflow
