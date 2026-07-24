@@ -4044,3 +4044,48 @@ html.theme-changing .key-row > span {
     animation-delay: 0ms !important;
   }
 }
+
+/* Larger-than-v32 wordmark and Apple-like system typography for the cue. */
+.entry-keyflow-mark {
+  width: 88%;
+  height: auto;
+  aspect-ratio: 700 / 230;
+}
+.entry-keyflow-mark text {
+  font-size: 160px;
+}
+.entry-any-key-hint {
+  margin-top: 24px;
+  color: rgba(230, 235, 248, .66);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .045em;
+  line-height: 1.25;
+  text-shadow: 0 1px 12px rgba(119, 144, 218, .12);
+}
+.entry-split-stage.is-ready .entry-any-key-hint {
+  color: rgba(244, 247, 255, .82);
+  text-shadow: 0 1px 16px rgba(120, 145, 224, .16);
+}
+html[data-theme="light"] .entry-any-key-hint {
+  color: rgba(45, 51, 78, .58);
+  text-shadow: 0 1px 10px rgba(255, 255, 255, .42);
+}
+html[data-theme="light"] .entry-split-stage.is-ready .entry-any-key-hint {
+  color: rgba(34, 40, 67, .72);
+  text-shadow: 0 1px 12px rgba(255, 255, 255, .55);
+}
+@media (max-width: 760px) {
+  .entry-keyflow-mark {
+    width: 88%;
+    height: auto;
+  }
+  .entry-keyflow-mark text {
+    font-size: 154px;
+  }
+  .entry-any-key-hint {
+    margin-top: 18px;
+    font-size: 11px;
+  }
+}
