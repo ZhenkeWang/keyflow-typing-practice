@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=M+PLUS+Rounded+1c:wght@700;800;900&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Nunito:wght@600;700;800&family=ZCOOL+KuaiLe&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=M+PLUS+Rounded+1c:wght@700;800;900&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Nunito:wght@600;700;800&family=Pacifico&family=ZCOOL+KuaiLe&display=swap');
 
 :root {
   --bg: #0c1020;
@@ -3836,4 +3836,81 @@ html[data-theme="light"] .nav-theme-segmented button.active {
 }
 @media (prefers-reduced-motion: reduce) {
   .entry-theme-control { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+}
+
+/* Handwritten Keyflow wordmark and quieter entry action. */
+.entry-split-stage {
+  grid-template-rows: minmax(285px, 45dvh) 350px;
+}
+.entry-keyflow-mark {
+  width: min(640px, 68vw);
+  height: clamp(116px, 15vw, 176px);
+  overflow: visible;
+  filter: drop-shadow(0 12px 28px rgba(73, 101, 209, .16));
+}
+.entry-keyflow-mark text {
+  fill: transparent;
+  stroke: url("#keyflow-title-gradient");
+  stroke-width: 2.35px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1250;
+  stroke-dashoffset: 1250;
+  font-family: Pacifico, "Segoe Script", cursive;
+  font-size: 132px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  paint-order: stroke fill;
+  animation:
+    keyflowWordWrite 1.7s cubic-bezier(.42, 0, .24, 1) 1.42s forwards,
+    keyflowWordFill .58s ease-out 2.68s forwards;
+}
+.entry-liquid-content button {
+  min-width: 150px;
+  height: 44px;
+  margin-top: 14px;
+  padding-inline: 18px;
+  font-size: 13px;
+  animation: liquidContentIn .52s cubic-bezier(.22,.82,.16,1) 2.92s both;
+}
+.entry-liquid-content button i {
+  margin-left: 9px;
+}
+@keyframes keyflowWordWrite {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 1250;
+  }
+  8% { opacity: 1; }
+  100% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes keyflowWordFill {
+  from { fill: transparent; }
+  to { fill: url("#keyflow-title-gradient"); }
+}
+@media (max-width: 760px) {
+  .entry-split-stage {
+    grid-template-rows: minmax(250px, 44dvh) 280px;
+  }
+  .entry-keyflow-mark {
+    width: min(620px, 82vw);
+    height: clamp(104px, 24vw, 150px);
+  }
+  .entry-liquid-content button {
+    min-width: 138px;
+    height: 42px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry-keyflow-mark text {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    stroke-dashoffset: 0;
+    fill: url("#keyflow-title-gradient");
+  }
 }

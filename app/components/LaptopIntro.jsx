@@ -103,13 +103,27 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
         <div className="liquid-glass-highlight" aria-hidden="true" />
         <div className="entry-liquid-content">
           <span>KEYFLOW · FLOW STATE TRAINING</span>
-          <h1>找到你的<em>击键节奏</em></h1>
+          <svg
+            className="entry-keyflow-mark"
+            viewBox="0 0 700 190"
+            role="img"
+            aria-label="Keyflow"
+          >
+            <defs>
+              <linearGradient id="keyflow-title-gradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#b9aaff" />
+                <stop offset="48%" stopColor="#8eb4ff" />
+                <stop offset="100%" stopColor="#73e4ca" />
+              </linearGradient>
+            </defs>
+            <text x="350" y="137" textAnchor="middle">Keyflow</text>
+          </svg>
           <button
             type="button"
             disabled={!ready || leaving}
             onClick={onEnter}
           >
-            点击进入练习 <i>→</i>
+            点击进入 <i>→</i>
           </button>
         </div>
       </section>
@@ -144,7 +158,6 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
         </div>
       </section>
 
-      <p className="entry-split-caption">让指尖先认识节奏，再进入专注练习。</p>
     </div>
   );
 }
