@@ -3840,7 +3840,15 @@ html[data-theme="light"] .nav-theme-segmented button.active {
 
 /* Handwritten Keyflow wordmark and quieter entry action. */
 .entry-split-stage {
+  --entry-stage-scale: .88;
+  --entry-screen-width: 1126px;
   grid-template-rows: minmax(285px, 45dvh) 350px;
+}
+.entry-liquid-screen {
+  width: min(var(--entry-screen-width), calc(100vw - 32px));
+}
+.entry-full-keyboard {
+  --entry-scale: var(--entry-stage-scale);
 }
 .entry-keyflow-mark {
   width: min(640px, 68vw);
@@ -3898,10 +3906,18 @@ html[data-theme="light"] .nav-theme-segmented button.active {
 @keyframes keyflowFillReveal {
   0% { width: 0; opacity: .18; }
   20% { opacity: .72; }
-  100% { width: 700px; opacity: 1; }
+  100% { width: 940px; opacity: 1; }
+}
+@media (max-width: 1100px) {
+  .entry-split-stage {
+    --entry-stage-scale: .7;
+    --entry-screen-width: 896px;
+  }
 }
 @media (max-width: 760px) {
   .entry-split-stage {
+    --entry-stage-scale: .49;
+    --entry-screen-width: 627px;
     grid-template-rows: minmax(250px, 44dvh) 280px;
   }
   .entry-keyflow-mark {
@@ -3915,6 +3931,12 @@ html[data-theme="light"] .nav-theme-segmented button.active {
     font-size: 12px;
   }
 }
+@media (max-width: 430px) {
+  .entry-split-stage {
+    --entry-stage-scale: .27;
+    --entry-screen-width: 346px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .entry-keyflow-outline,
   .entry-keyflow-fill-reveal {
@@ -3924,5 +3946,5 @@ html[data-theme="light"] .nav-theme-segmented button.active {
   .entry-keyflow-outline {
     stroke-dashoffset: 0;
   }
-  .entry-keyflow-fill-reveal { width: 700px; }
+  .entry-keyflow-fill-reveal { width: 940px; }
 }

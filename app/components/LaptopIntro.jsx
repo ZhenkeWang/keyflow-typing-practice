@@ -102,10 +102,9 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
         <div className="liquid-glass-refraction" aria-hidden="true" />
         <div className="liquid-glass-highlight" aria-hidden="true" />
         <div className="entry-liquid-content">
-          <span>KEYFLOW · FLOW STATE TRAINING</span>
           <svg
             className="entry-keyflow-mark"
-            viewBox="0 0 700 190"
+            viewBox="0 -20 700 230"
             role="img"
             aria-label="Keyflow"
           >
@@ -116,7 +115,7 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
                 <stop offset="100%" stopColor="#73e4ca" />
               </linearGradient>
               <clipPath id="keyflow-fill-clip">
-                <rect className="entry-keyflow-fill-reveal" x="0" y="0" width="700" height="190" rx="24" />
+                <rect className="entry-keyflow-fill-reveal" x="-120" y="-100" width="940" height="400" rx="24" />
               </clipPath>
             </defs>
             <text className="entry-keyflow-outline" x="350" y="137" textAnchor="middle">Keyflow</text>
