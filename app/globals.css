@@ -3948,3 +3948,48 @@ html[data-theme="light"] .nav-theme-segmented button.active {
   }
   .entry-keyflow-fill-reveal { width: 940px; }
 }
+
+/* Slower unified theme morph for entry and practice surfaces. */
+html.theme-changing::after {
+  animation-duration: 1800ms;
+}
+html.theme-changing .aurora-backdrop {
+  animation-duration: 1800ms;
+}
+html.theme-changing body,
+html.theme-changing .background-wash,
+html.theme-changing .ambient,
+html.theme-changing .entry-gate,
+html.theme-changing .entry-liquid-screen,
+html.theme-changing .entry-full-keyboard,
+html.theme-changing .entry-theme-control,
+html.theme-changing .nav-theme-segmented,
+html.theme-changing .mode-card,
+html.theme-changing .session-controls,
+html.theme-changing .feed-bar,
+html.theme-changing .practice-card,
+html.theme-changing .best-pill,
+html.theme-changing .icon-button,
+html.theme-changing .key-row > span {
+  transition-duration: 1600ms;
+  transition-timing-function: cubic-bezier(.32, .72, 0, 1);
+}
+.entry-gate,
+.entry-liquid-screen,
+.entry-theme-control,
+.nav-theme-segmented {
+  transition:
+    color 1600ms cubic-bezier(.32, .72, 0, 1),
+    background 1600ms cubic-bezier(.32, .72, 0, 1),
+    border-color 1600ms cubic-bezier(.32, .72, 0, 1),
+    box-shadow 1600ms cubic-bezier(.32, .72, 0, 1),
+    filter 1600ms cubic-bezier(.32, .72, 0, 1);
+}
+.entry-full-keyboard {
+  transition:
+    transform 460ms cubic-bezier(.22, .82, .16, 1),
+    color 1600ms cubic-bezier(.32, .72, 0, 1),
+    background 1600ms cubic-bezier(.32, .72, 0, 1),
+    border-color 1600ms cubic-bezier(.32, .72, 0, 1),
+    box-shadow 1600ms cubic-bezier(.32, .72, 0, 1);
+}

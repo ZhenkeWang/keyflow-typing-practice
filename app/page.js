@@ -200,7 +200,6 @@ export default function Home() {
   const [feedUpdated, setFeedUpdated] = useState("");
   const [themePreference, setThemePreference] = useState("auto");
   const [theme, setTheme] = useState("dark");
-  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [immersive, setImmersive] = useState(false);
   const [burstPosition, setBurstPosition] = useState({ x: 0, y: 0 });
   const [entryReady, setEntryReady] = useState(false);
@@ -307,7 +306,7 @@ export default function Home() {
       root.classList.remove("theme-changing");
       void root.offsetWidth;
       root.classList.add("theme-changing");
-      timer = window.setTimeout(() => root.classList.remove("theme-changing"), 1100);
+      timer = window.setTimeout(() => root.classList.remove("theme-changing"), 1800);
     }
     root.dataset.theme = theme;
     localStorage.setItem("keyflow-theme", theme);
@@ -595,7 +594,6 @@ export default function Home() {
     const resolvedTheme = nextTheme === "auto" ? getTimeBasedTheme() : nextTheme;
     setThemePreference(nextTheme);
     setTheme(resolvedTheme);
-    setThemeMenuOpen(false);
   }
 
   function enterPractice(event) {
@@ -622,7 +620,6 @@ export default function Home() {
     <main
       className={`app-shell theme-${theme} ${immersive ? "immersive-mode" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
       onClick={() => {
-        setThemeMenuOpen(false);
         if (entered && status !== "finished") inputRef.current?.focus();
       }}
     >
@@ -646,18 +643,26 @@ export default function Home() {
           <div className="entry-orbit" aria-hidden="true" />
           <div className="entry-theme-control" onClick={(event) => event.stopPropagation()} aria-label="入场主题">
             <button
-              className={theme === "light" ? "active" : ""}
+              className={themePreference === "auto" ? "active" : ""}
+              type="button"
+              onClick={() => chooseTheme("auto")}
+              aria-pressed={themePreference === "auto"}
+            >
+              <span>◒</span> Auto
+            </button>
+            <button
+              className={themePreference === "light" ? "active" : ""}
               type="button"
               onClick={() => chooseTheme("light")}
-              aria-pressed={theme === "light"}
+              aria-pressed={themePreference === "light"}
             >
               <span>☀</span> Light
             </button>
             <button
-              className={theme === "dark" ? "active" : ""}
+              className={themePreference === "dark" ? "active" : ""}
               type="button"
               onClick={() => chooseTheme("dark")}
-              aria-pressed={theme === "dark"}
+              aria-pressed={themePreference === "dark"}
             >
               <span>◐</span> Dark
             </button>
@@ -672,61 +677,29 @@ export default function Home() {
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
           <div className="nav-theme-segmented" onClick={(event) => event.stopPropagation()} aria-label="快速切换主题">
             <button
-              className={theme === "light" ? "active" : ""}
+              className={themePreference === "auto" ? "active" : ""}
+              type="button"
+              onClick={() => chooseTheme("auto")}
+              aria-pressed={themePreference === "auto"}
+            >
+              Auto
+            </button>
+            <button
+              className={themePreference === "light" ? "active" : ""}
               type="button"
               onClick={() => chooseTheme("light")}
-              aria-pressed={theme === "light"}
+              aria-pressed={themePreference === "light"}
             >
               Light
             </button>
             <button
-              className={theme === "dark" ? "active" : ""}
+              className={themePreference === "dark" ? "active" : ""}
               type="button"
               onClick={() => chooseTheme("dark")}
-              aria-pressed={theme === "dark"}
+              aria-pressed={themePreference === "dark"}
             >
               Dark
             </button>
-          </div>
-          <div className={`theme-picker ${themeMenuOpen ? "open" : ""}`}>
-            <button
-              className="icon-button theme-toggle"
-              onClick={(event) => {
-                event.stopPropagation();
-                setThemeMenuOpen((open) => !open);
-              }}
-              aria-label="选择主题"
-              aria-expanded={themeMenuOpen}
-              title={`主题：${themePreference === "auto" ? "自动" : themePreference === "light" ? "浅色" : "深色"}`}
-            >
-              <span>{themePreference === "auto" ? "◐" : theme === "dark" ? "☾" : "☼"}</span>
-              {themePreference === "auto" && <i aria-hidden="true" />}
-            </button>
-            <div className="theme-menu" role="menu" onClick={(event) => event.stopPropagation()}>
-              <div className="theme-menu-heading">
-                <strong>外观</strong>
-                <small>自动：07:00—19:00 浅色</small>
-              </div>
-              {[
-                { id: "auto", icon: "◐", label: "自动", detail: "跟随本地时间" },
-                { id: "light", icon: "☼", label: "浅色", detail: "始终使用 Light" },
-                { id: "dark", icon: "☾", label: "深色", detail: "始终使用 Dark" },
-              ].map((option) => (
-                <button
-                  className={themePreference === option.id ? "active" : ""}
-                  key={option.id}
-                  role="menuitemradio"
-                  aria-checked={themePreference === option.id}
-                  onClick={() => {
-                    chooseTheme(option.id);
-                  }}
-                >
-                  <span>{option.icon}</span>
-                  <b>{option.label}<small>{option.detail}</small></b>
-                  <i />
-                </button>
-              ))}
-            </div>
           </div>
           <button className="icon-button" onClick={(event) => { event.stopPropagation(); reset(); }} aria-label="重新开始">↻</button>
         </div>
