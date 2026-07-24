@@ -317,7 +317,7 @@ export default function Home() {
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => setEntryReady(true), reducedMotion ? 60 : 3500);
+    const timer = window.setTimeout(() => setEntryReady(true), reducedMotion ? 60 : 4400);
     return () => window.clearTimeout(timer);
   }, []);
 

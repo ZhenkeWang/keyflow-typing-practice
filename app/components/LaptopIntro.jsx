@@ -115,8 +115,20 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
                 <stop offset="48%" stopColor="#8eb4ff" />
                 <stop offset="100%" stopColor="#73e4ca" />
               </linearGradient>
+              <clipPath id="keyflow-fill-clip">
+                <rect className="entry-keyflow-fill-reveal" x="0" y="0" width="700" height="190" rx="24" />
+              </clipPath>
             </defs>
-            <text x="350" y="137" textAnchor="middle">Keyflow</text>
+            <text className="entry-keyflow-outline" x="350" y="137" textAnchor="middle">Keyflow</text>
+            <text
+              className="entry-keyflow-fill"
+              x="350"
+              y="137"
+              textAnchor="middle"
+              clipPath="url(#keyflow-fill-clip)"
+            >
+              Keyflow
+            </text>
           </svg>
           <button
             type="button"
