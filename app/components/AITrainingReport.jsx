@@ -47,9 +47,30 @@ export default function AITrainingReport({ report, onBack, onRestart, onApplyRec
         </section>
       </div>
 
+      <div className="coach-detail-grid">
+        <section>
+          <div className="report-section-title"><strong>优势</strong><span>STRENGTHS</span></div>
+          <ul>
+            {report.strengths.map((item) => <li key={item}><i>✓</i><span>{item}</span></li>)}
+          </ul>
+        </section>
+        <section>
+          <div className="report-section-title"><strong>需要改善</strong><span>FOCUS</span></div>
+          <ol>
+            {report.issues.map((item, index) => (
+              <li key={`${item.label}-${index}`}>
+                <i>{index + 1}</i>
+                <div><strong>{item.label}</strong><p>{item.detail}</p></div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
+
       <section className="report-recommendation">
         <span>RECOMMENDED NEXT</span>
         <div><strong>{report.recommendation.label}</strong><p>{report.recommendation.reason}</p></div>
+        <small>每日 {report.dailyDrill.duration} 分钟 · 重点 {report.dailyDrill.focus}</small>
         <button onClick={onApplyRecommendation}>开始专项训练 <span>→</span></button>
       </section>
 

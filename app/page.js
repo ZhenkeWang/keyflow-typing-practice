@@ -10,6 +10,7 @@ import TrainingDashboard from "./components/TrainingDashboard";
 import AITrainingReport from "./components/AITrainingReport";
 import TrainingKeyboard from "./components/TrainingKeyboard";
 import TrainingMetrics from "./components/TrainingMetrics";
+import UserProfileDialog from "./components/UserProfileDialog";
 import {
   appendMistakes,
   buildErrorPatterns,
@@ -208,6 +209,13 @@ const SPARKS = [
   [26, 10, 12, 2], [-18, 20, 26, 2], [7, 23, 8, 3],
 ];
 
+const DEFAULT_PROFILE = {
+  username: "",
+  email: "",
+  goal: "accuracy",
+  signedIn: false,
+};
+
 const TITLE_LINES = ["找到你的", "击键节奏。"];
 
 function makeText(mode, minLength = 1600, variant = "") {
@@ -296,6 +304,8 @@ export default function Home() {
   const [leveledUp, setLeveledUp] = useState(false);
   const [resultView, setResultView] = useState("summary");
   const [rhythmTarget, setRhythmTarget] = useState(90);
+  const [profile, setProfile] = useState(DEFAULT_PROFILE);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -416,6 +426,14 @@ export default function Home() {
       setHistory([]);
     }
     setXpTotal(Number(localStorage.getItem("keyflow-xp")) || 0);
+    try {
+      setProfile({
+        ...DEFAULT_PROFILE,
+        ...JSON.parse(localStorage.getItem("keyflow-profile") || "{}"),
+      });
+    } catch {
+      setProfile(DEFAULT_PROFILE);
+    }
     const savedPreference = localStorage.getItem("keyflow-theme-mode");
     const legacyTheme = localStorage.getItem("keyflow-theme");
     setThemePreference(
@@ -551,6 +569,8 @@ export default function Home() {
       handStats: trainingReport.hands,
       rhythmBpm,
       codeLanguage: mode === "code" ? codeLanguage : null,
+      characters: typed.length,
+      correctCharacters: correct,
     };
     const nextHistory = [entry, ...history].slice(0, 50);
     setHistory(nextHistory);
@@ -568,7 +588,7 @@ export default function Home() {
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
       if (mode === "speed") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, codeLanguage, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, rhythmBpm, speed, status, testType, totalErrors, trainingReport.hands]);
+  }, [accuracy, best, codeLanguage, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, rhythmBpm, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -819,6 +839,25 @@ export default function Home() {
     }, 820);
   }
 
+  function saveProfile(nextProfile) {
+    setProfile(nextProfile);
+    localStorage.setItem("keyflow-profile", JSON.stringify(nextProfile));
+    setProfileOpen(false);
+  }
+
+  function signOutProfile() {
+    setProfile(DEFAULT_PROFILE);
+    localStorage.removeItem("keyflow-profile");
+    setProfileOpen(false);
+  }
+
+  function startPlanMode(nextMode) {
+    reset({ mode: nextMode });
+    requestAnimationFrame(() => {
+      document.querySelector(".control-deck")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   const pkWinner = pkScores[1] && pkScores[2]
     ? pkScores[1].wpm === pkScores[2].wpm
       ? pkScores[1].accuracy === pkScores[2].accuracy ? 0 : pkScores[1].accuracy > pkScores[2].accuracy ? 1 : 2
@@ -866,6 +905,17 @@ export default function Home() {
         <div className="nav-actions">
           <span className="sync-dot"><i /> 本地记录</span>
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
+          <button
+            className="nav-profile-button"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setProfileOpen(true);
+            }}
+          >
+            <i>{profile.username.trim().slice(0, 2).toUpperCase() || "KF"}</i>
+            <span>{profile.signedIn ? profile.username : "登录"}</span>
+          </button>
           <div className="nav-theme-segmented" onClick={(event) => event.stopPropagation()} aria-label="快速切换主题">
             <button
               className={themePreference === "auto" ? "active" : ""}
@@ -1195,7 +1245,14 @@ export default function Home() {
         </footer>
       </section>
 
-      <TrainingDashboard history={history} levelInfo={levelInfo} />
+      <TrainingDashboard
+        history={history}
+        levelInfo={levelInfo}
+        xpTotal={xpTotal}
+        profile={profile}
+        onEditProfile={() => setProfileOpen(true)}
+        onStartPlan={startPlanMode}
+      />
 
       <section className="history-section">
         <div className="section-heading"><span>RECENT SESSIONS</span><small>最近记录保存在此设备</small></div>
@@ -1213,6 +1270,13 @@ export default function Home() {
       </section>
 
       <footer className="page-footer"><span>KEYFLOW / LAB</span><p>DESIGNED FOR DEEP FOCUS · 2026</p></footer>
+      <UserProfileDialog
+        open={profileOpen}
+        profile={profile}
+        onClose={() => setProfileOpen(false)}
+        onSave={saveProfile}
+        onSignOut={signOutProfile}
+      />
     </main>
   );
 }

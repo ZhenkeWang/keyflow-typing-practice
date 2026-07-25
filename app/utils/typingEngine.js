@@ -230,6 +230,8 @@ export function buildTrainingReport({
   const weakerHand = accuracyGap === 0
     ? null
     : hands.left.accuracy < hands.right.accuracy ? "left" : "right";
+  const pinkyMistakes = topMistakes.filter((item) => /[qp;:'"[\]{}]/i.test(item.expected));
+  const shiftMistakes = topMistakes.filter((item) => /[A-Z]/.test(item.expected));
 
   let recommendation = {
     mode: "accuracy",
@@ -260,6 +262,33 @@ export function buildTrainingReport({
     topMistakes,
     hands,
     weakerHand,
+    strengths: [
+      accuracy >= 97 ? "整体准确率稳定，基本击键控制良好。" : "能够持续完成整轮训练并保留修正意识。",
+      Math.abs(hands.left.accuracy - hands.right.accuracy) < 3
+        ? "左右手输入表现均衡。"
+        : `${weakerHand === "left" ? "右手" : "左手"}键区发挥相对稳定。`,
+    ],
+    issues: [
+      ...(pinkyMistakes.length ? [{
+        label: "小指键区",
+        detail: `${pinkyMistakes.map((item) => item.expected).join("、")} 等外侧按键需要更轻、更准确的触达。`,
+      }] : []),
+      ...(shiftMistakes.length ? [{
+        label: "Shift",
+        detail: "大写字符的组合击键出现停顿或错位。",
+      }] : []),
+      ...(topMistakes.length ? [{
+        label: topMistakes[0].expected === " " ? "Space" : topMistakes[0].expected,
+        detail: `本轮出现 ${topMistakes[0].count} 次，是最优先的纠错目标。`,
+      }] : [{
+        label: "节奏",
+        detail: "本轮没有集中错键，可继续缩小击键间隔波动。",
+      }]),
+    ].slice(0, 3),
+    dailyDrill: {
+      duration: accuracy < 95 ? 8 : 5,
+      focus: topMistakes[0]?.expected === " " ? "Space" : topMistakes[0]?.expected || "rhythm",
+    },
     insight: topMistakes.length
       ? `最常见错误是 ${topMistakes[0].expected === " " ? "空格" : topMistakes[0].expected} → ${topMistakes[0].typed === " " ? "空格" : topMistakes[0].typed}，共 ${topMistakes[0].count} 次。`
       : "本轮没有记录到错误，输入节奏稳定。",
@@ -286,10 +315,18 @@ export function calculateXpAward({
 export function getLevelInfo(xpTotal = 0) {
   const safeXp = Math.max(0, Number(xpTotal) || 0);
   const level = Math.floor(safeXp / XP_PER_LEVEL) + 1;
-  const titles = ["Starter", "Rhythm Builder", "Flow Typist", "Speed Crafter", "Typing Master"];
+  const title = level >= 50
+    ? "Keyboard Master"
+    : level >= 30
+      ? "Keyboard Expert"
+      : level >= 10
+        ? "Fast Typist"
+        : level >= 5
+          ? "Flow Builder"
+          : "Beginner";
   return {
     level,
-    title: titles[Math.min(titles.length - 1, level - 1)],
+    title,
     currentXp: safeXp % XP_PER_LEVEL,
     nextLevelXp: XP_PER_LEVEL,
     progress: (safeXp % XP_PER_LEVEL) / XP_PER_LEVEL,
