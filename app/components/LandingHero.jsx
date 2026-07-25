@@ -3,11 +3,13 @@
 import { motion } from "framer-motion";
 import KeyboardShowcase from "./KeyboardShowcase";
 import MotionButton from "./ui/MotionButton";
+import AnimatedHeadline from "../animations/AnimatedHeadline";
+import CountUp from "../animations/CountUp";
 
 const HERO_METRICS = [
-  { value: "120", suffix: "WPM", label: "Peak typing speed" },
-  { value: "99.8", suffix: "%", label: "Average accuracy" },
-  { value: "10M+", suffix: "", label: "Keystrokes practiced" },
+  { value: 120, suffix: " WPM", label: "Peak typing speed" },
+  { value: 99.8, decimals: 1, suffix: "%", label: "Average accuracy" },
+  { value: 10, suffix: "M+", label: "Keystrokes practiced" },
 ];
 
 const reveal = {
@@ -58,7 +60,7 @@ export default function LandingHero({ ready, leaving, themePreference, onThemeCh
         </motion.div>
         <motion.h1 variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.14}>KeyFlow</motion.h1>
         <motion.h2 variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.22}>
-          Type faster.<br />Think clearer.
+          <AnimatedHeadline active={ready && !leaving} />
         </motion.h2>
         <motion.p variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.3}>
           Master your keyboard.<br />Flow with every keystroke.
@@ -75,7 +77,7 @@ export default function LandingHero({ ready, leaving, themePreference, onThemeCh
       <motion.div className="hero-metrics" variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.68}>
         {HERO_METRICS.map((item) => (
           <div key={item.label}>
-            <strong>{item.value}<small>{item.suffix}</small></strong>
+            <strong><CountUp value={item.value} decimals={item.decimals} suffix={item.suffix} /></strong>
             <span>{item.label}</span>
           </div>
         ))}

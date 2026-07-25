@@ -8,18 +8,8 @@ import {
   calculateGrowthStats,
   getAchievements,
 } from "../utils/growthEngine";
-
-const formatDuration = (seconds) => {
-  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.round((seconds % 3600) / 60);
-  return `${hours}h ${minutes}m`;
-};
-
-const formatNumber = (value) => new Intl.NumberFormat("en-US", {
-  notation: value >= 10_000 ? "compact" : "standard",
-  maximumFractionDigits: 1,
-}).format(value);
+import CountUp from "../animations/CountUp";
+import Reveal from "../animations/Reveal";
 
 function buildPoints(values, width = 560, height = 160) {
   if (!values.length) return "";
@@ -41,7 +31,7 @@ function MetricCard({ label, value, unit, detail, tone }) {
   return (
     <article className={`growth-metric-card ${tone || ""}`}>
       <span>{label}</span>
-      <strong>{value}<small>{unit}</small></strong>
+      <strong><CountUp value={value} /><small>{unit}</small></strong>
       <p>{detail}</p>
     </article>
   );
@@ -145,7 +135,7 @@ function TrainingDashboard({ history, levelInfo, xpTotal, profile, onEditProfile
   const unlockedCount = achievements.filter((item) => item.unlocked).length;
 
   return (
-    <section className="training-dashboard growth-center">
+    <Reveal as="section" className="training-dashboard growth-center" amount={.04}>
       <div className="growth-dashboard-hero">
         <div className="growth-profile">
           <button className="growth-avatar" type="button" onClick={onEditProfile}>{avatarText(profile)}</button>
@@ -159,17 +149,20 @@ function TrainingDashboard({ history, levelInfo, xpTotal, profile, onEditProfile
           {profile.signedIn ? "编辑档案" : "创建本地档案"}
         </button>
         <div className="growth-level-ring" style={{ "--level-progress": `${levelInfo.progress * 360}deg` }}>
-          <div><small>LEVEL</small><strong>{levelInfo.level}</strong><span>{levelInfo.title}</span></div>
+          <div><small>LEVEL</small><strong><CountUp value={levelInfo.level} /></strong><span>{levelInfo.title}</span></div>
         </div>
         <div className="growth-xp">
-          <div><span>Next level</span><strong>{levelInfo.currentXp} / {levelInfo.nextLevelXp} XP</strong></div>
+          <div>
+            <span>Next level</span>
+            <strong><CountUp value={levelInfo.currentXp} /> / <CountUp value={levelInfo.nextLevelXp} /> XP</strong>
+          </div>
           <span><i style={{ width: `${levelInfo.progress * 100}%` }} /></span>
         </div>
       </div>
 
       <div className="growth-metric-grid">
-        <MetricCard label="Total Characters" value={formatNumber(stats.totalCharacters)} unit="" detail={`${stats.sessions} training sessions`} tone="characters" />
-        <MetricCard label="Practice Time" value={formatDuration(stats.totalPracticeSeconds)} unit="" detail="Focused training time" tone="time" />
+        <MetricCard label="Total Characters" value={stats.totalCharacters} unit="" detail={`${stats.sessions} training sessions`} tone="characters" />
+        <MetricCard label="Practice Time" value={Math.round(stats.totalPracticeSeconds / 60)} unit="MIN" detail="Focused training time" tone="time" />
         <MetricCard label="Average WPM" value={stats.averageWpm} unit="WPM" detail={`Best ${stats.bestWpm} WPM`} tone="speed" />
         <MetricCard label="Average Accuracy" value={stats.averageAccuracy} unit="%" detail="Across all sessions" tone="accuracy" />
         <MetricCard label="Practice Streak" value={stats.streak} unit="DAYS" detail={stats.streak ? "Keep the flow alive" : "Train today to begin"} tone="streak" />
@@ -268,7 +261,7 @@ function TrainingDashboard({ history, levelInfo, xpTotal, profile, onEditProfile
         </article>
         <Leaderboard stats={stats} profile={profile} />
       </div>
-    </section>
+    </Reveal>
   );
 }
 

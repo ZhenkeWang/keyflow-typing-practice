@@ -11,6 +11,7 @@ import AITrainingReport from "./components/AITrainingReport";
 import TrainingKeyboard from "./components/TrainingKeyboard";
 import TrainingMetrics from "./components/TrainingMetrics";
 import UserProfileDialog from "./components/UserProfileDialog";
+import ScrollRevealController from "./animations/ScrollRevealController";
 import {
   appendMistakes,
   buildErrorPatterns,
@@ -218,14 +219,14 @@ const DEFAULT_PROFILE = {
 
 const TITLE_LINES = ["找到你的", "击键节奏。"];
 
-function makeText(mode, minLength = 1600, variant = "") {
+function makeText(mode, minLength = 1600, variant = "", startIndex = null) {
   const source = mode === "code"
     ? CODE_BANK[variant] || CODE_BANK.javascript
     : mode === "numbers"
       ? NUMBER_BANK[variant] || NUMBER_BANK.mixed
       : TEXT_BANK[mode] || TEXT_BANK.speed;
   let result = "";
-  let index = Math.floor(Math.random() * source.length);
+  let index = startIndex ?? Math.floor(Math.random() * source.length);
   while (result.length < minLength) {
     result += (result ? (["chinese", "news"].includes(mode) ? "" : " ") : "") + source[index % source.length];
     index += 1;
@@ -273,7 +274,9 @@ export default function Home() {
   const [mode, setMode] = useState("speed");
   const [testType, setTestType] = useState("time");
   const [goal, setGoal] = useState(60);
-  const [text, setText] = useState(() => makeText("speed"));
+  // Keep the server and browser's first render identical; subsequent resets
+  // still use the randomized starting point for varied practice material.
+  const [text, setText] = useState(() => makeText("speed", 1600, "", 0));
   const [typed, setTyped] = useState("");
   const [status, setStatus] = useState("idle");
   const [now, setNow] = useState(0);
@@ -874,6 +877,7 @@ export default function Home() {
         if (entered && status !== "finished") inputRef.current?.focus();
       }}
     >
+      <ScrollRevealController />
       <div className="aurora-backdrop">
         <Aurora
           colorStops={theme === "light" ? ["#b8a9ff", "#8de5d1", "#b9c8ff"] : ["#7667ff", "#47d7bf", "#5363e8"]}

@@ -244,6 +244,449 @@ kbd { padding: 3px 5px; border: 1px solid var(--line-strong); border-bottom-widt
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
 }
 
+/* Phase 1 visual refresh — unified premium product language */
+:root {
+  --bg: var(--background);
+  --panel: var(--surface);
+  --panel-2: var(--surface-raised);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --text: var(--foreground);
+  --muted: var(--foreground-muted);
+  --violet: var(--primary);
+  --mint: var(--secondary);
+  --accent-1: var(--primary-strong);
+  --accent-2: var(--primary);
+  --accent-3: var(--secondary);
+  --font-number: var(--font-mono);
+}
+
+html,
+body {
+  font-family: var(--font-body);
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% -12%, rgba(105, 95, 255, .17), transparent 34rem),
+    radial-gradient(circle at 82% 32%, rgba(49, 173, 203, .08), transparent 34rem),
+    var(--background);
+}
+
+html[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 48% -10%, rgba(119, 111, 255, .11), transparent 35rem),
+    radial-gradient(circle at 88% 31%, rgba(60, 189, 165, .08), transparent 30rem),
+    #f5f5f7;
+}
+
+.app-shell,
+.entry-gate,
+.saas-landing,
+.nav,
+.control-deck,
+.practice-card,
+.training-dashboard,
+.history-section {
+  transition:
+    color 1.25s var(--ease-out-premium),
+    background-color 1.25s var(--ease-out-premium),
+    border-color 1.25s var(--ease-out-premium);
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translate3d(0, 40px, 0);
+  will-change: transform, opacity;
+}
+
+.scroll-reveal.scroll-reveal-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity var(--duration-reveal) var(--ease-out-premium),
+    transform var(--duration-reveal) var(--ease-out-premium);
+}
+
+.saas-entry-gate {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(111, 103, 255, .15), transparent 31rem),
+    radial-gradient(circle at 20% 17%, rgba(54, 205, 178, .055), transparent 25rem),
+    #050507;
+}
+
+html[data-theme="light"] .saas-entry-gate {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(108, 100, 255, .105), transparent 32rem),
+    radial-gradient(circle at 18% 20%, rgba(43, 188, 162, .07), transparent 27rem),
+    #f5f5f7;
+}
+
+.apple-landing {
+  width: min(1220px, calc(100% - 48px));
+}
+
+.apple-hero {
+  min-height: min(820px, calc(100dvh - 128px));
+  padding-top: 62px;
+}
+
+.apple-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(76px, 10.4vw, 142px);
+  font-weight: 720;
+  text-wrap: balance;
+}
+
+.apple-hero h2 {
+  width: min(100%, 980px);
+  min-height: 1.06em;
+  margin-top: 27px;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5.2vw, 68px);
+  text-wrap: balance;
+}
+
+.animated-headline {
+  display: grid;
+  min-height: 1.08em;
+  place-items: center;
+}
+
+.animated-headline > span {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.apple-hero > p {
+  margin-top: 18px;
+  font-size: clamp(14px, 1.35vw, 18px);
+  line-height: 1.55;
+}
+
+.apple-hero-action {
+  margin-top: 35px;
+}
+
+.hero-primary {
+  position: relative;
+  min-width: 184px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-md);
+  isolation: isolate;
+}
+
+.hero-primary::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -2px;
+  opacity: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 22%, rgba(119, 111, 255, .24), rgba(82, 213, 184, .18), transparent 78%);
+  transform: translateX(-38%);
+  transition: opacity var(--duration-ui) ease, transform .7s var(--ease-out-premium);
+}
+
+.hero-primary:hover::before {
+  opacity: 1;
+  transform: translateX(38%);
+}
+
+.hero-primary span {
+  display: inline-block;
+  transition: transform var(--duration-ui) var(--ease-spring);
+}
+
+.hero-primary:hover span {
+  transform: translateX(5px);
+}
+
+.showcase-perspective {
+  width: min(840px, 86vw);
+  height: 310px;
+  margin-top: 47px;
+}
+
+.showcase-perspective::before {
+  content: "";
+  position: absolute;
+  width: 72%;
+  height: 54%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(111, 104, 255, .15), transparent 67%);
+  transform: translateY(34px) translateZ(-20px);
+  pointer-events: none;
+}
+
+.showcase-scale {
+  display: grid;
+  width: 100%;
+  place-items: center;
+  transform-origin: center;
+}
+
+.showcase-keyboard {
+  width: min(780px, 88vw);
+  border-radius: 26px;
+  box-shadow:
+    0 42px 90px rgba(0, 0, 0, .38),
+    inset 0 1px rgba(255, 255, 255, .115),
+    0 0 0 1px rgba(117, 110, 255, .035);
+  backface-visibility: hidden;
+  contain: layout paint;
+}
+
+html[data-theme="light"] .showcase-keyboard {
+  box-shadow:
+    0 38px 88px rgba(61, 63, 87, .14),
+    inset 0 1px rgba(255, 255, 255, .96),
+    0 0 0 1px rgba(77, 74, 121, .025);
+}
+
+.showcase-row > span {
+  backface-visibility: hidden;
+  will-change: transform;
+  transition:
+    transform 220ms var(--ease-spring),
+    color 220ms ease,
+    background-color 220ms ease;
+}
+
+.showcase-row > span.flow-key {
+  animation: none;
+}
+
+.showcase-row > span.auto-pressed {
+  color: #fff;
+  border-color: rgba(139, 140, 255, .48);
+  background: linear-gradient(180deg, #514e8e, #262346);
+  box-shadow:
+    0 1px 0 #0b0b0c,
+    0 5px 16px rgba(111, 105, 255, .23),
+    inset 0 0 12px rgba(166, 162, 255, .13);
+  transform: translateY(5px) scale(.985);
+}
+
+html[data-theme="light"] .showcase-row > span.auto-pressed {
+  color: #3d376f;
+  border-color: rgba(97, 90, 232, .24);
+  background: linear-gradient(180deg, #e8e7ff, #c9c7ee);
+  box-shadow: 0 1px 0 #aaa9bf, 0 5px 15px rgba(85, 78, 196, .13), inset 0 1px #fff;
+}
+
+.showcase-shadow {
+  width: 72%;
+  opacity: .72;
+  transform: translateZ(-30px);
+}
+
+.apple-landing .hero-metrics {
+  border-top-color: var(--border);
+}
+
+.apple-landing .hero-metrics strong {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.apple-landing .hero-metrics strong > span {
+  display: inline;
+  margin: 0;
+  color: var(--text);
+  font-size: inherit;
+}
+
+.mode-card,
+.training-metric,
+.growth-metric-card,
+.daily-trend-card,
+.extended-heatmap-card,
+.coach-snapshot-card,
+.personal-plan-card,
+.leaderboard-card,
+.achievement-grid article,
+.history-item {
+  border-color: var(--border);
+  background: var(--surface);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .055);
+  backface-visibility: hidden;
+  will-change: transform;
+  transition:
+    transform var(--duration-ui) var(--ease-spring),
+    border-color var(--duration-ui) ease,
+    background-color var(--duration-ui) ease;
+}
+
+.training-metric:hover,
+.growth-metric-card:hover,
+.daily-trend-card:hover,
+.extended-heatmap-card:hover,
+.coach-snapshot-card:hover,
+.personal-plan-card:hover,
+.leaderboard-card:hover,
+.achievement-grid article:hover {
+  z-index: 2;
+  transform: translate3d(0, -5px, 0);
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+  background: var(--surface-raised);
+}
+
+.practice-card {
+  border-radius: var(--radius-xl);
+  border-color: var(--border);
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 28rem),
+    var(--surface);
+  box-shadow: var(--shadow-md), inset 0 1px rgba(255, 255, 255, .065);
+}
+
+.typing-zone {
+  position: relative;
+  isolation: isolate;
+}
+
+.typing-zone::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 4% 8% 9%;
+  opacity: .24;
+  border-radius: 44%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--primary) 18%, transparent), transparent 69%);
+  transform: scale(.94);
+  animation: typing-zone-breathe 4.8s ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+@keyframes typing-zone-breathe {
+  50% { opacity: .42; transform: scale(1.03); }
+}
+
+.passage {
+  text-wrap: pretty;
+}
+
+.passage span {
+  backface-visibility: hidden;
+  will-change: color, transform, opacity;
+}
+
+.passage .current {
+  color: color-mix(in srgb, var(--primary) 82%, var(--text));
+  background: color-mix(in srgb, var(--primary) 11%, transparent);
+}
+
+.passage .wrong {
+  color: #ff788b;
+  background: rgba(255, 86, 109, .105);
+}
+
+.training-keyboard-row > span.active.correct,
+.key-row > span.pressed {
+  color: #f8fffc;
+  border-color: color-mix(in srgb, var(--secondary) 66%, white);
+  background: color-mix(in srgb, var(--secondary) 42%, var(--panel));
+}
+
+.training-keyboard-row > span.active.wrong {
+  color: #fff8fa;
+  border-color: color-mix(in srgb, #ff6178 70%, white);
+  background: color-mix(in srgb, #ff6178 38%, var(--panel));
+  animation: premium-key-error .22s var(--ease-out-premium);
+}
+
+@keyframes premium-key-error {
+  30% { transform: translate3d(-2px, 3px, 0) scale(.96); }
+  65% { transform: translate3d(2px, 3px, 0) scale(.96); }
+}
+
+.growth-dashboard-hero,
+.training-dashboard {
+  border-color: var(--border);
+  background:
+    radial-gradient(circle at 78% 22%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 26rem),
+    var(--surface);
+  box-shadow: var(--shadow-md), inset 0 1px rgba(255, 255, 255, .075);
+}
+
+html[data-theme="light"] .growth-dashboard-hero,
+html[data-theme="light"] .training-dashboard,
+html[data-theme="light"] .practice-card {
+  box-shadow: var(--shadow-md), inset 0 1px rgba(255, 255, 255, .9);
+}
+
+@media (max-width: 760px) {
+  .apple-landing {
+    width: min(100% - 28px, 1220px);
+  }
+
+  .apple-hero {
+    min-height: 710px;
+    padding-top: 52px;
+  }
+
+  .apple-hero h1 {
+    font-size: clamp(64px, 20vw, 94px);
+  }
+
+  .apple-hero h2 {
+    width: 100%;
+    min-height: 2.15em;
+    font-size: clamp(31px, 9.4vw, 50px);
+  }
+
+  .apple-hero-action {
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .showcase-perspective {
+    width: 100%;
+    height: 230px;
+    margin-top: 36px;
+  }
+
+  .showcase-keyboard {
+    width: 730px;
+  }
+
+  .showcase-scale {
+    transform: scale(.68);
+  }
+}
+
+@media (max-width: 480px) {
+  .apple-hero {
+    min-height: 680px;
+  }
+
+  .apple-hero h2 {
+    min-height: 2.35em;
+  }
+
+  .showcase-scale {
+    transform: scale(.54);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .scroll-reveal.scroll-reveal-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .typing-zone::before,
+  .showcase-row > span.auto-pressed {
+    animation: none !important;
+  }
+}
+
 /* Phase 3 — growth, achievements and local profile */
 .nav-profile-button {
   display: flex;
@@ -7247,4 +7690,43 @@ html[data-theme="light"] .practice-card {
   .ability-card,
   .activity-card,
   .error-distribution-card { transition-duration: .01ms; }
+}
+
+/* Keep the 3D stage visually centered without letting its desktop keyboard
+   establish an oversized intrinsic grid width on narrow viewports. */
+@media (max-width: 720px) {
+  .apple-landing {
+    width: min(calc(100% - 28px), 1180px);
+  }
+
+  .apple-hero {
+    width: 100%;
+    min-width: 0;
+    overflow: clip;
+  }
+
+  .showcase-perspective {
+    width: 100%;
+    min-width: 0;
+    transform: none;
+  }
+
+  .showcase-scale {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-content: center;
+    transform: scale(.62);
+  }
+}
+
+@media (max-width: 430px) {
+  .showcase-perspective {
+    transform: none;
+  }
+
+  .showcase-scale {
+    transform: scale(.49);
+  }
 }
