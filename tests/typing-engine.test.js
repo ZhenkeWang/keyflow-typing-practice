@@ -2,11 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   appendMistakes,
+  buildErrorPatterns,
   buildTrainingReport,
+  buildWeakKeyText,
   calculateConsistency,
+  calculateRhythmBpm,
   calculateTypingMetrics,
   calculateXpAward,
   compareInput,
+  extractWeakKeys,
   getHandForCharacter,
   getLevelInfo,
   normalizeHistory,
@@ -100,8 +104,42 @@ test("training report identifies weak hand and recommends targeted drills", () =
     wpm: 45,
   });
   assert.equal(report.weakerHand, "left");
-  assert.equal(report.recommendation.mode, "numbers");
+  assert.equal(report.recommendation.mode, "weak");
   assert.equal(report.topMistakes[0].count, 3);
+});
+
+test("sustains accurate metrics across a 1000-character session", () => {
+  const target = "a".repeat(1000);
+  const result = calculateTypingMetrics({
+    typed: target,
+    target,
+    elapsedMs: 120_000,
+    totalKeystrokes: 1000,
+    incorrectKeystrokes: 0,
+  });
+  assert.equal(result.wpm, 100);
+  assert.equal(result.cpm, 500);
+  assert.equal(result.accuracy, 100);
+  assert.equal(result.remaining, 0);
+});
+
+test("derives rhythm, weak keys and contextual error combinations", () => {
+  assert.equal(calculateRhythmBpm([500, 500, 500, 500]), 120);
+  const history = [{
+    mistakes: [
+      { expected: "q", count: 4 },
+      { expected: "p", count: 2 },
+      { expected: ";", count: 1 },
+    ],
+  }];
+  assert.deepEqual(extractWeakKeys(history, 2), ["q", "p"]);
+  assert.match(buildWeakKeyText(history, 120), /q/);
+  assert.deepEqual(
+    buildErrorPatterns([
+      { expected: "i", positions: [4, 11] },
+    ], "action action"),
+    [{ pattern: "tion", count: 2 }]
+  );
 });
 
 test("XP awards are bounded and level progress is deterministic", () => {

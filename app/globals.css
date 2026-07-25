@@ -244,6 +244,400 @@ kbd { padding: 3px 5px; border: 1px solid var(--line-strong); border-bottom-widt
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
 }
 
+/* Phase 2 — low-latency training surface */
+.app-shell:not(.immersive-mode) .mode-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.training-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px 22px 4px;
+}
+
+.training-metric {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 16px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 68%, transparent);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--panel) 48%, transparent);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .07);
+  transition: transform .38s cubic-bezier(.2, .8, .2, 1), border-color .38s ease, background .38s ease;
+}
+
+.training-metric:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+  background: color-mix(in srgb, var(--panel) 64%, transparent);
+}
+
+.metric-ring {
+  --metric-color: #7c8cff;
+  position: relative;
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  border-radius: 50%;
+  background: conic-gradient(var(--metric-color) var(--metric-progress), color-mix(in srgb, var(--muted) 12%, transparent) 0);
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--metric-color) 22%, transparent));
+}
+
+.metric-ring::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+}
+
+.training-metric.accuracy .metric-ring { --metric-color: #53d7b2; }
+.training-metric.consistency .metric-ring { --metric-color: #a88bff; }
+.training-metric.time .metric-ring { --metric-color: #6eb9ff; }
+
+.metric-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.metric-copy > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.metric-copy strong {
+  color: var(--text);
+  font-family: var(--font-number, "JetBrains Mono", monospace);
+  font-size: clamp(21px, 2vw, 30px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.metric-copy strong small {
+  margin-left: 4px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .08em;
+}
+
+.metric-copy > small {
+  overflow: hidden;
+  color: color-mix(in srgb, var(--muted) 84%, transparent);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.training-keyboard {
+  width: min(100%, 860px);
+  margin: 52px auto 10px;
+  padding: 14px 16px 17px;
+  border: 1px solid color-mix(in srgb, var(--line) 56%, transparent);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--panel) 30%, transparent);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .08);
+  backdrop-filter: blur(18px) saturate(130%);
+}
+
+.training-keyboard-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 4px 10px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: .14em;
+}
+
+.training-keyboard-status span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.training-keyboard-status i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+
+.training-keyboard-status strong {
+  min-width: 54px;
+  color: var(--text);
+  font-family: var(--font-number, monospace);
+  font-size: 11px;
+  text-align: right;
+}
+
+.training-keyboard-rows {
+  display: grid;
+  gap: 5px;
+}
+
+.training-keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.training-keyboard-row > span {
+  display: grid;
+  width: clamp(25px, 3.1vw, 42px);
+  height: clamp(25px, 3.1vw, 42px);
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--line) 68%, transparent);
+  border-radius: 8px;
+  color: color-mix(in srgb, var(--text) 68%, transparent);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--panel) 68%, transparent), color-mix(in srgb, var(--panel) 28%, transparent));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 7%, transparent), inset 0 1px rgba(255, 255, 255, .08);
+  font-family: var(--font-number, monospace);
+  font-size: clamp(7px, .85vw, 10px);
+  font-weight: 650;
+  will-change: transform;
+  transition: color .2s ease, border-color .2s ease, box-shadow .24s ease, transform .16s cubic-bezier(.2, .8, .2, 1);
+}
+
+.training-keyboard-row > span.wide { width: clamp(42px, 5vw, 69px); }
+.training-keyboard-row > span.space { width: clamp(126px, 18vw, 260px); }
+
+.training-keyboard-row > span.next {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 7%, transparent), 0 0 13px color-mix(in srgb, var(--accent) 14%, transparent), inset 0 1px rgba(255, 255, 255, .12);
+}
+
+.training-keyboard-row > span.active {
+  transform: translateY(3px) scale(.96);
+  color: #f7fbff;
+  border-color: color-mix(in srgb, var(--accent) 76%, white);
+  background: color-mix(in srgb, var(--accent) 48%, var(--panel));
+  box-shadow: 0 0 17px color-mix(in srgb, var(--accent) 30%, transparent), inset 0 0 12px rgba(255, 255, 255, .12);
+  animation: training-key-press .28s cubic-bezier(.2, .8, .2, 1);
+}
+
+.training-keyboard-row > span.active.wrong {
+  border-color: color-mix(in srgb, #ff647a 72%, white);
+  background: color-mix(in srgb, #ff647a 36%, var(--panel));
+  box-shadow: 0 0 13px rgba(255, 86, 111, .24);
+}
+
+@keyframes training-key-press {
+  0% { transform: translateY(0) scale(1); }
+  46% { transform: translateY(4px) scale(.95); }
+  100% { transform: translateY(3px) scale(.96); }
+}
+
+.passage .correct {
+  opacity: .5;
+  animation: character-complete .2s cubic-bezier(.2, .8, .2, 1);
+}
+
+.passage .current {
+  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 34%, transparent));
+}
+
+.passage .current::before {
+  animation:
+    caret-arrive .2s cubic-bezier(.16, 1, .3, 1),
+    caret-breathe .95s ease-in-out .2s infinite;
+}
+
+.practice-card.has-error .passage {
+  animation: input-error-shake .18s cubic-bezier(.36, .07, .19, .97);
+}
+
+@keyframes character-complete {
+  from { opacity: 1; transform: translateY(-1px); }
+  to { opacity: .5; transform: translateY(0); }
+}
+
+@keyframes caret-arrive {
+  from { transform: translateX(-8px) scaleY(.7); opacity: .2; }
+  to { transform: translateX(0) scaleY(1); opacity: 1; }
+}
+
+@keyframes caret-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .48; }
+}
+
+@keyframes input-error-shake {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(-4px); }
+  65% { transform: translateX(3px); }
+}
+
+.rhythm-control .rhythm-beat {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 38%, transparent);
+  animation: rhythm-pulse var(--beat-duration, .67s) ease-out infinite;
+}
+
+@keyframes rhythm-pulse {
+  0% { transform: scale(.72); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 42%, transparent); }
+  55% { transform: scale(1); box-shadow: 0 0 0 8px transparent; }
+  100% { transform: scale(.72); box-shadow: 0 0 0 0 transparent; }
+}
+
+.result-stat-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.result-training-context {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.result-training-context span {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.result-mistakes {
+  width: min(100%, 520px);
+  margin: 16px auto 0;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 66%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--panel) 46%, transparent);
+}
+
+.result-mistakes > div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .1em;
+}
+
+.result-mistakes ol {
+  display: flex;
+  gap: 8px;
+  margin: 11px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result-mistakes li {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 11px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  font-size: 10px;
+}
+
+.result-mistakes code {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.result-mistakes p {
+  margin: 11px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  .app-shell:not(.immersive-mode) .mode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-shell:not(.immersive-mode) .mode-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .training-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .training-metrics {
+    padding-inline: 12px;
+  }
+
+  .training-metric {
+    padding: 12px;
+  }
+
+  .metric-ring {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .training-keyboard {
+    margin-top: 38px;
+    padding-inline: 8px;
+  }
+
+  .training-keyboard-row,
+  .training-keyboard-rows {
+    gap: 3px;
+  }
+
+  .training-keyboard-row > span {
+    width: clamp(18px, 5.25vw, 32px);
+    height: clamp(21px, 5.8vw, 34px);
+    border-radius: 6px;
+    font-size: 6px;
+  }
+
+  .training-keyboard-row > span.wide { width: clamp(31px, 8.3vw, 49px); }
+  .training-keyboard-row > span.space { width: clamp(92px, 28vw, 170px); }
+
+  .result-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .result-stat-grid > div:last-child {
+    grid-column: span 2;
+  }
+
+  .result-mistakes ol {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .training-keyboard-row > span,
+  .passage .correct,
+  .passage .current::before,
+  .practice-card.has-error .passage,
+  .rhythm-control .rhythm-beat {
+    animation: none !important;
+  }
+}
+
 /* Typography refresh */
 body { font-family: Manrope, "Noto Sans SC", "Microsoft YaHei UI", sans-serif; }
 .eyebrow, .sync-dot, .best-pill, .card-topline, .live-status, .typing-meta,

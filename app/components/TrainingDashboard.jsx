@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 const average = (items, key) => items.length
   ? Math.round(items.reduce((sum, item) => sum + (Number(item[key]) || 0), 0) / items.length)
   : 0;
@@ -60,7 +62,7 @@ function AbilityBar({ label, value, detail }) {
   );
 }
 
-export default function TrainingDashboard({ history, levelInfo }) {
+function TrainingDashboard({ history, levelInfo }) {
   const chronological = [...history].sort((a, b) => a.timestamp - b.timestamp).slice(-12);
   const speeds = chronological.map((item) => item.wpm);
   const accuracies = chronological.map((item) => item.accuracy);
@@ -150,3 +152,5 @@ export default function TrainingDashboard({ history, levelInfo }) {
     </section>
   );
 }
+
+export default memo(TrainingDashboard);

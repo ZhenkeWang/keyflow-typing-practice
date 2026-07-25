@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Aurora from "./components/Aurora";
 import LandingHero from "./components/LandingHero";
@@ -8,10 +8,15 @@ import ErrorAnalysis from "./components/ErrorAnalysis";
 import SessionResult from "./components/SessionResult";
 import TrainingDashboard from "./components/TrainingDashboard";
 import AITrainingReport from "./components/AITrainingReport";
+import TrainingKeyboard from "./components/TrainingKeyboard";
+import TrainingMetrics from "./components/TrainingMetrics";
 import {
   appendMistakes,
+  buildErrorPatterns,
   buildTrainingReport,
+  buildWeakKeyText,
   calculateConsistency,
+  calculateRhythmBpm,
   calculateTypingMetrics,
   calculateXpAward,
   getLevelInfo,
@@ -19,6 +24,24 @@ import {
 } from "./utils/typingEngine";
 
 const TEXT_BANK = {
+  speed: [
+    "speed comes from relaxed hands clear focus and thousands of accurate repetitions",
+    "move quickly through familiar words while keeping every keystroke light and precise",
+    "fast typing feels effortless when your eyes stay ahead and your hands trust the rhythm",
+  ],
+  accuracy: [
+    "thinking through the transition brings lasting precision to every typing session",
+    "the quick rhythm of writing improves when each combination lands in the right order",
+    "practice action station motion typing flowing bring thing through thought",
+  ],
+  weak: [
+    "quality people sequence practice precision query pixel project keyboard flow",
+  ],
+  rhythm: [
+    "breathe and type keep the beat steady hands move lightly thoughts move freely",
+    "one clear key at a time creates a calm continuous rhythm across the keyboard",
+    "steady motion steady focus steady breathing every keystroke arrives on time",
+  ],
   focus: [
     "small steps every day create remarkable results over time stay curious keep learning and trust the process",
     "focus grows when you remove the noise and give your full attention to the moment right in front of you",
@@ -70,6 +93,11 @@ const CODE_BANK = {
     "for (const auto& item : values) { std::cout << item; }",
     "int clamp(int value, int low, int high) { return std::min(std::max(value, low), high); }",
   ],
+  java: [
+    "public boolean isReady() { return status == Status.READY; }",
+    "List<String> names = items.stream().map(Item::getName).toList();",
+    "for (int index = 0; index < values.length; index++) { total += values[index]; }",
+  ],
   shell: [
     "git status --short && npm run build",
     "find ./src -type f -name '*.js' | sort",
@@ -99,12 +127,11 @@ const NUMBER_BANK = {
 };
 
 const MODES = [
-  { id: "focus", label: "专注", icon: "Aa", desc: "常用词" },
-  { id: "quote", label: "标点", icon: "“ ”", desc: "完整句" },
-  { id: "code", label: "代码", icon: "</>", desc: "符号流" },
-  { id: "numbers", label: "数字", icon: "123", desc: "数字列" },
-  { id: "chinese", label: "中文", icon: "中", desc: "中文段落" },
-  { id: "news", label: "热点", icon: "↗", desc: "实时内容" },
+  { id: "speed", label: "Speed Test", icon: "↗", desc: "突破最高 WPM" },
+  { id: "accuracy", label: "Accuracy", icon: "◎", desc: "字符组合准确率" },
+  { id: "weak", label: "Weak Keys", icon: "⌁", desc: "历史薄弱按键" },
+  { id: "code", label: "Coding", icon: "</>", desc: "程序语言输入" },
+  { id: "rhythm", label: "Rhythm", icon: "◉", desc: "BPM 节奏稳定" },
 ];
 
 const INTERACTIONS = [
@@ -177,9 +204,8 @@ const KEY_ROWS = [
 ];
 
 const SPARKS = [
-  [-34, -22, 0, 5], [-12, -36, 18, 3], [15, -34, 30, 5], [36, -16, 12, 3],
-  [39, 12, 36, 4], [22, 33, 8, 3], [-5, 38, 26, 5], [-31, 27, 40, 3],
-  [-42, 3, 22, 4], [-21, -8, 46, 3], [18, 8, 32, 4], [2, -18, 14, 3],
+  [-24, -18, 0, 3], [-8, -27, 18, 2], [18, -20, 30, 3],
+  [26, 10, 12, 2], [-18, 20, 26, 2], [7, 23, 8, 3],
 ];
 
 const TITLE_LINES = ["找到你的", "击键节奏。"];
@@ -189,7 +215,7 @@ function makeText(mode, minLength = 1600, variant = "") {
     ? CODE_BANK[variant] || CODE_BANK.javascript
     : mode === "numbers"
       ? NUMBER_BANK[variant] || NUMBER_BANK.mixed
-      : TEXT_BANK[mode];
+      : TEXT_BANK[mode] || TEXT_BANK.speed;
   let result = "";
   let index = Math.floor(Math.random() * source.length);
   while (result.length < minLength) {
@@ -236,10 +262,10 @@ function getTimeBasedTheme() {
 }
 
 export default function Home() {
-  const [mode, setMode] = useState("focus");
+  const [mode, setMode] = useState("speed");
   const [testType, setTestType] = useState("time");
   const [goal, setGoal] = useState(60);
-  const [text, setText] = useState(() => makeText("focus"));
+  const [text, setText] = useState(() => makeText("speed"));
   const [typed, setTyped] = useState("");
   const [status, setStatus] = useState("idle");
   const [now, setNow] = useState(0);
@@ -269,6 +295,7 @@ export default function Home() {
   const [lastXpAward, setLastXpAward] = useState(0);
   const [leveledUp, setLeveledUp] = useState(false);
   const [resultView, setResultView] = useState("summary");
+  const [rhythmTarget, setRhythmTarget] = useState(90);
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -313,6 +340,11 @@ export default function Home() {
     ? Math.min(100, (elapsedSeconds / goal) * 100)
     : Math.min(100, (words / goal) * 100);
   const consistency = useMemo(() => calculateConsistency(intervals.current), [pulse, typed]);
+  const rhythmBpm = useMemo(() => calculateRhythmBpm(intervals.current), [pulse, typed]);
+  const errorPatterns = useMemo(
+    () => buildErrorPatterns(mistakeLog, text),
+    [mistakeLog, text]
+  );
   const trainingReport = useMemo(() => buildTrainingReport({
     mistakes: mistakeLog,
     characterStats: characterStats.current,
@@ -329,12 +361,18 @@ export default function Home() {
     const nextGoal = options.goal ?? goal;
     const nextCodeLanguage = options.codeLanguage ?? codeLanguage;
     const nextNumberPreset = options.numberPreset ?? numberPreset;
+    const nextRhythmTarget = options.rhythmTarget ?? rhythmTarget;
     setMode(nextMode);
     setTestType(nextType);
     setGoal(nextGoal);
     setCodeLanguage(nextCodeLanguage);
     setNumberPreset(nextNumberPreset);
-    setText(makeText(nextMode, 1600, nextMode === "code" ? nextCodeLanguage : nextNumberPreset));
+    setRhythmTarget(nextRhythmTarget);
+    setText(
+      nextMode === "weak"
+        ? buildWeakKeyText(history)
+        : makeText(nextMode, 1600, nextMode === "code" ? nextCodeLanguage : nextNumberPreset)
+    );
     setTyped("");
     setDraft("");
     setStatus("idle");
@@ -347,7 +385,14 @@ export default function Home() {
     setResultView("summary");
     setPkPlayer(1);
     setPkScores({ 1: null, 2: null });
-    setBest(Number(localStorage.getItem(`keyflow-best-${nextMode}`)) || (nextMode === "focus" ? Number(localStorage.getItem("keyflow-best")) || 0 : 0));
+    setBest(
+      Number(localStorage.getItem(`keyflow-best-${nextMode}`))
+      || (nextMode === "speed"
+        ? Number(localStorage.getItem("keyflow-best-focus"))
+          || Number(localStorage.getItem("keyflow-best"))
+          || 0
+        : 0)
+    );
     startedAt.current = 0;
     finishedAt.current = 0;
     lastKeyAt.current = 0;
@@ -356,10 +401,15 @@ export default function Home() {
     characterStats.current = {};
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
-  }, [codeLanguage, goal, mode, numberPreset, testType]);
+  }, [codeLanguage, goal, history, mode, numberPreset, rhythmTarget, testType]);
 
   useEffect(() => {
-    setBest(Number(localStorage.getItem("keyflow-best-focus")) || Number(localStorage.getItem("keyflow-best")) || 0);
+    setBest(
+      Number(localStorage.getItem("keyflow-best-speed"))
+      || Number(localStorage.getItem("keyflow-best-focus"))
+      || Number(localStorage.getItem("keyflow-best"))
+      || 0
+    );
     try {
       setHistory(normalizeHistory(JSON.parse(localStorage.getItem("keyflow-history") || "[]")));
     } catch {
@@ -418,17 +468,20 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleLandingShortcut);
   }, [entered, entryLeaving, entryReady]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!pulse || !typed.length) return;
-    const zone = typingZoneRef.current;
-    const target = passageRef.current?.querySelector(`[data-absolute="${typed.length - 1}"]`);
-    if (!zone || !target) return;
-    const zoneRect = zone.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    setBurstPosition({
-      x: targetRect.left - zoneRect.left + targetRect.width / 2,
-      y: targetRect.top - zoneRect.top + targetRect.height / 2,
+    const frame = window.requestAnimationFrame(() => {
+      const zone = typingZoneRef.current;
+      const target = passageRef.current?.querySelector(`[data-absolute="${typed.length - 1}"]`);
+      if (!zone || !target) return;
+      const zoneRect = zone.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      setBurstPosition({
+        x: targetRect.left - zoneRect.left + targetRect.width / 2,
+        y: targetRect.top - zoneRect.top + targetRect.height / 2,
+      });
     });
+    return () => window.cancelAnimationFrame(frame);
   }, [pulse, typed.length]);
 
   useEffect(() => {
@@ -494,7 +547,10 @@ export default function Home() {
         count: item.count,
         positions: item.positions,
       })),
+      errorPatterns,
       handStats: trainingReport.hands,
+      rhythmBpm,
+      codeLanguage: mode === "code" ? codeLanguage : null,
     };
     const nextHistory = [entry, ...history].slice(0, 50);
     setHistory(nextHistory);
@@ -510,9 +566,9 @@ export default function Home() {
     if (speed > best) {
       setBest(speed);
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
-      if (mode === "focus") localStorage.setItem("keyflow-best", String(speed));
+      if (mode === "speed") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, consistency, correct, cpm, elapsedSeconds, errorRate, history, metric, mistakeLog, mode, pkPlayer, speed, status, testType, totalErrors, trainingReport.hands]);
+  }, [accuracy, best, codeLanguage, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, rhythmBpm, speed, status, testType, totalErrors, trainingReport.hands]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -739,7 +795,7 @@ export default function Home() {
   }
 
   const visibleStart = Math.max(0, typed.length - 85);
-  const visibleText = text.slice(visibleStart, visibleStart + 360);
+  const visibleText = text.slice(visibleStart, visibleStart + 280);
   const expectedKey = (text[typed.length] || "").toLowerCase();
   const lastTypedKey = (typed.at(-1) || "").toLowerCase();
   const modeLabel = MODES.find((item) => item.id === mode)?.label;
@@ -914,9 +970,8 @@ export default function Home() {
               {[
                 ["python", "Python"],
                 ["javascript", "JavaScript"],
+                ["java", "Java"],
                 ["cpp", "C++"],
-                ["sql", "SQL"],
-                ["shell", "Shell"],
               ].map(([id, label]) => (
                 <button
                   key={id}
@@ -934,29 +989,24 @@ export default function Home() {
           </div>
         )}
 
-        {mode === "numbers" && (
-          <div className="specialty-bar" aria-label="数字训练类型">
-            <span><i>123</i> Number drill</span>
+        {mode === "rhythm" && (
+          <div className="specialty-bar rhythm-control" aria-label="节奏训练目标">
+            <span><i className="rhythm-beat" style={{ "--beat-duration": `${60 / rhythmTarget}s` }} /> Rhythm target</span>
             <div>
-              {[
-                ["mixed", "综合"],
-                ["network", "IP 地址"],
-                ["date", "日期时间"],
-                ["formula", "数学公式"],
-              ].map(([id, label]) => (
+              {[60, 90, 120, 150].map((bpm) => (
                 <button
-                  key={id}
-                  className={numberPreset === id ? "active" : ""}
+                  key={bpm}
+                  className={rhythmTarget === bpm ? "active" : ""}
                   onClick={(event) => {
                     event.stopPropagation();
-                    reset({ mode: "numbers", numberPreset: id });
+                    reset({ mode: "rhythm", rhythmTarget: bpm });
                   }}
                 >
-                  {label}
+                  {bpm} BPM
                 </button>
               ))}
             </div>
-            <small>强化数字行、符号与结构化数据输入</small>
+            <small>当前 {rhythmBpm || "—"} BPM · 跟随节拍保持连续输入</small>
           </div>
         )}
       </section>
@@ -985,13 +1035,14 @@ export default function Home() {
           >退出全屏 <kbd>Esc</kbd></button>
         )}
 
-        <div className="stats phase-one-stats">
-          <div className="stat primary" key={`wpm-${pulse}`}><span>WPM</span><strong>{wpm}</strong><small>单词速度</small></div>
-          <div className="stat"><span>CPM</span><strong>{cpm}</strong><small>字符速度</small></div>
-          <div className="stat"><span>ACCURACY</span><strong>{accuracy}<small>%</small></strong><small>准确率</small></div>
-          <div className="stat"><span>ERROR RATE</span><strong>{errorRate}<small>%</small></strong><small>{totalErrors} 次错误</small></div>
-          <div className="stat"><span>{testType === "words" ? (chineseContent ? "CHARS" : "WORDS") : "TIME"}</span><strong>{testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}</strong><small>{testType === "words" ? "训练进度" : "剩余时间"}</small></div>
-        </div>
+        <TrainingMetrics
+          wpm={speed}
+          accuracy={accuracy}
+          consistency={consistency}
+          timeLabel={testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}
+          timeProgress={testType === "words" ? progress : Math.max(0, 100 - progress)}
+          best={best}
+        />
 
         <div className="typing-zone" ref={typingZoneRef}>
           <textarea
@@ -1023,11 +1074,12 @@ export default function Home() {
             <span>RAW <b>{rawWpm}</b></span>
             <span>CORRECTED <b>{keystrokes.current.corrected}</b></span>
             <span className={`combo ${combo >= 5 ? "hot" : ""}`}>COMBO <b>{combo}</b></span>
+            {mode === "rhythm" && <span>RHYTHM <b>{rhythmBpm || "—"} / {rhythmTarget}</b></span>}
             <span className="interaction-label">{INTERACTIONS.find((item) => item.id === interaction)?.desc}</span>
           </div>
 
           {pulse > 0 && status === "running" && <span className={`key-burst ${feedback}`} key={pulse}>{feedback === "correct" ? "+1" : "×"}</span>}
-          {pulse > 0 && status === "running" && (
+          {pulse > 0 && status === "running" && feedback === "correct" && (
             <span
               className={`spark-burst ${feedback}`}
               key={`spark-${pulse}`}
@@ -1065,6 +1117,15 @@ export default function Home() {
             })}
           </div>
 
+          {!immersive && (
+            <TrainingKeyboard
+              expectedKey={expectedKey}
+              activeKey={lastTypedKey}
+              pulse={pulse}
+              feedback={feedback}
+            />
+          )}
+
           {status === "idle" && <div className="start-hint"><span>{testType === "pk" ? `玩家 ${pkPlayer} 准备好后开始输入` : "点击这里或直接开始输入"}</span><small>{chineseContent ? "支持拼音与五笔输入法" : interaction === "sprint" ? "冲刺模式无法使用退格键" : "首个按键后自动计时"}</small></div>}
 
           {status === "finished" && resultView === "summary" && (
@@ -1075,6 +1136,10 @@ export default function Home() {
               accuracy={accuracy}
               consistency={consistency}
               errors={totalErrors}
+              best={Math.max(best, speed)}
+              errorPatterns={errorPatterns}
+              modeLabel={modeLabel}
+              rhythmBpm={mode === "rhythm" ? rhythmBpm : 0}
               gainedXp={lastXpAward}
               level={level}
               leveledUp={leveledUp}

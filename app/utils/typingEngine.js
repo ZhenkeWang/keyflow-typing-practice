@@ -73,6 +73,89 @@ export function calculateConsistency(intervals = []) {
   return clamp(Math.round(100 - coefficientOfVariation * 60), 0, 100);
 }
 
+export function calculateRhythmBpm(intervals = []) {
+  const valid = intervals
+    .filter((value) => Number.isFinite(value) && value >= 40 && value <= 2000)
+    .slice(-24);
+  if (valid.length < 2) return 0;
+  const mean = valid.reduce((sum, value) => sum + value, 0) / valid.length;
+  return clamp(Math.round(60_000 / mean), 1, 999);
+}
+
+export function extractWeakKeys(history = [], limit = 4) {
+  const totals = {};
+  history.forEach((record) => {
+    (record.mistakes || []).forEach((mistake) => {
+      const key = String(mistake.expected || "").toLowerCase();
+      if (!key || key === " " || key === "∅") return;
+      totals[key] = (totals[key] || 0) + (Number(mistake.count) || 1);
+    });
+  });
+  return Object.entries(totals)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([key]) => key);
+}
+
+export function buildWeakKeyText(history = [], minLength = 1600) {
+  const weakKeys = extractWeakKeys(history);
+  const fallbackKeys = ["q", "p", ";"];
+  const keys = weakKeys.length ? weakKeys : fallbackKeys;
+  const vocabulary = [
+    "quality", "quick", "quiet", "people", "project", "progress", "practice",
+    "precision", "sequence", "equal", "query", "focus", "clear", "rhythm",
+    "keyboard", "flow", "system", "signal", "process", "perfect", "pixel",
+  ];
+  const matched = vocabulary.filter((word) => keys.some((key) => word.includes(key)));
+  const source = matched.length >= 4 ? matched : [...matched, ...vocabulary];
+  let result = "";
+  let index = 0;
+  while (result.length < minLength) {
+    const word = source[index % source.length];
+    const drill = index % 6 === 5 ? keys.join(" ") : word;
+    result += `${result ? " " : ""}${drill}`;
+    index += 1;
+  }
+  return result;
+}
+
+export function buildErrorPatterns(mistakes = [], target = "", limit = 3) {
+  const totals = {};
+  const commonPatterns = ["tion", "ing", "the", "th", "er", "re", "qu"];
+  mistakes.forEach((mistake) => {
+    (mistake.positions || [mistake.lastIndex]).forEach((position) => {
+      if (!Number.isFinite(position)) return;
+      const character = target[position] || mistake.expected;
+      let label;
+      if (/[A-Z]/.test(character)) label = "Shift";
+      else if (/[0-9]/.test(character)) label = "数字键";
+      else {
+        const wordStart = target.lastIndexOf(" ", position) + 1;
+        const nextSpace = target.indexOf(" ", position);
+        const wordEnd = nextSpace === -1 ? target.length : nextSpace;
+        const word = target.slice(wordStart, wordEnd).toLowerCase();
+        const localPosition = position - wordStart;
+        label = commonPatterns.find((pattern) => {
+          const patternStart = word.indexOf(pattern);
+          return patternStart >= 0
+            && localPosition >= patternStart
+            && localPosition < patternStart + pattern.length;
+        });
+        if (!label) {
+          const start = Math.max(wordStart, position - 1);
+          label = target.slice(start, Math.min(wordEnd, position + 2)).trim();
+        }
+      }
+      if (!label) label = mistake.expected === " " ? "Space" : mistake.expected;
+      totals[label] = (totals[label] || 0) + 1;
+    });
+  });
+  return Object.entries(totals)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([pattern, count]) => ({ pattern, count }));
+}
+
 export function appendMistakes(current = [], mistakes = [], limit = 12) {
   const next = current.map((item) => ({ ...item, positions: [...item.positions] }));
 
@@ -149,15 +232,15 @@ export function buildTrainingReport({
     : hands.left.accuracy < hands.right.accuracy ? "left" : "right";
 
   let recommendation = {
-    mode: "focus",
-    label: "专注基础训练",
-    reason: "保持均匀节奏，先把高频字符的准确率稳定下来。",
+    mode: "accuracy",
+    label: "准确率训练",
+    reason: "保持均匀节奏，先把高频字符与组合的准确率稳定下来。",
   };
   if (topMistakes.some((item) => /[0-9]/.test(item.expected))) {
     recommendation = {
-      mode: "numbers",
-      label: "数字专项训练",
-      reason: "错误集中在数字键，建议强化数字行与结构化数据输入。",
+      mode: "weak",
+      label: "薄弱按键训练",
+      reason: "错误集中在数字键，系统会把这些按键加入下一轮弱键训练。",
     };
   } else if (mode === "code" || topMistakes.some((item) => /[()[\]{};:'"<>/=+*-]/.test(item.expected))) {
     recommendation = {
@@ -167,9 +250,9 @@ export function buildTrainingReport({
     };
   } else if (accuracy >= 97 && wpm >= 55) {
     recommendation = {
-      mode: "quote",
-      label: "标点节奏训练",
-      reason: "基础准确率已经稳定，可以用完整句提升连续输入与停顿控制。",
+      mode: "rhythm",
+      label: "节奏稳定训练",
+      reason: "基础准确率已经稳定，可以用节拍引导提升连续输入与停顿控制。",
     };
   }
 

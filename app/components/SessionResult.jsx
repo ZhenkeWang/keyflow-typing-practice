@@ -7,6 +7,10 @@ export default function SessionResult({
   accuracy,
   consistency,
   errors,
+  best,
+  errorPatterns = [],
+  modeLabel,
+  rhythmBpm,
   gainedXp,
   level,
   leveledUp,
@@ -34,6 +38,24 @@ export default function SessionResult({
         <div><span>Accuracy</span><strong>{accuracy}%</strong></div>
         <div><span>Stability</span><strong>{consistency}%</strong></div>
         <div><span>Errors</span><strong>{errors}</strong></div>
+        <div><span>Best</span><strong>{best} <small>{metric}</small></strong></div>
+      </div>
+      <div className="result-training-context">
+        <span>{modeLabel || "Training"}</span>
+        {rhythmBpm > 0 && <span>{rhythmBpm} BPM</span>}
+      </div>
+      <div className="result-mistakes">
+        <div><span>TOP MISTAKES</span><small>本轮错误组合</small></div>
+        {errorPatterns.length ? (
+          <ol>
+            {errorPatterns.map((item) => (
+              <li key={item.pattern}>
+                <code>{item.pattern}</code>
+                <span>{item.count} 次</span>
+              </li>
+            ))}
+          </ol>
+        ) : <p>本轮没有记录到错误，节奏保持得很好。</p>}
       </div>
       {testType === "pk" && pkPlayer === 2 && (
         <div className="pk-result">
