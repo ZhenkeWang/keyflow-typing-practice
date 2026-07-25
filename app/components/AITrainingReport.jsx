@@ -11,13 +11,32 @@ function HandCard({ label, stats, weaker }) {
   );
 }
 
-export default function AITrainingReport({ report, onBack, onRestart, onApplyRecommendation }) {
+export default function AITrainingReport({
+  report,
+  weakKeys = [],
+  fingers = [],
+  plan = [],
+  reactionTime = 0,
+  rhythmScore = 0,
+  improvement = 0,
+  onBack,
+  onRestart,
+  onStartPlan,
+  onApplyRecommendation,
+}) {
   return (
-    <div className="result-overlay ai-report-overlay">
+    <div className="result-overlay ai-report-overlay phase-two-report">
       <div className="result-glow" />
       <div className="ai-report-header">
-        <div><span>AI TRAINING REPORT</span><h3>本轮训练分析</h3></div>
+        <div><span>AI TRAINING REPORT</span><h3>个人训练分析</h3></div>
         <small>基于本地击键数据即时生成</small>
+      </div>
+
+      <div className="report-summary-strip">
+        <div><span>成长变化</span><strong className={improvement >= 0 ? "positive" : "negative"}>{improvement >= 0 ? "+" : ""}{improvement}%</strong></div>
+        <div><span>平均反应</span><strong>{reactionTime || "—"}<small>{reactionTime ? "ms" : ""}</small></strong></div>
+        <div><span>节奏评分</span><strong>{rhythmScore || "—"}<small>{rhythmScore ? "/100" : ""}</small></strong></div>
+        <div><span>首要薄弱键</span><strong>{weakKeys[0]?.character?.toUpperCase() || "—"}</strong></div>
       </div>
 
       <div className="ai-report-grid">
@@ -33,7 +52,7 @@ export default function AITrainingReport({ report, onBack, onRestart, onApplyRec
                 </div>
               ))}
             </div>
-          ) : <p className="report-clean">✓ 本轮零错误，准确率表现优秀。</p>}
+          ) : <p className="report-clean">✓ 本次零错误，准确率表现优秀。</p>}
           <p className="report-insight">{report.insight}</p>
         </section>
 
@@ -47,31 +66,36 @@ export default function AITrainingReport({ report, onBack, onRestart, onApplyRec
         </section>
       </div>
 
-      <div className="coach-detail-grid">
-        <section>
-          <div className="report-section-title"><strong>优势</strong><span>STRENGTHS</span></div>
-          <ul>
-            {report.strengths.map((item) => <li key={item}><i>✓</i><span>{item}</span></li>)}
-          </ul>
-        </section>
-        <section>
-          <div className="report-section-title"><strong>需要改善</strong><span>FOCUS</span></div>
-          <ol>
-            {report.issues.map((item, index) => (
-              <li key={`${item.label}-${index}`}>
-                <i>{index + 1}</i>
-                <div><strong>{item.label}</strong><p>{item.detail}</p></div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </div>
+      <section className="report-finger-heatmap">
+        <div className="report-section-title"><strong>Finger Heatmap</strong><span>ERROR DISTRIBUTION</span></div>
+        <div>
+          {fingers.map((finger) => (
+            <article className={finger.level} key={finger.id}>
+              <span>{finger.label}</span><strong>{finger.errorRate}%</strong><small>{finger.errors} errors</small>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="report-training-plan">
+        <div className="report-section-title"><strong>今日训练</strong><span>PERSONAL PLAN</span></div>
+        <div>
+          {plan.map((item, index) => (
+            <button type="button" key={item.id} onClick={() => onStartPlan(item)}>
+              <i>{index + 1}</i>
+              <span><strong>{item.title}</strong><small>{item.reason}</small></span>
+              <b>{item.duration} MIN</b>
+              <em>→</em>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="report-recommendation">
         <span>RECOMMENDED NEXT</span>
         <div><strong>{report.recommendation.label}</strong><p>{report.recommendation.reason}</p></div>
         <small>每日 {report.dailyDrill.duration} 分钟 · 重点 {report.dailyDrill.focus}</small>
-        <button onClick={onApplyRecommendation}>开始专项训练 <span>→</span></button>
+        <button onClick={onApplyRecommendation}>开始推荐训练 <span>→</span></button>
       </section>
 
       <div className="report-actions">

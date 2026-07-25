@@ -1,12 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  aggregateCharacterStats,
   appendMistakes,
   buildErrorPatterns,
+  buildFingerHeatmap,
+  buildFocusedWeakKeyText,
+  buildPersonalTrainingPlan,
   buildTrainingReport,
+  buildWeakKeyRanking,
   buildWeakKeyText,
+  calculateCodeMetrics,
   calculateConsistency,
   calculateRhythmBpm,
+  calculateRhythmScore,
   calculateTypingMetrics,
   calculateXpAward,
   compareInput,
@@ -14,6 +21,7 @@ import {
   getHandForCharacter,
   getLevelInfo,
   normalizeHistory,
+  summarizeReactionTime,
   summarizeHandPerformance,
 } from "../app/utils/typingEngine.js";
 
@@ -155,4 +163,57 @@ test("XP awards are bounded and level progress is deterministic", () => {
   assert.equal(getLevelInfo(9000).title, "Fast Typist");
   assert.equal(getLevelInfo(29_000).title, "Keyboard Expert");
   assert.equal(getLevelInfo(49_000).title, "Keyboard Master");
+});
+
+test("ranks weak keys with error rate and reaction time", () => {
+  const history = [{
+    characterStats: {
+      e: { attempts: 20, errors: 4, latencyTotal: 2400, latencyCount: 10 },
+      r: { attempts: 10, errors: 1, latencyTotal: 3200, latencyCount: 10 },
+    },
+  }];
+  const ranking = buildWeakKeyRanking(history);
+  assert.equal(ranking[0].character, "e");
+  assert.equal(ranking[0].errorRate, 20);
+  assert.equal(ranking[0].reactionMs, 240);
+  assert.match(buildFocusedWeakKeyText("e", 80), /eeeeee/);
+});
+
+test("builds finger heatmap and reaction summary from shared character data", () => {
+  const stats = aggregateCharacterStats(
+    [{ characterStats: { q: { attempts: 10, errors: 2, latencyTotal: 1000, latencyCount: 5 } } }],
+    { p: { attempts: 10, errors: 0, latencyTotal: 500, latencyCount: 5 } }
+  );
+  const heatmap = buildFingerHeatmap(stats);
+  assert.equal(heatmap.find((item) => item.id === "left-pinky").level, "weak");
+  assert.equal(heatmap.find((item) => item.id === "right-pinky").level, "normal");
+  assert.equal(summarizeReactionTime(stats), 150);
+});
+
+test("scores rhythm and calculates coding metrics", () => {
+  assert.equal(calculateRhythmScore([500, 500, 500, 500], 120), 100);
+  const metrics = calculateCodeMetrics({
+    characterStats: {
+      "{": { attempts: 4, errors: 1 },
+      "}": { attempts: 4, errors: 0 },
+    },
+    typed: "fn {\n  ok\n}",
+    target: "fn {\n  ok\n}",
+    elapsedMs: 60_000,
+  });
+  assert.equal(metrics.symbolAccuracy, 88);
+  assert.equal(metrics.indentSpeed, 2);
+  assert.equal(metrics.codeWpm, 2);
+});
+
+test("generates a three-step personal training plan", () => {
+  const plan = buildPersonalTrainingPlan({
+    weakKeys: [{ character: "r", errors: 6, errorRate: 12 }],
+    accuracy: 93,
+    reactionTime: 320,
+    rhythmScore: 65,
+  });
+  assert.deepEqual(plan.map((item) => item.duration), [5, 3, 5]);
+  assert.equal(plan[0].focus, "r");
+  assert.equal(plan[2].mode, "rhythm");
 });

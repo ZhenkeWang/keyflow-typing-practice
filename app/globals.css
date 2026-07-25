@@ -5768,6 +5768,627 @@ html[data-theme="light"] .nav-theme-segmented button.active {
     --entry-screen-width: 346px;
   }
 }
+
+/* Phase 2 training intelligence — extends the existing visual system without
+   altering the Phase 1 theme, motion or surface primitives. */
+@media (min-width: 981px) {
+  .mode-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.training-intelligence {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, .75fr);
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.training-intelligence.mode-rhythm,
+.training-intelligence.mode-code {
+  grid-template-columns: 1fr;
+}
+
+.training-intelligence > section {
+  min-width: 0;
+  padding: clamp(18px, 2.2vw, 26px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 18rem),
+    var(--surface);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .055);
+}
+
+.training-panel-heading,
+.training-panel-heading > div {
+  display: flex;
+}
+
+.training-panel-heading {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.training-panel-heading > div {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.training-panel-heading span,
+.training-panel-heading small {
+  color: var(--foreground-subtle);
+  font: 650 9px var(--font-mono);
+  letter-spacing: .11em;
+}
+
+.training-panel-heading strong {
+  font-size: 17px;
+  letter-spacing: -.035em;
+}
+
+.training-panel-heading small {
+  max-width: 240px;
+  line-height: 1.55;
+  text-align: right;
+  letter-spacing: .02em;
+}
+
+.ai-diagnosis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.ai-diagnosis article,
+.code-metric-grid article {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-raised) 72%, transparent);
+}
+
+.ai-diagnosis span,
+.code-metric-grid span {
+  display: block;
+  color: var(--foreground-subtle);
+  font: 650 8px var(--font-mono);
+  letter-spacing: .1em;
+}
+
+.ai-diagnosis strong,
+.code-metric-grid strong {
+  display: block;
+  margin-top: 9px;
+  color: var(--foreground);
+  font: 650 clamp(24px, 3vw, 34px) var(--font-mono);
+  letter-spacing: -.06em;
+}
+
+.ai-diagnosis strong em {
+  margin-left: 3px;
+  color: var(--foreground-muted);
+  font-size: 10px;
+  font-style: normal;
+}
+
+.ai-diagnosis small,
+.code-metric-grid small {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  color: var(--foreground-muted);
+  font-size: 9px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+}
+
+.ai-plan-list {
+  display: grid;
+  gap: 7px;
+}
+
+.ai-plan-list button,
+.weak-key-table button,
+.report-training-plan button {
+  border: 1px solid transparent;
+  color: var(--foreground);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    transform var(--duration-ui) var(--ease-spring),
+    border-color var(--duration-ui) ease,
+    background-color var(--duration-ui) ease;
+}
+
+.ai-plan-list button {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto 18px;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.ai-plan-list button:hover,
+.report-training-plan button:hover {
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface-raised));
+  transform: translate3d(0, -2px, 0);
+}
+
+.ai-plan-list button > i,
+.report-training-plan button > i {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  font: 700 10px var(--font-mono);
+  font-style: normal;
+}
+
+.ai-plan-list button > div {
+  display: grid;
+  gap: 3px;
+}
+
+.ai-plan-list button strong {
+  font-size: 12px;
+}
+
+.ai-plan-list button small {
+  overflow: hidden;
+  color: var(--foreground-muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-plan-list button > span {
+  color: var(--foreground-muted);
+  font: 650 8px var(--font-mono);
+  letter-spacing: .08em;
+}
+
+.ai-plan-list button > b {
+  color: var(--primary);
+  font-weight: 500;
+  transition: transform var(--duration-ui) var(--ease-spring);
+}
+
+.ai-plan-list button:hover > b {
+  transform: translateX(4px);
+}
+
+.finger-heatmap {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.finger-hand {
+  display: grid;
+  gap: 9px;
+}
+
+.finger-hand > span {
+  color: var(--foreground-subtle);
+  font: 650 8px var(--font-mono);
+  letter-spacing: .12em;
+}
+
+.finger-hand > div {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+}
+
+.finger-hand article {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+}
+
+.finger-hand article i {
+  width: 100%;
+  height: var(--finger-height, 78px);
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: 999px 999px 12px 12px;
+  background: color-mix(in srgb, currentColor 13%, var(--surface-raised));
+  box-shadow: inset 0 1px color-mix(in srgb, white 14%, transparent);
+}
+
+.finger-hand article:nth-child(1) { --finger-height: 56px; }
+.finger-hand article:nth-child(2) { --finger-height: 69px; }
+.finger-hand article:nth-child(3) { --finger-height: 78px; }
+.finger-hand article:nth-child(4) { --finger-height: 72px; }
+.finger-hand article.normal { color: #55d6aa; }
+.finger-hand article.watch { color: #f0bd58; }
+.finger-hand article.weak { color: #ff687e; }
+.finger-hand article strong { font-size: 8px; }
+.finger-hand article small { color: currentColor; font: 650 8px var(--font-mono); }
+
+.weak-key-table {
+  display: grid;
+}
+
+.weak-key-table-head,
+.weak-key-table button {
+  display: grid;
+  grid-template-columns: minmax(100px, 1.3fr) repeat(3, minmax(70px, .7fr));
+  align-items: center;
+}
+
+.weak-key-table-head {
+  padding: 0 12px 8px;
+  color: var(--foreground-subtle);
+  font: 650 8px var(--font-mono);
+  letter-spacing: .08em;
+}
+
+.weak-key-table button {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-top-color: color-mix(in srgb, var(--border) 65%, transparent);
+  text-align: left;
+}
+
+.weak-key-table button:hover,
+.weak-key-table button.active {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.weak-key-table button > span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weak-key-table button i {
+  color: var(--foreground-subtle);
+  font: 600 8px var(--font-mono);
+  font-style: normal;
+}
+
+.weak-key-table button kbd {
+  display: grid;
+  width: 28px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--foreground) 10%, transparent);
+  font: 700 11px var(--font-mono);
+}
+
+.weak-key-table button strong,
+.weak-key-table button small {
+  font: 650 10px var(--font-mono);
+}
+
+.weak-key-table button small {
+  color: var(--foreground-muted);
+}
+
+.training-panel-empty {
+  padding: 26px 12px;
+  color: var(--foreground-muted);
+  font-size: 11px;
+}
+
+.rhythm-trainer-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  align-items: center;
+  gap: 26px;
+}
+
+.rhythm-trainer-card .training-panel-heading {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.rhythm-lane {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(14px, 4vw, 42px);
+  padding: 27px clamp(18px, 5vw, 50px);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--foreground) 2.5%, transparent);
+  overflow: hidden;
+}
+
+.rhythm-lane::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 25%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 60%, transparent), transparent);
+  animation: rhythm-scan calc(var(--rhythm-duration) * 4) linear infinite;
+}
+
+.rhythm-lane > i {
+  position: relative;
+  z-index: 1;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+  animation: rhythm-beat-dot calc(var(--rhythm-duration) * 4) ease-in-out infinite;
+  animation-delay: calc(var(--rhythm-duration) * var(--beat-index));
+}
+
+@keyframes rhythm-beat-dot {
+  0%, 10%, 100% { opacity: .34; transform: scale(.8); }
+  5% {
+    opacity: 1;
+    background: var(--primary);
+    box-shadow: 0 0 28px color-mix(in srgb, var(--primary) 44%, transparent);
+    transform: scale(1);
+  }
+}
+
+@keyframes rhythm-scan {
+  to { transform: translateX(400%); }
+}
+
+.rhythm-score {
+  display: grid;
+  gap: 5px;
+}
+
+.rhythm-score > span {
+  color: var(--foreground-subtle);
+  font: 650 8px var(--font-mono);
+  letter-spacing: .1em;
+}
+
+.rhythm-score strong {
+  font: 650 42px var(--font-mono);
+  letter-spacing: -.07em;
+}
+
+.rhythm-score strong small {
+  color: var(--foreground-subtle);
+  font-size: 10px;
+}
+
+.rhythm-score p {
+  color: var(--foreground-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.code-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.passage.code {
+  white-space: pre-wrap;
+}
+
+.result-stat-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.result-training-context .positive,
+.report-summary-strip .positive {
+  color: var(--secondary);
+}
+
+.result-training-context .negative,
+.report-summary-strip .negative {
+  color: #ff687e;
+}
+
+.result-code-metrics,
+.report-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: min(720px, 100%);
+}
+
+.result-code-metrics > div,
+.report-summary-strip > div {
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-raised) 68%, transparent);
+}
+
+.result-code-metrics span,
+.report-summary-strip span {
+  display: block;
+  color: var(--foreground-subtle);
+  font: 650 8px var(--font-mono);
+  letter-spacing: .08em;
+}
+
+.result-code-metrics strong,
+.report-summary-strip strong {
+  display: block;
+  margin-top: 5px;
+  font: 650 16px var(--font-mono);
+}
+
+.result-code-metrics strong small,
+.report-summary-strip strong small {
+  margin-left: 3px;
+  color: var(--foreground-muted);
+  font-size: 8px;
+}
+
+.result-next-step {
+  width: min(720px, 100%);
+  display: grid;
+  grid-template-columns: 115px minmax(0, 1fr);
+  gap: 14px;
+  padding: 13px 15px;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+.result-next-step > span {
+  color: var(--primary);
+  font: 650 8px var(--font-mono);
+  letter-spacing: .1em;
+}
+
+.result-next-step strong {
+  font-size: 11px;
+}
+
+.result-next-step p {
+  margin-top: 3px;
+  color: var(--foreground-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.report-summary-strip {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.report-finger-heatmap,
+.report-training-plan {
+  width: min(760px, 100%);
+}
+
+.report-finger-heatmap > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.report-finger-heatmap article {
+  padding: 10px 6px;
+  border-radius: 10px;
+  text-align: center;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+}
+
+.report-finger-heatmap article.normal { color: #55d6aa; }
+.report-finger-heatmap article.watch { color: #f0bd58; }
+.report-finger-heatmap article.weak { color: #ff687e; }
+.report-finger-heatmap article span,
+.report-finger-heatmap article small {
+  display: block;
+  font-size: 7px;
+}
+.report-finger-heatmap article strong { display: block; margin: 5px 0; font: 650 13px var(--font-mono); }
+
+.report-training-plan > div:last-child {
+  display: grid;
+  gap: 7px;
+}
+
+.report-training-plan button {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto 18px;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 11px;
+  text-align: left;
+}
+
+.report-training-plan button > span {
+  display: grid;
+  gap: 2px;
+}
+
+.report-training-plan button > span strong { font-size: 10px; }
+.report-training-plan button > span small { color: var(--foreground-muted); font-size: 8px; }
+.report-training-plan button > b { color: var(--foreground-muted); font: 650 8px var(--font-mono); }
+.report-training-plan button > em { color: var(--primary); font-style: normal; }
+
+@media (max-width: 980px) {
+  .mode-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .training-intelligence {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .mode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .training-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .training-panel-heading small {
+    text-align: left;
+  }
+
+  .ai-diagnosis,
+  .code-metric-grid,
+  .result-code-metrics,
+  .report-summary-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .finger-heatmap {
+    grid-template-columns: 1fr;
+  }
+
+  .weak-key-table-head,
+  .weak-key-table button {
+    grid-template-columns: minmax(86px, 1.2fr) repeat(2, minmax(58px, .7fr));
+  }
+
+  .weak-key-table-head span:last-child,
+  .weak-key-table button small {
+    display: none;
+  }
+
+  .rhythm-trainer-card {
+    grid-template-columns: 1fr;
+  }
+
+  .report-finger-heatmap > div:last-child {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .result-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .result-next-step {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rhythm-lane::after,
+  .rhythm-lane > i {
+    animation: none !important;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .entry-keyflow-outline,
   .entry-keyflow-fill-reveal {

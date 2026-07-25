@@ -9,20 +9,29 @@ import SessionResult from "./components/SessionResult";
 import TrainingDashboard from "./components/TrainingDashboard";
 import AITrainingReport from "./components/AITrainingReport";
 import TrainingKeyboard from "./components/TrainingKeyboard";
+import TrainingIntelligence from "./components/TrainingIntelligence";
 import TrainingMetrics from "./components/TrainingMetrics";
 import UserProfileDialog from "./components/UserProfileDialog";
 import ScrollRevealController from "./animations/ScrollRevealController";
 import {
+  aggregateCharacterStats,
   appendMistakes,
   buildErrorPatterns,
+  buildFingerHeatmap,
+  buildFocusedWeakKeyText,
+  buildPersonalTrainingPlan,
   buildTrainingReport,
+  buildWeakKeyRanking,
   buildWeakKeyText,
+  calculateCodeMetrics,
   calculateConsistency,
   calculateRhythmBpm,
+  calculateRhythmScore,
   calculateTypingMetrics,
   calculateXpAward,
   getLevelInfo,
   normalizeHistory,
+  summarizeReactionTime,
 } from "./utils/typingEngine";
 
 const TEXT_BANK = {
@@ -30,6 +39,11 @@ const TEXT_BANK = {
     "speed comes from relaxed hands clear focus and thousands of accurate repetitions",
     "move quickly through familiar words while keeping every keystroke light and precise",
     "fast typing feels effortless when your eyes stay ahead and your hands trust the rhythm",
+  ],
+  ai: [
+    "intelligent practice adapts to every hesitation repeated error and improving rhythm",
+    "train the weakest key first then carry the new control into combinations and complete sentences",
+    "small accurate corrections build durable muscle memory and make fast typing feel natural",
   ],
   accuracy: [
     "thinking through the transition brings lasting precision to every typing session",
@@ -85,13 +99,17 @@ const TEXT_BANK = {
 
 const CODE_BANK = {
   python: [
-    "def train_model(data): return model.fit(data)",
+    "def train_model(data):\n    result = model.fit(data)\n    return result",
     "scores = [value * 2 for value in results if value > 0]",
     "with open('notes.txt', 'r') as file: content = file.read()",
   ],
-  javascript: TEXT_BANK.code,
+  javascript: [
+    "const train = (items) => {\n  return items.filter(Boolean).map((item) => item.value);\n};",
+    "if (response.ok) {\n  const data = await response.json();\n  render(data);\n}",
+    "export const sum = (numbers = []) => numbers.reduce((total, value) => total + value, 0);",
+  ],
   cpp: [
-    "std::vector<int> values = {1, 2, 3};",
+    "std::vector<int> values = {1, 2, 3};\nfor (const auto& value : values) {\n    std::cout << value;\n}",
     "for (const auto& item : values) { std::cout << item; }",
     "int clamp(int value, int low, int high) { return std::min(std::max(value, low), high); }",
   ],
@@ -109,6 +127,11 @@ const CODE_BANK = {
     "SELECT user_id, COUNT(*) AS sessions FROM practice_records GROUP BY user_id ORDER BY sessions DESC;",
     "WITH recent AS (SELECT * FROM sessions WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') SELECT AVG(wpm) FROM recent;",
     "UPDATE typing_profiles SET level = level + 1, xp = xp - 1000 WHERE user_id = 42;",
+  ],
+  rust: [
+    "fn clamp(value: i32, min: i32, max: i32) -> i32 {\n    value.max(min).min(max)\n}",
+    "let active: Vec<_> = items.iter().filter(|item| item.ready).collect();",
+    "match result {\n    Ok(value) => println!(\"{value}\"),\n    Err(error) => eprintln!(\"{error}\"),\n}",
   ],
 };
 
@@ -129,6 +152,7 @@ const NUMBER_BANK = {
 };
 
 const MODES = [
+  { id: "ai", label: "AI Training", icon: "✦", desc: "个性化训练方案" },
   { id: "speed", label: "Speed Test", icon: "↗", desc: "突破最高 WPM" },
   { id: "accuracy", label: "Accuracy", icon: "◎", desc: "字符组合准确率" },
   { id: "weak", label: "Weak Keys", icon: "⌁", desc: "历史薄弱按键" },
@@ -309,6 +333,7 @@ export default function Home() {
   const [rhythmTarget, setRhythmTarget] = useState(90);
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [selectedWeakKey, setSelectedWeakKey] = useState("");
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -354,6 +379,45 @@ export default function Home() {
     : Math.min(100, (words / goal) * 100);
   const consistency = useMemo(() => calculateConsistency(intervals.current), [pulse, typed]);
   const rhythmBpm = useMemo(() => calculateRhythmBpm(intervals.current), [pulse, typed]);
+  const rhythmScore = useMemo(
+    () => calculateRhythmScore(intervals.current, rhythmTarget),
+    [pulse, rhythmTarget, typed]
+  );
+  const aggregateStats = useMemo(
+    () => aggregateCharacterStats(history, characterStats.current),
+    [history, pulse]
+  );
+  const weakKeyRanking = useMemo(
+    () => buildWeakKeyRanking(history, characterStats.current, 10),
+    [history, pulse]
+  );
+  const fingerHeatmap = useMemo(
+    () => buildFingerHeatmap(aggregateStats),
+    [aggregateStats]
+  );
+  const reactionTime = useMemo(
+    () => summarizeReactionTime(characterStats.current)
+      || Math.round(history.find((item) => item.reactionTime)?.reactionTime || 0),
+    [history, pulse]
+  );
+  const codeMetrics = useMemo(
+    () => calculateCodeMetrics({
+      characterStats: characterStats.current,
+      typed,
+      target: text,
+      elapsedMs,
+    }),
+    [elapsedMs, pulse, text, typed]
+  );
+  const aiTrainingPlan = useMemo(
+    () => buildPersonalTrainingPlan({
+      weakKeys: weakKeyRanking,
+      accuracy,
+      reactionTime,
+      rhythmScore,
+    }),
+    [accuracy, reactionTime, rhythmScore, weakKeyRanking]
+  );
   const errorPatterns = useMemo(
     () => buildErrorPatterns(mistakeLog, text),
     [mistakeLog, text]
@@ -375,15 +439,21 @@ export default function Home() {
     const nextCodeLanguage = options.codeLanguage ?? codeLanguage;
     const nextNumberPreset = options.numberPreset ?? numberPreset;
     const nextRhythmTarget = options.rhythmTarget ?? rhythmTarget;
+    const nextWeakKey = options.selectedWeakKey ?? selectedWeakKey;
     setMode(nextMode);
     setTestType(nextType);
     setGoal(nextGoal);
     setCodeLanguage(nextCodeLanguage);
     setNumberPreset(nextNumberPreset);
     setRhythmTarget(nextRhythmTarget);
+    setSelectedWeakKey(nextWeakKey);
     setText(
       nextMode === "weak"
-        ? buildWeakKeyText(history)
+        ? nextWeakKey
+          ? buildFocusedWeakKeyText(nextWeakKey)
+          : buildWeakKeyText(history)
+        : nextMode === "ai"
+          ? buildWeakKeyText(history)
         : makeText(nextMode, 1600, nextMode === "code" ? nextCodeLanguage : nextNumberPreset)
     );
     setTyped("");
@@ -414,7 +484,7 @@ export default function Home() {
     characterStats.current = {};
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
-  }, [codeLanguage, goal, history, mode, numberPreset, rhythmTarget, testType]);
+  }, [codeLanguage, goal, history, mode, numberPreset, rhythmTarget, selectedWeakKey, testType]);
 
   useEffect(() => {
     setBest(
@@ -571,7 +641,13 @@ export default function Home() {
       errorPatterns,
       handStats: trainingReport.hands,
       rhythmBpm,
+      rhythmScore,
+      reactionTime,
       codeLanguage: mode === "code" ? codeLanguage : null,
+      codeMetrics: mode === "code" ? codeMetrics : null,
+      characterStats: Object.fromEntries(
+        Object.entries(characterStats.current).map(([character, stats]) => [character, { ...stats }])
+      ),
       characters: typed.length,
       correctCharacters: correct,
     };
@@ -591,7 +667,7 @@ export default function Home() {
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
       if (mode === "speed") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, codeLanguage, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, rhythmBpm, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
+  }, [accuracy, best, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, reactionTime, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -629,9 +705,10 @@ export default function Home() {
 
   function processInput(value) {
     if (status === "finished") return;
-    value = value.replace(/[\r\n]/g, "").slice(0, text.length);
+    value = (mode === "code" ? value.replace(/\r\n/g, "\n") : value.replace(/[\r\n]/g, "")).slice(0, text.length);
     if (interaction === "sprint" && value.length < typed.length) return;
     const stamp = performance.now();
+    const reactionDelta = lastKeyAt.current ? stamp - lastKeyAt.current : 0;
     if (status === "idle" && value.length) {
       startedAt.current = stamp;
       lastKeyAt.current = stamp;
@@ -649,10 +726,20 @@ export default function Home() {
       for (let cursor = typed.length; cursor < value.length; cursor += 1) {
         const expectedCharacter = text[cursor] || "∅";
         const isCharacterCorrect = value[cursor] === text[cursor];
-        const stats = characterStats.current[expectedCharacter] || { attempts: 0, errors: 0 };
+        const stats = characterStats.current[expectedCharacter] || {
+          attempts: 0,
+          errors: 0,
+          latencyTotal: 0,
+          latencyCount: 0,
+        };
+        const shouldRecordLatency = cursor === value.length - 1
+          && reactionDelta >= 40
+          && reactionDelta <= 2000;
         characterStats.current[expectedCharacter] = {
           attempts: stats.attempts + 1,
           errors: stats.errors + (isCharacterCorrect ? 0 : 1),
+          latencyTotal: (stats.latencyTotal || 0) + (shouldRecordLatency ? reactionDelta : 0),
+          latencyCount: (stats.latencyCount || 0) + (shouldRecordLatency ? 1 : 0),
         };
         keystrokes.current.total += 1;
         if (!isCharacterCorrect) {
@@ -819,10 +906,16 @@ export default function Home() {
 
   const visibleStart = Math.max(0, typed.length - 85);
   const visibleText = text.slice(visibleStart, visibleStart + 280);
-  const expectedKey = (text[typed.length] || "").toLowerCase();
-  const lastTypedKey = (typed.at(-1) || "").toLowerCase();
+  const expectedCharacter = (text[typed.length] || "").toLowerCase();
+  const lastTypedCharacter = (typed.at(-1) || "").toLowerCase();
+  const expectedKey = expectedCharacter === "\n" ? "enter" : expectedCharacter;
+  const lastTypedKey = lastTypedCharacter === "\n" ? "enter" : lastTypedCharacter;
   const modeLabel = MODES.find((item) => item.id === mode)?.label;
-  const timeOptions = [15, 30, 60, 120];
+  const previousComparable = history.find((item) => item.mode === mode && item.metric === metric) || history[0];
+  const improvement = previousComparable?.wpm
+    ? Math.round(((speed - previousComparable.wpm) / Math.max(1, previousComparable.wpm)) * 100)
+    : 0;
+  const timeOptions = [15, 30, 60, 120, 300];
   const wordOptions = [10, 25, 50, 100];
   const pkOptions = [15, 30, 60];
   function chooseTheme(nextTheme) {
@@ -859,6 +952,23 @@ export default function Home() {
     requestAnimationFrame(() => {
       document.querySelector(".control-deck")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  }
+
+  function startAiPlan(item) {
+    reset({
+      mode: item.mode,
+      testType: "time",
+      goal: item.duration * 60,
+      selectedWeakKey: item.mode === "weak" ? item.focus : selectedWeakKey,
+    });
+    requestAnimationFrame(() => {
+      document.querySelector(".practice-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function selectWeakKey(character) {
+    reset({ mode: "weak", selectedWeakKey: character, testType: "time", goal: 300 });
+    requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   const pkWinner = pkScores[1] && pkScores[2]
@@ -987,7 +1097,7 @@ export default function Home() {
           <div className="goal-options">
             {(testType === "time" ? timeOptions : testType === "pk" ? pkOptions : wordOptions).map((item) => (
               <button key={item} className={goal === item ? "active" : ""} onClick={(event) => { event.stopPropagation(); reset({ goal: item }); }}>
-                {testType !== "words" ? (item === 120 ? "2m" : `${item}s`) : `${item}${chineseContent ? "字" : "词"}`}
+                {testType !== "words" ? (item > 60 ? `${item / 60}m` : `${item}s`) : `${item}${chineseContent ? "字" : "词"}`}
               </button>
             ))}
           </div>
@@ -1026,6 +1136,8 @@ export default function Home() {
                 ["javascript", "JavaScript"],
                 ["java", "Java"],
                 ["cpp", "C++"],
+                ["rust", "Rust"],
+                ["sql", "SQL"],
               ].map(([id, label]) => (
                 <button
                   key={id}
@@ -1063,13 +1175,27 @@ export default function Home() {
             <small>当前 {rhythmBpm || "—"} BPM · 跟随节拍保持连续输入</small>
           </div>
         )}
+
+        <TrainingIntelligence
+          mode={mode}
+          weakKeys={weakKeyRanking}
+          selectedWeakKey={selectedWeakKey}
+          onSelectWeakKey={selectWeakKey}
+          fingers={fingerHeatmap}
+          plan={aiTrainingPlan}
+          reactionTime={reactionTime}
+          onStartPlan={startAiPlan}
+          rhythmTarget={rhythmTarget}
+          rhythmScore={rhythmScore}
+          codeMetrics={codeMetrics}
+        />
       </section>
 
       <section className={`practice-card ${status} interaction-${interaction} ${errors > 0 && typed.at(-1) !== text[typed.length - 1] ? "has-error" : ""}`}>
         <div className="progress-track"><span style={{ width: `${progress}%` }} /></div>
         <div className="card-topline">
           <span className={`live-status ${status}`}><i /> {status === "idle" ? "READY" : status === "running" ? "LIVE SESSION" : "SESSION COMPLETE"}</span>
-          <span>{modeLabel} · {INTERACTIONS.find((item) => item.id === interaction)?.label} · {testType !== "words" ? `${goal} 秒` : `${goal} ${chineseContent ? "字" : "词"}`}</span>
+          <span>{modeLabel} · {INTERACTIONS.find((item) => item.id === interaction)?.label} · {testType !== "words" ? (goal > 60 ? `${goal / 60} 分钟` : `${goal} 秒`) : `${goal} ${chineseContent ? "字" : "词"}`}</span>
           <div className="session-actions">
             <span className="session-index">{testType === "pk" ? `PLAYER ${pkPlayer} / 2` : `SESSION / ${String(history.length + 1).padStart(2, "0")}`}</span>
             <button
@@ -1194,6 +1320,11 @@ export default function Home() {
               errorPatterns={errorPatterns}
               modeLabel={modeLabel}
               rhythmBpm={mode === "rhythm" ? rhythmBpm : 0}
+              rhythmScore={mode === "rhythm" ? rhythmScore : 0}
+              reactionTime={reactionTime}
+              improvement={improvement}
+              recommendation={trainingReport.recommendation}
+              codeMetrics={mode === "code" ? codeMetrics : null}
               gainedXp={lastXpAward}
               level={level}
               leveledUp={leveledUp}
@@ -1209,8 +1340,17 @@ export default function Home() {
           {status === "finished" && resultView === "report" && (
             <AITrainingReport
               report={trainingReport}
+              weakKeys={weakKeyRanking}
+              fingers={fingerHeatmap}
+              plan={aiTrainingPlan}
+              reactionTime={reactionTime}
+              rhythmScore={rhythmScore}
+              improvement={improvement}
               onBack={(event) => { event.stopPropagation(); setResultView("summary"); }}
               onRestart={(event) => { event.stopPropagation(); reset(); }}
+              onStartPlan={(item) => {
+                startAiPlan(item);
+              }}
               onApplyRecommendation={(event) => {
                 event.stopPropagation();
                 reset({ mode: trainingReport.recommendation.mode });

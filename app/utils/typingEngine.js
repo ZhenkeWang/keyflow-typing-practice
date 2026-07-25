@@ -4,6 +4,17 @@ export const XP_PER_LEVEL = 1000;
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const LEFT_HAND_KEYS = new Set(Array.from("qwertasdfgzxcvb12345`"));
 const RIGHT_HAND_KEYS = new Set(Array.from("yuiophjklnm67890-=[]\\;',./"));
+const SYMBOL_KEYS = new Set(Array.from("{}[]();:=>+-*/,."));
+const FINGER_GROUPS = [
+  { id: "left-pinky", hand: "left", finger: "Pinky", label: "左小拇指", keys: "`1qaz" },
+  { id: "left-ring", hand: "left", finger: "Ring", label: "左无名指", keys: "2wsx" },
+  { id: "left-middle", hand: "left", finger: "Middle", label: "左中指", keys: "3edc" },
+  { id: "left-index", hand: "left", finger: "Index", label: "左食指", keys: "45rtfgvb" },
+  { id: "right-index", hand: "right", finger: "Index", label: "右食指", keys: "67yuhjnm" },
+  { id: "right-middle", hand: "right", finger: "Middle", label: "右中指", keys: "8ik," },
+  { id: "right-ring", hand: "right", finger: "Ring", label: "右无名指", keys: "9ol." },
+  { id: "right-pinky", hand: "right", finger: "Pinky", label: "右小拇指", keys: "0p;:/[{'\"-=_+]}\\?" },
+];
 
 export function compareInput(typed = "", target = "") {
   const typedChars = Array.from(typed);
@@ -119,6 +130,206 @@ export function buildWeakKeyText(history = [], minLength = 1600) {
   return result;
 }
 
+export function buildFocusedWeakKeyText(key = "e", minLength = 1600) {
+  const normalized = String(key || "e").toLowerCase();
+  const combinations = [
+    `${normalized}${normalized}${normalized}${normalized}${normalized}${normalized}`,
+    `${normalized}r r${normalized} ${normalized}t t${normalized}`,
+    `th${normalized} ${normalized}r ing ${normalized}d`,
+  ];
+  const vocabulary = [
+    "experience", "remember", "better", "keyboard", "practice", "precision",
+    "repeat", "create", "progress", "strength", "training", "sentence",
+  ].filter((word) => word.includes(normalized));
+  const source = [...combinations, ...(vocabulary.length ? vocabulary : [`${normalized} flow`, `type ${normalized}`, `${normalized} rhythm`])];
+  let result = "";
+  let index = 0;
+  while (result.length < minLength) {
+    result += `${result ? " " : ""}${source[index % source.length]}`;
+    index += 1;
+  }
+  return result;
+}
+
+export function buildWeakKeyRanking(history = [], currentStats = {}, limit = 10) {
+  const totals = {};
+  const mergeStats = (stats = {}) => {
+    Object.entries(stats).forEach(([character, value]) => {
+      const key = String(character).toLowerCase();
+      if (!key || key === " " || key === "\n") return;
+      const current = totals[key] || { character: key, attempts: 0, errors: 0, latencyTotal: 0, latencyCount: 0 };
+      current.attempts += Number(value.attempts) || 0;
+      current.errors += Number(value.errors) || 0;
+      current.latencyTotal += Number(value.latencyTotal) || 0;
+      current.latencyCount += Number(value.latencyCount) || 0;
+      totals[key] = current;
+    });
+  };
+
+  history.forEach((record) => {
+    if (record.characterStats) {
+      mergeStats(record.characterStats);
+      return;
+    }
+    (record.mistakes || []).forEach((mistake) => {
+      const key = String(mistake.expected || "").toLowerCase();
+      if (!key || key === " ") return;
+      const current = totals[key] || { character: key, attempts: 0, errors: 0, latencyTotal: 0, latencyCount: 0 };
+      current.errors += Number(mistake.count) || 1;
+      current.attempts += Number(mistake.count) || 1;
+      totals[key] = current;
+    });
+  });
+  mergeStats(currentStats);
+
+  return Object.values(totals)
+    .map((item) => ({
+      ...item,
+      errorRate: item.attempts ? Math.round((item.errors / item.attempts) * 100) : 0,
+      reactionMs: item.latencyCount ? Math.round(item.latencyTotal / item.latencyCount) : 0,
+    }))
+    .filter((item) => item.errors > 0 || item.reactionMs > 0)
+    .sort((a, b) => b.errors - a.errors || b.errorRate - a.errorRate || b.reactionMs - a.reactionMs)
+    .slice(0, limit);
+}
+
+export function aggregateCharacterStats(history = [], currentStats = {}) {
+  const aggregate = {};
+  const merge = (stats = {}) => {
+    Object.entries(stats).forEach(([character, value]) => {
+      const item = aggregate[character] || {
+        attempts: 0,
+        errors: 0,
+        latencyTotal: 0,
+        latencyCount: 0,
+      };
+      item.attempts += Number(value.attempts) || 0;
+      item.errors += Number(value.errors) || 0;
+      item.latencyTotal += Number(value.latencyTotal) || 0;
+      item.latencyCount += Number(value.latencyCount) || 0;
+      aggregate[character] = item;
+    });
+  };
+  history.forEach((record) => merge(record.characterStats));
+  merge(currentStats);
+  return aggregate;
+}
+
+export function getFingerForCharacter(character = "") {
+  const key = String(character).toLowerCase();
+  return FINGER_GROUPS.find((group) => group.keys.includes(key))?.id || "neutral";
+}
+
+export function buildFingerHeatmap(characterStats = {}) {
+  const totals = Object.fromEntries(FINGER_GROUPS.map((group) => [
+    group.id,
+    { ...group, attempts: 0, errors: 0, errorRate: 0, level: "normal" },
+  ]));
+
+  Object.entries(characterStats).forEach(([character, stats]) => {
+    const id = getFingerForCharacter(character);
+    if (!totals[id]) return;
+    totals[id].attempts += Number(stats.attempts) || 0;
+    totals[id].errors += Number(stats.errors) || 0;
+  });
+
+  return FINGER_GROUPS.map((group) => {
+    const item = totals[group.id];
+    const errorRate = item.attempts ? Math.round((item.errors / item.attempts) * 100) : 0;
+    return {
+      ...item,
+      errorRate,
+      level: errorRate >= 12 ? "weak" : errorRate >= 5 ? "watch" : "normal",
+    };
+  });
+}
+
+export function summarizeReactionTime(characterStats = {}) {
+  let latencyTotal = 0;
+  let latencyCount = 0;
+  Object.values(characterStats).forEach((stats) => {
+    latencyTotal += Number(stats.latencyTotal) || 0;
+    latencyCount += Number(stats.latencyCount) || 0;
+  });
+  return latencyCount ? Math.round(latencyTotal / latencyCount) : 0;
+}
+
+export function calculateRhythmScore(intervals = [], targetBpm = 90) {
+  const targetInterval = 60_000 / Math.max(1, targetBpm);
+  const valid = intervals.filter((value) => Number.isFinite(value) && value >= 40 && value <= 2000).slice(-48);
+  if (valid.length < 3) return 0;
+  const averageDeviation = valid.reduce((sum, value) => sum + Math.abs(value - targetInterval), 0) / valid.length;
+  return clamp(Math.round(100 - (averageDeviation / targetInterval) * 100), 0, 100);
+}
+
+export function calculateCodeMetrics({
+  characterStats = {},
+  typed = "",
+  target = "",
+  elapsedMs = 0,
+} = {}) {
+  let symbolAttempts = 0;
+  let symbolErrors = 0;
+  Object.entries(characterStats).forEach(([character, stats]) => {
+    if (!SYMBOL_KEYS.has(character)) return;
+    symbolAttempts += Number(stats.attempts) || 0;
+    symbolErrors += Number(stats.errors) || 0;
+  });
+  const minutes = elapsedMs > 0 ? elapsedMs / 60_000 : 0;
+  const comparison = compareInput(typed, target);
+  const correctIndentCharacters = Array.from(typed).reduce((count, character, index) => {
+    if (character !== " " && character !== "\t") return count;
+    const lineStart = typed.lastIndexOf("\n", index - 1) + 1;
+    return typed.slice(lineStart, index).trim() === "" && character === target[index] ? count + 1 : count;
+  }, 0);
+
+  return {
+    symbolAccuracy: symbolAttempts
+      ? Math.round(((symbolAttempts - Math.min(symbolAttempts, symbolErrors)) / symbolAttempts) * 100)
+      : 100,
+    indentSpeed: minutes ? Math.round(correctIndentCharacters / minutes) : 0,
+    codeWpm: minutes ? Math.round((comparison.correct / CHARACTERS_PER_WORD) / minutes) : 0,
+  };
+}
+
+export function buildPersonalTrainingPlan({
+  weakKeys = [],
+  accuracy = 100,
+  reactionTime = 0,
+  rhythmScore = 100,
+} = {}) {
+  const primaryKey = weakKeys[0]?.character || "e";
+  const combination = weakKeys.slice(0, 2).map((item) => item.character).join("") || "th";
+  return [
+    {
+      id: "weak",
+      mode: "weak",
+      title: "Weak Key",
+      duration: 5,
+      focus: primaryKey,
+      reason: weakKeys.length
+        ? `${primaryKey.toUpperCase()} 键错误率较高，先建立稳定触键。`
+        : `先用 ${primaryKey.toUpperCase()} 键建立第一组专项基准。`,
+    },
+    {
+      id: "combination",
+      mode: "accuracy",
+      title: "Combination",
+      duration: 3,
+      focus: combination,
+      reason: `集中练习 ${combination} 与常见相邻组合。`,
+    },
+    {
+      id: "flow",
+      mode: rhythmScore < 82 || reactionTime > 260 ? "rhythm" : "speed",
+      title: "Sentence Flow",
+      duration: 5,
+      focus: rhythmScore < 82 ? "rhythm" : "speed",
+      reason: accuracy < 95 ? "降低速度，在完整句子中保持准确率。" : "把专项成果带回连续句子输入。",
+    },
+  ];
+}
+
 export function buildErrorPatterns(mistakes = [], target = "", limit = 3) {
   const totals = {};
   const commonPatterns = ["tion", "ing", "the", "th", "er", "re", "qu"];
@@ -215,7 +426,7 @@ export function summarizeHandPerformance(characterStats = {}) {
   return summary;
 }
 
-export function buildTrainingReport({
+function buildLegacyTrainingReport({
   mistakes = [],
   characterStats = {},
   accuracy = 100,
@@ -291,6 +502,88 @@ export function buildTrainingReport({
     },
     insight: topMistakes.length
       ? `最常见错误是 ${topMistakes[0].expected === " " ? "空格" : topMistakes[0].expected} → ${topMistakes[0].typed === " " ? "空格" : topMistakes[0].typed}，共 ${topMistakes[0].count} 次。`
+      : "本轮没有记录到错误，输入节奏稳定。",
+    handInsight: accuracyGap >= 3
+      ? `${weakerHand === "left" ? "左手" : "右手"}准确率低 ${accuracyGap}%，建议降低速度并做单侧键区热身。`
+      : "左右手表现均衡，可以继续提升连续输入速度。",
+    recommendation,
+  };
+}
+
+export function buildTrainingReport({
+  mistakes = [],
+  characterStats = {},
+  accuracy = 100,
+  wpm = 0,
+  mode = "speed",
+} = {}) {
+  const hands = summarizeHandPerformance(characterStats);
+  const topMistakes = [...mistakes]
+    .sort((a, b) => b.count - a.count || b.lastIndex - a.lastIndex)
+    .slice(0, 5);
+  const accuracyGap = Math.abs(hands.left.accuracy - hands.right.accuracy);
+  const weakerHand = accuracyGap === 0
+    ? null
+    : hands.left.accuracy < hands.right.accuracy ? "left" : "right";
+  const primary = topMistakes[0];
+  const hasSymbols = mode === "code"
+    || topMistakes.some((item) => /[()[\]{};:'"<>/=+*-]/.test(item.expected));
+  const hasNumbers = topMistakes.some((item) => /[0-9]/.test(item.expected));
+
+  let recommendation = {
+    mode: "accuracy",
+    label: "Accuracy Training",
+    reason: "降低输入速度，优先稳定高频字符与组合的准确率。",
+  };
+  if (hasNumbers) {
+    recommendation = {
+      mode: "weak",
+      label: "数字与薄弱按键",
+      reason: "错误集中在数字键区，建议进行五分钟定向触键训练。",
+    };
+  } else if (hasSymbols) {
+    recommendation = {
+      mode: "code",
+      label: "代码符号训练",
+      reason: "成对符号和语法标点是主要损耗点，继续进行代码专项。",
+    };
+  } else if (accuracy >= 97 && wpm >= 55) {
+    recommendation = {
+      mode: "rhythm",
+      label: "Rhythm Training",
+      reason: "准确率已经稳定，下一步应减少连续输入中的节奏波动。",
+    };
+  } else if (primary) {
+    recommendation = {
+      mode: "weak",
+      label: `${primary.expected.toUpperCase()} 键专项`,
+      reason: `${primary.expected.toUpperCase()} 是本轮最高频错误，先单独修正再回到句子训练。`,
+    };
+  }
+
+  return {
+    topMistakes,
+    hands,
+    weakerHand,
+    strengths: [
+      accuracy >= 97 ? "整体准确率稳定，基础击键控制良好。" : "能够持续完成训练并主动修正错误。",
+      accuracyGap < 3 ? "左右手输入表现均衡。" : `${weakerHand === "left" ? "右手" : "左手"}键区发挥相对稳定。`,
+    ],
+    issues: primary
+      ? [{
+          label: primary.expected === " " ? "Space" : primary.expected,
+          detail: `本轮出现 ${primary.count} 次，是最优先的纠错目标。`,
+        }]
+      : [{
+          label: "Rhythm",
+          detail: "本轮没有集中错键，可以继续缩小击键间隔波动。",
+        }],
+    dailyDrill: {
+      duration: accuracy < 95 ? 8 : 5,
+      focus: primary?.expected === " " ? "Space" : primary?.expected || "rhythm",
+    },
+    insight: primary
+      ? `最常见错误是 ${primary.expected === " " ? "空格" : primary.expected} → ${primary.typed === " " ? "空格" : primary.typed}，共 ${primary.count} 次。`
       : "本轮没有记录到错误，输入节奏稳定。",
     handInsight: accuracyGap >= 3
       ? `${weakerHand === "left" ? "左手" : "右手"}准确率低 ${accuracyGap}%，建议降低速度并做单侧键区热身。`
