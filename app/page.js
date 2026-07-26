@@ -13,6 +13,7 @@ import TrainingIntelligence from "./components/TrainingIntelligence";
 import TrainingMetrics from "./components/TrainingMetrics";
 import UserProfileDialog from "./components/UserProfileDialog";
 import GrowthNotifications from "./components/GrowthNotifications";
+import { useAiCoachStore } from "./stores/aiCoachStore";
 import ScrollRevealController from "./animations/ScrollRevealController";
 import {
   buildDailyMissions,
@@ -344,6 +345,9 @@ export default function Home() {
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const [profileOpen, setProfileOpen] = useState(false);
   const [selectedWeakKey, setSelectedWeakKey] = useState("");
+  const sessionReview = useAiCoachStore((state) => state.sessionReview);
+  const reviewSession = useAiCoachStore((state) => state.review);
+  const clearSessionReview = useAiCoachStore((state) => state.clearReview);
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -352,6 +356,7 @@ export default function Home() {
   const finishedAt = useRef(0);
   const lastKeyAt = useRef(0);
   const intervals = useRef([]);
+  const speedTimeline = useRef([]);
   const keystrokes = useRef({ total: 0, incorrect: 0, corrected: 0 });
   const characterStats = useRef({});
   const recorded = useRef(false);
@@ -491,11 +496,13 @@ export default function Home() {
     finishedAt.current = 0;
     lastKeyAt.current = 0;
     intervals.current = [];
+    speedTimeline.current = [];
+    clearSessionReview();
     keystrokes.current = { total: 0, incorrect: 0, corrected: 0 };
     characterStats.current = {};
     recorded.current = false;
     requestAnimationFrame(() => inputRef.current?.focus());
-  }, [codeLanguage, goal, history, mode, numberPreset, rhythmTarget, selectedWeakKey, testType]);
+  }, [clearSessionReview, codeLanguage, goal, history, mode, numberPreset, rhythmTarget, selectedWeakKey, testType]);
 
   useEffect(() => {
     setBest(
@@ -633,6 +640,18 @@ export default function Home() {
   }, [goal, status, testType]);
 
   useEffect(() => {
+    if (status !== "running" || elapsedSeconds < 1) return;
+    const second = Math.floor(elapsedSeconds);
+    const bucket = Math.max(5, Math.floor(second / 5) * 5);
+    const previous = speedTimeline.current.at(-1);
+    if (previous?.second === bucket) {
+      previous.wpm = speed;
+      return;
+    }
+    speedTimeline.current.push({ second: bucket, wpm: speed });
+  }, [elapsedSeconds, speed, status]);
+
+  useEffect(() => {
     if (status !== "finished" || recorded.current) return;
     recorded.current = true;
     const completedAt = Date.now();
@@ -663,6 +682,7 @@ export default function Home() {
       reactionTime,
       codeLanguage: mode === "code" ? codeLanguage : null,
       codeMetrics: mode === "code" ? codeMetrics : null,
+      speedTimeline: speedTimeline.current.map((point) => ({ ...point })),
       characterStats: Object.fromEntries(
         Object.entries(characterStats.current).map(([character, stats]) => [character, { ...stats }])
       ),
@@ -684,6 +704,7 @@ export default function Home() {
     entry.xp = xpGain;
     const nextHistory = [entry, ...history].slice(0, 1000);
     setHistory(nextHistory);
+    reviewSession(entry, history);
     localStorage.setItem("keyflow-history", JSON.stringify(nextHistory));
     if (testType === "pk") setPkScores((scores) => ({ ...scores, [pkPlayer]: entry }));
     setLastXpAward(xpGain);
@@ -718,7 +739,7 @@ export default function Home() {
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
       if (mode === "speed") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, claimedMissionIds, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, reactionTime, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
+  }, [accuracy, best, claimedMissionIds, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, reactionTime, reviewSession, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -1380,6 +1401,7 @@ export default function Home() {
               xpBreakdown={lastXpBreakdown}
               level={level}
               leveledUp={leveledUp}
+              aiReview={sessionReview}
               testType={testType}
               pkPlayer={pkPlayer}
               pkWinner={pkWinner}
@@ -1392,6 +1414,7 @@ export default function Home() {
           {status === "finished" && resultView === "report" && (
             <AITrainingReport
               report={trainingReport}
+              aiReview={sessionReview}
               weakKeys={weakKeyRanking}
               fingers={fingerHeatmap}
               plan={aiTrainingPlan}

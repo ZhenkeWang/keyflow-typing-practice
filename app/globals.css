@@ -8593,3 +8593,287 @@ html[data-theme="light"] .practice-card {
 @media (prefers-reduced-motion: reduce) {
   .growth-notification-orbit i { animation: none; }
 }
+
+/* Phase 4 — Apple Intelligence inspired coaching surface. */
+.ai-personal-coach {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 30px;
+  border: 1px solid color-mix(in srgb, var(--violet) 22%, var(--line));
+  border-radius: 26px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--panel-2) 88%, transparent), color-mix(in srgb, var(--panel) 76%, transparent)),
+    var(--panel);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, .16), inset 0 1px rgba(255, 255, 255, .08);
+  backdrop-filter: blur(30px) saturate(145%);
+}
+.ai-coach-ambient {
+  position: absolute;
+  z-index: -1;
+  inset: -40% -15% auto 38%;
+  height: 520px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 45%, color-mix(in srgb, var(--cyan) 17%, transparent), transparent 32%),
+    radial-gradient(circle at 68% 36%, color-mix(in srgb, var(--violet) 21%, transparent), transparent 39%);
+  opacity: .8;
+  pointer-events: none;
+}
+.ai-coach-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.ai-coach-header > div:nth-child(2) > span,
+.ai-panel-title > div > span {
+  color: color-mix(in srgb, var(--violet) 76%, var(--text));
+  font: 650 8px Inter, sans-serif;
+  letter-spacing: .16em;
+}
+.ai-coach-header h3 { margin: 5px 0 3px; color: var(--text); font: 650 27px Inter, sans-serif; letter-spacing: -.045em; }
+.ai-coach-header p { color: var(--muted); font: 450 11px Inter, sans-serif; }
+.ai-coach-header > em {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px;
+  border: 1px solid var(--line); border-radius: 999px; color: var(--dim);
+  background: color-mix(in srgb, var(--panel) 68%, transparent);
+  font: 600 8px Inter, sans-serif; font-style: normal; letter-spacing: .1em;
+}
+.ai-coach-header > em i { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+.ai-coach-orb {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 27%, rgba(255, 255, 255, .9), transparent 17%),
+    radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--cyan) 80%, white), color-mix(in srgb, var(--violet) 78%, transparent) 58%, transparent 72%);
+  box-shadow: 0 0 34px color-mix(in srgb, var(--violet) 28%, transparent), inset -8px -10px 16px rgba(34, 24, 92, .24);
+}
+.ai-coach-orb.suggestion {
+  background:
+    radial-gradient(circle at 34% 27%, rgba(255, 255, 255, .9), transparent 17%),
+    radial-gradient(circle at 35% 35%, #76f6ce, color-mix(in srgb, var(--cyan) 50%, var(--violet)) 62%, transparent 72%);
+}
+.ai-coach-orb.complete {
+  background:
+    radial-gradient(circle at 34% 27%, rgba(255, 255, 255, .9), transparent 17%),
+    radial-gradient(circle at 35% 35%, #cbb7ff, var(--violet) 62%, transparent 72%);
+}
+.ai-coach-orb > i {
+  position: absolute;
+  inset: -5px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 35%, transparent);
+  border-radius: 50%;
+  animation: coachOrbit 4.6s linear infinite;
+}
+.ai-coach-orb > i:nth-child(2) { inset: -9px 2px; animation-duration: 6.2s; animation-direction: reverse; }
+.ai-coach-orb > i:nth-child(3) { inset: 2px -9px; animation-duration: 5.4s; }
+.ai-coach-orb > i::after { content: ""; position: absolute; top: 2px; left: 50%; width: 3px; height: 3px; border-radius: 50%; background: white; }
+.ai-coach-orb > span { width: 13px; height: 13px; border-radius: 50%; background: rgba(255, 255, 255, .34); box-shadow: inset 0 1px rgba(255,255,255,.8); }
+@keyframes coachOrbit { to { rotate: 360deg; } }
+
+.ai-coach-body { display: grid; gap: 18px; padding-top: 22px; }
+.ai-status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.ai-status-grid article {
+  min-height: 118px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+}
+.ai-status-grid article > span { color: var(--dim); font: 600 8px Inter, sans-serif; letter-spacing: .11em; }
+.ai-status-grid article > strong { display: block; margin: 12px 0 4px; color: var(--text); font: 650 24px Inter, sans-serif; letter-spacing: -.04em; text-transform: capitalize; }
+.ai-status-grid article > strong small { margin-left: 4px; color: var(--muted); font-size: 8px; letter-spacing: .02em; }
+.ai-status-grid article > p { color: var(--muted); font: 450 9px Inter, sans-serif; line-height: 1.5; }
+.ai-status-grid article.weakness { background: color-mix(in srgb, #ff765f 5%, var(--panel)); }
+.ai-status-grid article.prediction { background: color-mix(in srgb, var(--cyan) 6%, var(--panel)); }
+
+.ai-coach-intelligence-grid,
+.ai-goal-prediction-grid {
+  display: grid;
+  grid-template-columns: 1.12fr .88fr;
+  gap: 12px;
+}
+.ai-weakness-panel,
+.ai-recommendation-panel,
+.ai-growth-prediction,
+.ai-goal-panel,
+.ai-chat-coach {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: color-mix(in srgb, var(--panel) 73%, transparent);
+}
+.ai-panel-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ai-panel-title > div > strong { display: block; margin-top: 4px; color: var(--text); font: 600 14px Inter, sans-serif; }
+.ai-panel-title > small { color: var(--dim); font: 600 8px Inter, sans-serif; letter-spacing: .09em; text-transform: uppercase; }
+.ai-weakness-list { display: grid; gap: 7px; margin-top: 16px; }
+.ai-weakness-list article {
+  display: grid;
+  grid-template-columns: 29px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--panel-2) 62%, transparent);
+}
+.ai-weakness-list article > i { color: var(--dim); font: 550 8px "IBM Plex Mono", monospace; font-style: normal; }
+.ai-weakness-list article strong { display: block; color: var(--text); font: 600 11px Inter, sans-serif; }
+.ai-weakness-list article small { color: var(--muted); font: 450 9px Inter, sans-serif; }
+.ai-weakness-list article > span { padding: 4px 7px; border-radius: 999px; color: var(--muted); background: var(--line); font: 600 7px Inter, sans-serif; text-transform: uppercase; }
+.ai-weakness-list article.high > span { color: #ff9584; background: rgba(255, 91, 71, .1); }
+.ai-endurance {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.ai-endurance > span { color: var(--dim); font: 600 8px Inter, sans-serif; letter-spacing: .1em; }
+.ai-endurance > div { display: flex; align-items: center; gap: 14px; margin-top: 10px; }
+.ai-endurance > div strong { color: var(--text); font: 650 20px Inter, sans-serif; }
+.ai-endurance > div strong small { display: block; margin-top: 2px; color: var(--dim); font-size: 8px; font-weight: 500; }
+.ai-endurance > div i { color: var(--dim); font-style: normal; }
+.ai-endurance > p { margin-top: 9px; color: var(--muted); font-size: 9px; }
+
+.ai-recommendation-list { display: grid; gap: 8px; margin-top: 16px; }
+.ai-recommendation-list button {
+  display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 11px;
+  width: 100%; padding: 13px; border: 1px solid var(--line); border-radius: 14px;
+  color: var(--text); background: color-mix(in srgb, var(--panel-2) 64%, transparent);
+  text-align: left; cursor: pointer;
+  transition: transform .35s cubic-bezier(.16,1,.3,1), border-color .25s, background .25s;
+}
+.ai-recommendation-list button:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--violet) 38%, var(--line)); background: color-mix(in srgb, var(--violet) 7%, var(--panel-2)); }
+.ai-recommendation-list button > i { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 9px; color: white; background: linear-gradient(135deg, var(--violet), var(--cyan)); font: 650 10px Inter, sans-serif; font-style: normal; }
+.ai-recommendation-list button strong { display: block; font: 600 11px Inter, sans-serif; }
+.ai-recommendation-list button div > span { display: inline-block; margin: 3px 0; color: color-mix(in srgb, var(--cyan) 75%, var(--text)); font: 600 9px "IBM Plex Mono", monospace; }
+.ai-recommendation-list button small { display: block; color: var(--muted); font: 450 8px Inter, sans-serif; }
+.ai-recommendation-list button em { color: var(--dim); font: 600 8px Inter, sans-serif; font-style: normal; }
+
+.ai-prediction-chart { margin-top: 12px; color: color-mix(in srgb, var(--violet) 78%, var(--cyan)); }
+.ai-prediction-chart svg { width: 100%; overflow: visible; }
+.ai-prediction-chart svg line { stroke: var(--line); }
+.ai-prediction-chart svg polyline { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ai-prediction-chart svg circle { fill: var(--panel); stroke: currentColor; stroke-width: 2; }
+.ai-prediction-chart svg text { fill: var(--muted); font: 600 8px Inter, sans-serif; text-anchor: middle; }
+.ai-prediction-chart > div { display: grid; grid-template-columns: repeat(4, 1fr); color: var(--dim); font: 500 7px Inter, sans-serif; text-align: center; }
+.ai-goal-panel form { display: flex; gap: 8px; margin: 14px 0; }
+.ai-goal-panel label { flex: 1; display: grid; grid-template-columns: 1fr 54px auto; align-items: center; gap: 6px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 12px; }
+.ai-goal-panel label > span, .ai-goal-panel label > small { color: var(--dim); font: 500 8px Inter, sans-serif; }
+.ai-goal-panel input { width: 54px; border: 0; outline: 0; color: var(--text); background: transparent; font: 650 15px Inter, sans-serif; text-align: right; }
+.ai-goal-panel form > button { padding: 0 13px; border: 0; border-radius: 11px; color: white; background: linear-gradient(135deg, var(--violet), color-mix(in srgb, var(--violet) 55%, var(--cyan))); font: 600 9px Inter, sans-serif; cursor: pointer; }
+.ai-timeline { display: grid; gap: 7px; }
+.ai-timeline > div { display: grid; grid-template-columns: 8px 25px 1fr; align-items: center; gap: 7px; }
+.ai-timeline > div > i { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); box-shadow: 0 0 9px color-mix(in srgb, var(--violet) 55%, transparent); }
+.ai-timeline > div > span { color: var(--dim); font: 600 8px Inter, sans-serif; }
+.ai-timeline strong { display: block; color: var(--text); font: 550 9px Inter, sans-serif; }
+.ai-timeline small { color: var(--muted); font: 450 8px Inter, sans-serif; }
+
+.ai-chat-coach { display: grid; gap: 13px; }
+.ai-chat-coach .ai-panel-title .ai-coach-orb { width: 35px; height: 35px; }
+.ai-chat-prompts { display: flex; flex-wrap: wrap; gap: 7px; }
+.ai-chat-prompts button { padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: transparent; font: 500 9px Inter, sans-serif; cursor: pointer; }
+.ai-chat-prompts button:hover { color: var(--text); border-color: color-mix(in srgb, var(--violet) 35%, var(--line)); }
+.ai-conversation { display: grid; gap: 9px; max-height: 280px; overflow-y: auto; }
+.ai-conversation article { padding: 14px 15px; border-left: 2px solid color-mix(in srgb, var(--violet) 60%, var(--cyan)); border-radius: 0 13px 13px 0; background: color-mix(in srgb, var(--panel-2) 65%, transparent); }
+.ai-conversation article span { color: var(--dim); font: 550 9px Inter, sans-serif; }
+.ai-conversation article p { margin-top: 7px; color: var(--text); font: 450 11px Inter, sans-serif; line-height: 1.7; }
+.ai-chat-coach > form { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.ai-chat-coach > form input { min-width: 0; padding: 13px 15px; border: 1px solid var(--line); border-radius: 13px; outline: none; color: var(--text); background: color-mix(in srgb, var(--panel) 78%, transparent); font: 500 11px Inter, sans-serif; }
+.ai-chat-coach > form input:focus { border-color: color-mix(in srgb, var(--violet) 48%, var(--line)); }
+.ai-chat-coach > form button { padding: 0 16px; border: 0; border-radius: 13px; color: white; background: linear-gradient(135deg, var(--violet), color-mix(in srgb, var(--violet) 55%, var(--cyan))); font: 600 10px Inter, sans-serif; cursor: pointer; }
+.ai-chat-coach > form button:disabled { opacity: .4; cursor: default; }
+.ai-chat-coach > form button span { margin-left: 6px; }
+.ai-thinking { display: flex; align-items: center; gap: 5px; padding: 12px; color: var(--muted); font: 500 9px Inter, sans-serif; }
+.ai-thinking i, .ai-coach-skeleton i, .session-ai-review.loading i b, .phase-four-review.loading i b { width: 5px; height: 5px; border-radius: 50%; background: var(--violet); animation: aiThinking 1.1s ease-in-out infinite; }
+.ai-thinking i:nth-child(2), .session-ai-review.loading i b:nth-child(2), .phase-four-review.loading i b:nth-child(2) { animation-delay: .14s; }
+.ai-thinking i:nth-child(3), .session-ai-review.loading i b:nth-child(3), .phase-four-review.loading i b:nth-child(3) { animation-delay: .28s; }
+@keyframes aiThinking { 0%,100% { opacity: .25; scale: .75; } 50% { opacity: 1; scale: 1.15; } }
+
+.ai-coach-skeleton { display: grid; gap: 14px; padding-top: 22px; }
+.ai-coach-skeleton > div { display: grid; gap: 10px; }
+.ai-coach-skeleton > div:first-child { grid-template-columns: 50px 1fr; }
+.ai-coach-skeleton > div:nth-child(2) { grid-template-columns: repeat(3, 1fr); }
+.ai-coach-skeleton > div:nth-child(3) { grid-template-columns: 1.2fr .8fr; }
+.ai-coach-skeleton span { display: block; min-height: 72px; border-radius: 16px; background: linear-gradient(90deg, var(--line), color-mix(in srgb, var(--text) 7%, transparent), var(--line)); background-size: 200% 100%; animation: aiSkeleton 1.8s ease infinite; }
+.ai-coach-skeleton > div:first-child span { min-height: 18px; align-self: center; }
+@keyframes aiSkeleton { to { background-position: -200% 0; } }
+
+.phase-four-activity-grid { grid-template-columns: 1fr; }
+.session-ai-review {
+  display: grid;
+  grid-template-columns: minmax(95px, .6fr) repeat(3, 1fr);
+  align-items: stretch;
+  gap: 7px;
+  margin: 0 0 16px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--violet) 26%, var(--line));
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--violet) 5%, var(--panel));
+}
+.session-ai-review > div, .session-ai-review > p { padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--panel-2) 68%, transparent); }
+.session-ai-review > div span { display: block; color: color-mix(in srgb, var(--violet) 76%, var(--text)); font: 650 7px Inter, sans-serif; letter-spacing: .12em; }
+.session-ai-review > div strong { display: block; margin-top: 4px; color: var(--text); font: 650 20px Inter, sans-serif; }
+.session-ai-review > div strong small { color: var(--dim); font-size: 8px; }
+.session-ai-review > p { color: var(--muted); font: 450 9px Inter, sans-serif; line-height: 1.45; }
+.session-ai-review > p b { display: block; margin-bottom: 3px; color: var(--text); font: 600 8px Inter, sans-serif; }
+.session-ai-review.loading { grid-template-columns: auto 1fr; }
+.session-ai-review.loading i, .phase-four-review.loading i { display: flex; gap: 4px; margin-top: 9px; }
+.phase-four-review {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--violet) 28%, var(--line));
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--violet) 6%, var(--panel));
+}
+.phase-four-review-score { padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--panel-2) 68%, transparent); }
+.phase-four-review-score > span { color: color-mix(in srgb, var(--violet) 75%, var(--text)); font: 650 7px Inter, sans-serif; letter-spacing: .1em; }
+.phase-four-review-score strong { display: block; margin-top: 8px; color: var(--text); font: 650 29px Inter, sans-serif; }
+.phase-four-review-score strong small { color: var(--dim); font-size: 9px; }
+.phase-four-review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.phase-four-review-grid article { padding: 11px; border: 1px solid var(--line); border-radius: 11px; }
+.phase-four-review-grid span { color: var(--dim); font: 600 7px Inter, sans-serif; letter-spacing: .1em; }
+.phase-four-review-grid strong { display: block; margin-top: 6px; color: var(--text); font: 550 10px Inter, sans-serif; line-height: 1.4; }
+.phase-four-review-grid small { display: block; margin-top: 4px; color: var(--muted); font: 450 8px Inter, sans-serif; }
+.phase-four-review > p { align-self: center; color: var(--muted); font: 450 10px Inter, sans-serif; }
+
+html[data-theme="light"] .ai-personal-coach {
+  background: linear-gradient(135deg, rgba(255,255,255,.82), rgba(247,247,252,.67));
+  box-shadow: 0 34px 90px rgba(67, 66, 94, .09), inset 0 1px rgba(255,255,255,.9);
+}
+html[data-theme="light"] .ai-coach-ambient { opacity: .55; }
+
+@media (max-width: 1050px) {
+  .ai-status-grid { grid-template-columns: repeat(2, 1fr); }
+  .ai-coach-intelligence-grid, .ai-goal-prediction-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .ai-personal-coach { padding: 20px; border-radius: 21px; }
+  .ai-coach-header { grid-template-columns: auto 1fr; }
+  .ai-coach-header > em { grid-column: 1 / -1; justify-self: start; }
+  .ai-status-grid { grid-template-columns: 1fr 1fr; }
+  .session-ai-review { grid-template-columns: 1fr 1fr; }
+  .phase-four-review { grid-template-columns: 1fr; }
+  .phase-four-review-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 460px) {
+  .ai-status-grid { grid-template-columns: 1fr; }
+  .ai-coach-header h3 { font-size: 22px; }
+  .ai-coach-orb { width: 48px; height: 48px; }
+  .ai-weakness-panel, .ai-recommendation-panel, .ai-growth-prediction, .ai-goal-panel, .ai-chat-coach { padding: 15px; }
+  .ai-chat-coach > form { grid-template-columns: 1fr; }
+  .ai-chat-coach > form button { min-height: 42px; }
+  .session-ai-review { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-coach-orb > i, .ai-thinking i, .ai-coach-skeleton span { animation: none; }
+}

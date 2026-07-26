@@ -13,6 +13,7 @@ function HandCard({ label, stats, weaker }) {
 
 export default function AITrainingReport({
   report,
+  aiReview,
   weakKeys = [],
   fingers = [],
   plan = [],
@@ -31,6 +32,20 @@ export default function AITrainingReport({
         <div><span>AI TRAINING REPORT</span><h3>个人训练分析</h3></div>
         <small>基于本地击键数据即时生成</small>
       </div>
+
+      <section className={`phase-four-review ${aiReview ? "ready" : "loading"}`}>
+        <div className="phase-four-review-score">
+          <span>AI REVIEW SCORE</span>
+          {aiReview ? <strong>{aiReview.score}<small>/100</small></strong> : <i><b /><b /><b /></i>}
+        </div>
+        {aiReview ? (
+          <div className="phase-four-review-grid">
+            <article><span>STRENGTH</span><strong>{aiReview.strengths[0]}</strong></article>
+            <article><span>FOCUS</span><strong>{aiReview.issues[0]?.label}</strong><small>{aiReview.issues[0]?.detail}</small></article>
+            <article><span>NEXT STEP</span><strong>{aiReview.nextStep.title}</strong><small>{aiReview.nextStep.target} · {aiReview.nextStep.duration} min</small></article>
+          </div>
+        ) : <p>AI Coach 正在生成本轮训练解释与下一步建议…</p>}
+      </section>
 
       <div className="report-summary-strip">
         <div><span>成长变化</span><strong className={improvement >= 0 ? "positive" : "negative"}>{improvement >= 0 ? "+" : ""}{improvement}%</strong></div>

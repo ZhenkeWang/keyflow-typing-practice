@@ -24,7 +24,8 @@
     "react-dom": "^19.2.8",
     "react-server-dom-webpack": "^19.2.8",
     "three": "^0.185.1",
-    "vinext": "^1.0.0-beta.3"
+    "vinext": "^1.0.0-beta.3",
+    "zustand": "^5.0.14"
   },
   "overrides": {
     "postcss": "^8.5.10",

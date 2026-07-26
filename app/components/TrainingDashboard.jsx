@@ -2,7 +2,6 @@
 
 import { memo, useMemo, useState } from "react";
 import {
-  buildCoachSummary,
   buildDailySeries,
   buildGrowthProfile,
   buildPersonalPlan,
@@ -12,6 +11,7 @@ import CountUp from "../animations/CountUp";
 import Reveal from "../animations/Reveal";
 import DailyMissions from "./DailyMissions";
 import SkillTree from "./SkillTree";
+import AiPersonalCoach from "./AiPersonalCoach";
 
 function buildPoints(values, width = 560, height = 160) {
   const active = values.filter((value) => value > 0);
@@ -115,7 +115,6 @@ function TrainingDashboard({ history, xpTotal, profile, claimedMissionIds = [], 
   const daily = useMemo(() => buildDailySeries(history, 14), [history]);
   const activity = useMemo(() => buildDailySeries(history, 365), [history]);
   const plan = useMemo(() => buildPersonalPlan(history), [history]);
-  const coach = useMemo(() => buildCoachSummary(history), [history]);
   const unlockedCount = growth.achievements.filter((item) => item.unlocked).length;
 
   return (
@@ -150,6 +149,8 @@ function TrainingDashboard({ history, xpTotal, profile, claimedMissionIds = [], 
         <MetricCard label="Practice Streak" value={stats.streak} unit="DAYS" detail={stats.streak ? "Keep the flow alive" : "Train today to begin"} tone="streak" />
       </div>
 
+      <AiPersonalCoach history={history} profile={profile} onStartPlan={onStartPlan} />
+
       <div className="phase-three-core-grid">
         <SkillTree skills={growth.skills} />
         <DailyMissions missions={growth.missions} />
@@ -160,7 +161,7 @@ function TrainingDashboard({ history, xpTotal, profile, claimedMissionIds = [], 
         <TrendChart title="Accuracy 趋势" detail="最近 14 天的每日平均准确率" values={daily.map((item) => item.accuracy)} labels={daily.map((item) => item.label)} unit="%" className="accuracy-trend" />
       </div>
 
-      <div className="growth-content-grid">
+      <div className="growth-content-grid phase-four-activity-grid">
         <article className="extended-heatmap-card yearly-heatmap-card">
           <div className="dashboard-card-title">
             <div><strong>年度训练热力图</strong><small>过去 365 天 · 每格代表一天</small></div>
@@ -177,12 +178,6 @@ function TrainingDashboard({ history, xpTotal, profile, claimedMissionIds = [], 
           <div className="heatmap-legend"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`level-${level}`} />)}<span>More</span></div>
         </article>
 
-        <article className="coach-snapshot-card">
-          <div className="dashboard-card-title"><div><strong>Training Insight</strong><small>已有本地分析 · 未新增 AI 服务</small></div><span>LOCAL</span></div>
-          <div className="coach-strength"><span>优势</span><p>{coach.strengths[0]}</p></div>
-          <div className="coach-issues"><span>当前重点</span>{coach.issues.slice(0, 2).map((issue) => <div key={issue.label}><code>{issue.label}</code><p>{issue.detail}</p></div>)}</div>
-          <div className="coach-next"><span>NEXT BEST SESSION</span><strong>{coach.recommendation.title}</strong><small>{coach.recommendation.duration} · {coach.recommendation.reason}</small></div>
-        </article>
       </div>
 
       <div className="achievements-section phase-three-achievements">

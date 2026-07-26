@@ -20,6 +20,7 @@ export default function SessionResult({
   xpBreakdown = [],
   level,
   leveledUp,
+  aiReview,
   testType,
   pkPlayer,
   pkWinner,
@@ -63,6 +64,20 @@ export default function SessionResult({
         <span className={improvement >= 0 ? "positive" : "negative"}>
           {improvement >= 0 ? "+" : ""}{improvement}% VS LAST
         </span>
+      </div>
+
+      <div className={`session-ai-review ${aiReview ? "ready" : "loading"}`}>
+        <div>
+          <span>AI REVIEW</span>
+          {aiReview ? <strong>{aiReview.score}<small>/100</small></strong> : <i><b /><b /><b /></i>}
+        </div>
+        {aiReview ? (
+          <>
+            <p><b>优势</b>{aiReview.strengths[0]}</p>
+            <p><b>问题</b>{aiReview.issues[0]?.label} · {aiReview.issues[0]?.detail}</p>
+            <p><b>下一步</b>{aiReview.nextStep.title} · {aiReview.nextStep.target}</p>
+          </>
+        ) : <p>正在分析本次节奏、错键与训练趋势…</p>}
       </div>
 
       {codeMetrics && (
