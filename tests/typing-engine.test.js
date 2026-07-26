@@ -155,14 +155,14 @@ test("XP awards are bounded and level progress is deterministic", () => {
   assert.ok(xp > 20);
   assert.deepEqual(getLevelInfo(1250), {
     level: 2,
-    title: "Beginner",
+    title: "Typing Beginner",
     currentXp: 250,
     nextLevelXp: 1000,
     progress: 0.25,
   });
-  assert.equal(getLevelInfo(9000).title, "Fast Typist");
-  assert.equal(getLevelInfo(29_000).title, "Keyboard Expert");
-  assert.equal(getLevelInfo(49_000).title, "Keyboard Master");
+  assert.equal(getLevelInfo(9000).title, "Typing Apprentice");
+  assert.equal(getLevelInfo(29_000).title, "Flow Master");
+  assert.equal(getLevelInfo(49_000).title, "Typing Legend");
 });
 
 test("ranks weak keys with error rate and reaction time", () => {

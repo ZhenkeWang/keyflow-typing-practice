@@ -12,7 +12,15 @@ import TrainingKeyboard from "./components/TrainingKeyboard";
 import TrainingIntelligence from "./components/TrainingIntelligence";
 import TrainingMetrics from "./components/TrainingMetrics";
 import UserProfileDialog from "./components/UserProfileDialog";
+import GrowthNotifications from "./components/GrowthNotifications";
 import ScrollRevealController from "./animations/ScrollRevealController";
+import {
+  buildDailyMissions,
+  calculatePracticeStreak,
+  calculateSessionRewards,
+  getAchievements,
+  getGrowthLevelInfo,
+} from "./utils/growthEngine";
 import {
   aggregateCharacterStats,
   appendMistakes,
@@ -28,7 +36,6 @@ import {
   calculateRhythmBpm,
   calculateRhythmScore,
   calculateTypingMetrics,
-  calculateXpAward,
   getLevelInfo,
   normalizeHistory,
   summarizeReactionTime,
@@ -328,7 +335,10 @@ export default function Home() {
   const [mistakeLog, setMistakeLog] = useState([]);
   const [xpTotal, setXpTotal] = useState(0);
   const [lastXpAward, setLastXpAward] = useState(0);
+  const [lastXpBreakdown, setLastXpBreakdown] = useState([]);
   const [leveledUp, setLeveledUp] = useState(false);
+  const [claimedMissionIds, setClaimedMissionIds] = useState([]);
+  const [growthEvents, setGrowthEvents] = useState([]);
   const [resultView, setResultView] = useState("summary");
   const [rhythmTarget, setRhythmTarget] = useState(90);
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
@@ -464,6 +474,7 @@ export default function Home() {
     setFeedback("correct");
     setMistakeLog([]);
     setLastXpAward(0);
+    setLastXpBreakdown([]);
     setLeveledUp(false);
     setResultView("summary");
     setPkPlayer(1);
@@ -500,6 +511,13 @@ export default function Home() {
     }
     setXpTotal(Number(localStorage.getItem("keyflow-xp")) || 0);
     try {
+      const missionState = JSON.parse(localStorage.getItem("keyflow-daily-missions") || "{}");
+      const today = new Date().toLocaleDateString("en-CA");
+      setClaimedMissionIds(missionState.date === today ? missionState.claimedIds || [] : []);
+    } catch {
+      setClaimedMissionIds([]);
+    }
+    try {
       setProfile({
         ...DEFAULT_PROFILE,
         ...JSON.parse(localStorage.getItem("keyflow-profile") || "{}"),
@@ -515,6 +533,12 @@ export default function Home() {
         : ["light", "dark"].includes(legacyTheme) ? legacyTheme : "auto"
     );
   }, []);
+
+  useEffect(() => {
+    if (!growthEvents.length) return undefined;
+    const timer = window.setTimeout(() => setGrowthEvents((events) => events.slice(1)), 4200);
+    return () => window.clearTimeout(timer);
+  }, [growthEvents]);
 
   useEffect(() => {
     const resolveTheme = () => setTheme(
@@ -611,12 +635,7 @@ export default function Home() {
   useEffect(() => {
     if (status !== "finished" || recorded.current) return;
     recorded.current = true;
-    const xpGain = calculateXpAward({
-      correctCharacters: correct,
-      accuracy,
-      duration: elapsedSeconds,
-      errorRate,
-    });
+    const completedAt = Date.now();
     const entry = {
       wpm: speed,
       cpm,
@@ -627,10 +646,9 @@ export default function Home() {
       mode,
       metric,
       consistency,
-      timestamp: Date.now(),
-      at: Date.now(),
+      timestamp: completedAt,
+      at: completedAt,
       player: testType === "pk" ? pkPlayer : null,
-      xp: xpGain,
       mistakes: mistakeLog.map((item) => ({
         key: item.key,
         expected: item.expected,
@@ -651,14 +669,47 @@ export default function Home() {
       characters: typed.length,
       correctCharacters: correct,
     };
-    const nextHistory = [entry, ...history].slice(0, 50);
+    const projectedHistory = [entry, ...history];
+    const missionsAfter = buildDailyMissions(projectedHistory, completedAt, claimedMissionIds);
+    const completedMissions = missionsAfter.filter((mission) => mission.completed && !mission.claimed);
+    const reward = calculateSessionRewards({
+      mode,
+      duration: elapsedSeconds,
+      accuracy,
+      correctCharacters: correct,
+      streak: calculatePracticeStreak(projectedHistory, completedAt),
+      missionRewards: completedMissions.map((mission) => mission.reward),
+    });
+    const xpGain = reward.total;
+    entry.xp = xpGain;
+    const nextHistory = [entry, ...history].slice(0, 1000);
     setHistory(nextHistory);
     localStorage.setItem("keyflow-history", JSON.stringify(nextHistory));
     if (testType === "pk") setPkScores((scores) => ({ ...scores, [pkPlayer]: entry }));
     setLastXpAward(xpGain);
+    setLastXpBreakdown(reward.breakdown);
+    const nextClaimedMissionIds = [...new Set([...claimedMissionIds, ...completedMissions.map((mission) => mission.id)])];
+    if (completedMissions.length) {
+      setClaimedMissionIds(nextClaimedMissionIds);
+      localStorage.setItem("keyflow-daily-missions", JSON.stringify({
+        date: new Date(completedAt).toLocaleDateString("en-CA"),
+        claimedIds: nextClaimedMissionIds,
+      }));
+    }
+    const previousAchievementIds = new Set(getAchievements(history, completedAt).filter((item) => item.unlocked).map((item) => item.id));
+    const unlockedAchievement = getAchievements(nextHistory, completedAt).find((item) => item.unlocked && !previousAchievementIds.has(item.id));
     setXpTotal((current) => {
       const next = current + xpGain;
-      setLeveledUp(Math.floor(current / 1000) < Math.floor(next / 1000));
+      const previousLevel = getGrowthLevelInfo(current);
+      const nextLevel = getGrowthLevelInfo(next);
+      const didLevelUp = previousLevel.level < nextLevel.level;
+      setLeveledUp(didLevelUp);
+      const events = [
+        ...(didLevelUp ? [{ type: "level", level: nextLevel.level, title: nextLevel.title }] : []),
+        ...(unlockedAchievement ? [{ type: "achievement", ...unlockedAchievement }] : []),
+        ...completedMissions.map((mission) => ({ type: "mission", ...mission })),
+      ];
+      if (events.length) setGrowthEvents((currentEvents) => [...currentEvents, ...events]);
       localStorage.setItem("keyflow-xp", String(next));
       return next;
     });
@@ -667,7 +718,7 @@ export default function Home() {
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
       if (mode === "speed") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, reactionTime, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
+  }, [accuracy, best, claimedMissionIds, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, reactionTime, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -1326,6 +1377,7 @@ export default function Home() {
               recommendation={trainingReport.recommendation}
               codeMetrics={mode === "code" ? codeMetrics : null}
               gainedXp={lastXpAward}
+              xpBreakdown={lastXpBreakdown}
               level={level}
               leveledUp={leveledUp}
               testType={testType}
@@ -1391,9 +1443,9 @@ export default function Home() {
 
       <TrainingDashboard
         history={history}
-        levelInfo={levelInfo}
         xpTotal={xpTotal}
         profile={profile}
+        claimedMissionIds={claimedMissionIds}
         onEditProfile={() => setProfileOpen(true)}
         onStartPlan={startPlanMode}
       />
@@ -1420,6 +1472,10 @@ export default function Home() {
         onClose={() => setProfileOpen(false)}
         onSave={saveProfile}
         onSignOut={signOutProfile}
+      />
+      <GrowthNotifications
+        event={growthEvents[0]}
+        onDismiss={() => setGrowthEvents((events) => events.slice(1))}
       />
     </main>
   );

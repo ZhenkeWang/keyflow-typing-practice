@@ -17,6 +17,7 @@ export default function SessionResult({
   recommendation,
   codeMetrics,
   gainedXp,
+  xpBreakdown = [],
   level,
   leveledUp,
   testType,
@@ -40,6 +41,11 @@ export default function SessionResult({
       </div>
 
       <div className="xp-award"><span>+{gainedXp} XP</span><small>Level {level}</small></div>
+      <div className="xp-breakdown">
+        {xpBreakdown.map((item) => (
+          <span key={item.id}><small>{item.label}</small><strong>+{item.value}</strong></span>
+        ))}
+      </div>
 
       <div className="result-stat-grid">
         <div><span>CPM</span><strong>{cpm}</strong></div>

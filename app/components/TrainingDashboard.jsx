@@ -4,15 +4,16 @@ import { memo, useMemo, useState } from "react";
 import {
   buildCoachSummary,
   buildDailySeries,
+  buildGrowthProfile,
   buildPersonalPlan,
   calculateGrowthStats,
-  getAchievements,
 } from "../utils/growthEngine";
 import CountUp from "../animations/CountUp";
 import Reveal from "../animations/Reveal";
+import DailyMissions from "./DailyMissions";
+import SkillTree from "./SkillTree";
 
 function buildPoints(values, width = 560, height = 160) {
-  if (!values.length) return "";
   const active = values.filter((value) => value > 0);
   const min = active.length ? Math.min(...active) : 0;
   const max = active.length ? Math.max(...active) : 1;
@@ -20,8 +21,7 @@ function buildPoints(values, width = 560, height = 160) {
   return values.map((value, index) => {
     const x = values.length === 1 ? width / 2 : (index / (values.length - 1)) * width;
     const normalized = value > 0 ? (value - min) / range : 0;
-    const y = height - normalized * (height - 32) - 16;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
+    return `${x.toFixed(1)},${(height - normalized * (height - 32) - 16).toFixed(1)}`;
   }).join(" ");
 }
 
@@ -29,7 +29,7 @@ const avatarText = (profile) => profile?.username?.trim().slice(0, 2).toUpperCas
 
 function MetricCard({ label, value, unit, detail, tone }) {
   return (
-    <article className={`growth-metric-card ${tone || ""}`}>
+    <article className={`growth-metric-card ${tone}`}>
       <span>{label}</span>
       <strong><CountUp value={value} /><small>{unit}</small></strong>
       <p>{detail}</p>
@@ -45,9 +45,7 @@ function TrendChart({ title, detail, values, labels, unit, className }) {
     <article className={`daily-trend-card ${className}`}>
       <div className="dashboard-card-title">
         <div><strong>{title}</strong><small>{detail}</small></div>
-        <span className={delta >= 0 ? "growth-positive" : "growth-negative"}>
-          {delta >= 0 ? "+" : ""}{delta} {unit}
-        </span>
+        <span className={delta >= 0 ? "growth-positive" : "growth-negative"}>{delta >= 0 ? "+" : ""}{delta} {unit}</span>
       </div>
       {active.length > 1 ? (
         <>
@@ -58,105 +56,89 @@ function TrendChart({ title, detail, values, labels, unit, className }) {
                 <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <g className="chart-grid-lines">
-              <line x1="0" y1="35" x2="560" y2="35" />
-              <line x1="0" y1="90" x2="560" y2="90" />
-              <line x1="0" y1="145" x2="560" y2="145" />
-            </g>
+            <g className="chart-grid-lines"><line x1="0" y1="35" x2="560" y2="35" /><line x1="0" y1="90" x2="560" y2="90" /><line x1="0" y1="145" x2="560" y2="145" /></g>
             <polygon className="daily-chart-area" points={`0,174 ${points} 560,174`} fill={`url(#${className}-fill)`} />
             <polyline className="daily-chart-line" points={points} />
-            {points.split(" ").map((point, index) => {
-              const [cx, cy] = point.split(",");
-              return values[index] > 0 ? <circle key={`${point}-${index}`} cx={cx} cy={cy} r="3.5" /> : null;
-            })}
           </svg>
-          <div className="daily-chart-labels">
-            {labels.map((label, index) => <span key={`${label}-${index}`}>{index % 3 === 0 || index === labels.length - 1 ? label : ""}</span>)}
-          </div>
+          <div className="daily-chart-labels">{labels.map((label, index) => <span key={`${label}-${index}`}>{index % 3 === 0 || index === labels.length - 1 ? label : ""}</span>)}</div>
         </>
-      ) : <div className="chart-empty">继续训练后，这里会形成每天的成长曲线。</div>}
+      ) : <div className="chart-empty">继续训练后，这里会形成每日成长曲线。</div>}
     </article>
   );
 }
 
-function Leaderboard({ stats, profile }) {
+function Leaderboard({ stats, profile, growth }) {
   const [scope, setScope] = useState("global");
   const samples = scope === "global"
     ? [
-        { name: "Nova", wpm: 142, level: 37 },
-        { name: "Mika", wpm: 131, level: 31 },
-        { name: "Pixel", wpm: 124, level: 28 },
-        { name: "Sora", wpm: 118, level: 24 },
+        { name: "Nova", wpm: 142, accuracy: 99, level: 50 },
+        { name: "Mika", wpm: 130, accuracy: 98, level: 42 },
+        { name: "Pixel", wpm: 124, accuracy: 99, level: 35 },
+        { name: "Sora", wpm: 118, accuracy: 97, level: 28 },
       ]
     : [
-        { name: "Luna", wpm: 108, level: 18 },
-        { name: "Kai", wpm: 96, level: 13 },
+        { name: "Luna", wpm: 108, accuracy: 98, level: 18 },
+        { name: "Kai", wpm: 96, accuracy: 97, level: 13 },
       ];
   const userEntry = {
     name: profile.signedIn ? profile.username : "You",
     wpm: stats.bestWpm,
-    level: Math.max(1, Math.floor(stats.xpTotal / 1000) + 1),
+    accuracy: stats.averageAccuracy,
+    level: growth.level,
     current: true,
   };
   const ranking = [...samples, userEntry].sort((a, b) => b.wpm - a.wpm);
-
   return (
-    <article className="leaderboard-card">
+    <article className="leaderboard-card season-leaderboard">
       <div className="dashboard-card-title">
-        <div><strong>Leaderboard</strong><small>社区排行预览 · 本地数据</small></div>
+        <div><strong>KeyFlow Season 01</strong><small>本地赛季竞技预览</small></div>
         <div className="leaderboard-tabs">
-          <button className={scope === "global" ? "active" : ""} onClick={() => setScope("global")}>全球</button>
-          <button className={scope === "friends" ? "active" : ""} onClick={() => setScope("friends")}>好友</button>
+          <button className={scope === "global" ? "active" : ""} onClick={() => setScope("global")}>Global</button>
+          <button className={scope === "friends" ? "active" : ""} onClick={() => setScope("friends")}>Friends</button>
         </div>
       </div>
       <div className="leaderboard-list">
         {ranking.map((item, index) => (
           <div className={item.current ? "current" : ""} key={`${scope}-${item.name}`}>
-            <span>{index + 1}</span>
-            <i>{item.name.slice(0, 2).toUpperCase()}</i>
-            <strong>{item.name}</strong>
-            <small>Lv.{item.level}</small>
-            <b>{item.wpm}<em>WPM</em></b>
+            <span>#{index + 1}</span><i>{item.name.slice(0, 2).toUpperCase()}</i><strong>{item.name}</strong>
+            <small>Lv.{item.level}</small><b>{item.wpm}<em>WPM</em></b><small>{item.accuracy}%</small>
           </div>
         ))}
       </div>
-      <p>接入云数据库后可替换为经过验证的实时全球与好友排行。</p>
     </article>
   );
 }
 
-function TrainingDashboard({ history, levelInfo, xpTotal, profile, onEditProfile, onStartPlan }) {
+function TrainingDashboard({ history, xpTotal, profile, claimedMissionIds = [], onEditProfile, onStartPlan }) {
   const stats = useMemo(() => calculateGrowthStats(history, xpTotal), [history, xpTotal]);
+  const growth = useMemo(() => buildGrowthProfile({ profile, history, xpTotal, claimedMissionIds }), [claimedMissionIds, history, profile, xpTotal]);
   const daily = useMemo(() => buildDailySeries(history, 14), [history]);
-  const activity = useMemo(() => buildDailySeries(history, 84), [history]);
-  const achievements = useMemo(() => getAchievements(history), [history]);
+  const activity = useMemo(() => buildDailySeries(history, 365), [history]);
   const plan = useMemo(() => buildPersonalPlan(history), [history]);
   const coach = useMemo(() => buildCoachSummary(history), [history]);
-  const unlockedCount = achievements.filter((item) => item.unlocked).length;
+  const unlockedCount = growth.achievements.filter((item) => item.unlocked).length;
 
   return (
-    <Reveal as="section" className="training-dashboard growth-center" amount={.04}>
-      <div className="growth-dashboard-hero">
+    <Reveal as="section" className="training-dashboard growth-center phase-three-dashboard" amount={.04}>
+      <div className="growth-dashboard-hero phase-three-profile">
         <div className="growth-profile">
           <button className="growth-avatar" type="button" onClick={onEditProfile}>{avatarText(profile)}</button>
           <div>
             <span>PERSONAL TRAINING CENTER</span>
-            <h2>{profile.signedIn ? profile.username : "Your KeyFlow Journey"}</h2>
-            <p>每一次准确击键，都会成为下一阶段训练的依据。</p>
+            <h2>{profile.signedIn ? profile.username : "Your KeyFlow Journey"} <em>{growth.activeTitle}</em></h2>
+            <p>每一次练习都会转化为经验、技能与长期成长。</p>
           </div>
         </div>
-        <button className="growth-profile-button" type="button" onClick={onEditProfile}>
-          {profile.signedIn ? "编辑档案" : "创建本地档案"}
-        </button>
-        <div className="growth-level-ring" style={{ "--level-progress": `${levelInfo.progress * 360}deg` }}>
-          <div><small>LEVEL</small><strong><CountUp value={levelInfo.level} /></strong><span>{levelInfo.title}</span></div>
+        <button className="growth-profile-button" type="button" onClick={onEditProfile}>{profile.signedIn ? "编辑档案" : "创建本地档案"}</button>
+        <div className="growth-level-ring" style={{ "--level-progress": `${growth.progress * 360}deg` }}>
+          <div><small>LEVEL</small><strong><CountUp value={growth.level} /></strong><span>{growth.title}</span></div>
         </div>
         <div className="growth-xp">
-          <div>
-            <span>Next level</span>
-            <strong><CountUp value={levelInfo.currentXp} /> / <CountUp value={levelInfo.nextLevelXp} /> XP</strong>
-          </div>
-          <span><i style={{ width: `${levelInfo.progress * 100}%` }} /></span>
+          <div><span>Experience</span><strong><CountUp value={growth.currentXp} /> / <CountUp value={growth.nextLevelXp} /> XP</strong></div>
+          <span><i style={{ width: `${growth.progress * 100}%` }} /></span>
+        </div>
+        <div className="profile-skill-strip">
+          {Object.entries(growth.skills).map(([key, skill]) => <span key={key}><small>{key}</small><strong>Lv.{skill.level}</strong></span>)}
         </div>
       </div>
 
@@ -168,98 +150,70 @@ function TrainingDashboard({ history, levelInfo, xpTotal, profile, onEditProfile
         <MetricCard label="Practice Streak" value={stats.streak} unit="DAYS" detail={stats.streak ? "Keep the flow alive" : "Train today to begin"} tone="streak" />
       </div>
 
+      <div className="phase-three-core-grid">
+        <SkillTree skills={growth.skills} />
+        <DailyMissions missions={growth.missions} />
+      </div>
+
       <div className="daily-trends-grid">
-        <TrendChart
-          title="WPM 成长曲线"
-          detail="最近 14 天的每日平均速度"
-          values={daily.map((item) => item.wpm)}
-          labels={daily.map((item) => item.label)}
-          unit="WPM"
-          className="wpm-trend"
-        />
-        <TrendChart
-          title="Accuracy 趋势"
-          detail="最近 14 天的每日平均准确率"
-          values={daily.map((item) => item.accuracy)}
-          labels={daily.map((item) => item.label)}
-          unit="%"
-          className="accuracy-trend"
-        />
+        <TrendChart title="WPM 成长曲线" detail="最近 14 天的每日平均速度" values={daily.map((item) => item.wpm)} labels={daily.map((item) => item.label)} unit="WPM" className="wpm-trend" />
+        <TrendChart title="Accuracy 趋势" detail="最近 14 天的每日平均准确率" values={daily.map((item) => item.accuracy)} labels={daily.map((item) => item.label)} unit="%" className="accuracy-trend" />
       </div>
 
       <div className="growth-content-grid">
-        <article className="extended-heatmap-card">
+        <article className="extended-heatmap-card yearly-heatmap-card">
           <div className="dashboard-card-title">
-            <div><strong>训练热力图</strong><small>过去 12 周 · 每格代表一天</small></div>
-            <span>{stats.streak} DAY STREAK</span>
+            <div><strong>年度训练热力图</strong><small>过去 365 天 · 每格代表一天</small></div>
+            <span>🔥 {stats.streak} DAY STREAK</span>
           </div>
-          <div className="extended-heatmap" role="img" aria-label="过去十二周训练热力图">
-            {activity.map((day) => {
-              const level = day.characters > 1200 ? 4 : day.characters > 700 ? 3 : day.characters > 250 ? 2 : day.sessions ? 1 : 0;
-              return <i key={day.key} className={`level-${level}`} title={`${day.label} · ${day.sessions} 次 · ${day.characters} 字符`} />;
-            })}
+          <div className="yearly-heatmap-scroll">
+            <div className="extended-heatmap yearly-heatmap" role="img" aria-label="过去一年训练热力图">
+              {activity.map((day) => {
+                const level = day.characters > 1200 ? 4 : day.characters > 700 ? 3 : day.characters > 250 ? 2 : day.sessions ? 1 : 0;
+                return <i key={day.key} className={`level-${level}`} title={`${day.label} · ${day.sessions} 次 · ${day.characters} 字符`} />;
+              })}
+            </div>
           </div>
-          <div className="heatmap-legend"><span>少</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`level-${level}`} />)}<span>多</span></div>
+          <div className="heatmap-legend"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`level-${level}`} />)}<span>More</span></div>
         </article>
 
         <article className="coach-snapshot-card">
-          <div className="dashboard-card-title">
-            <div><strong>AI Coach Snapshot</strong><small>基于最近 12 次训练</small></div>
-            <span>LOCAL ANALYSIS</span>
-          </div>
-          <div className="coach-strength">
-            <span>优势</span>
-            <p>{coach.strengths[0]}</p>
-          </div>
-          <div className="coach-issues">
-            <span>当前重点</span>
-            {coach.issues.slice(0, 2).map((issue) => (
-              <div key={issue.label}><code>{issue.label}</code><p>{issue.detail}</p></div>
-            ))}
-          </div>
-          <div className="coach-next">
-            <span>NEXT BEST SESSION</span>
-            <strong>{coach.recommendation.title}</strong>
-            <small>{coach.recommendation.duration} · {coach.recommendation.reason}</small>
-          </div>
+          <div className="dashboard-card-title"><div><strong>Training Insight</strong><small>已有本地分析 · 未新增 AI 服务</small></div><span>LOCAL</span></div>
+          <div className="coach-strength"><span>优势</span><p>{coach.strengths[0]}</p></div>
+          <div className="coach-issues"><span>当前重点</span>{coach.issues.slice(0, 2).map((issue) => <div key={issue.label}><code>{issue.label}</code><p>{issue.detail}</p></div>)}</div>
+          <div className="coach-next"><span>NEXT BEST SESSION</span><strong>{coach.recommendation.title}</strong><small>{coach.recommendation.duration} · {coach.recommendation.reason}</small></div>
         </article>
       </div>
 
-      <div className="achievements-section">
-        <div className="growth-section-heading">
-          <div><span>ACHIEVEMENTS</span><h3>Milestones that keep you moving</h3></div>
-          <strong>{unlockedCount} / {achievements.length}</strong>
-        </div>
+      <div className="achievements-section phase-three-achievements">
+        <div className="growth-section-heading"><div><span>ACHIEVEMENTS</span><h3>Milestones that shape your keyboard identity</h3></div><strong>{unlockedCount} / {growth.achievements.length}</strong></div>
         <div className="achievement-grid">
-          {achievements.map((achievement) => (
+          {growth.achievements.map((achievement) => (
             <article className={achievement.unlocked ? "unlocked" : "locked"} key={achievement.id}>
-              <i>{achievement.icon}</i>
-              <div><strong>{achievement.title}</strong><p>{achievement.detail}</p></div>
-              <span><b style={{ width: `${achievement.progress * 100}%` }} /></span>
-              <small>{achievement.unlocked ? "COMPLETED" : `${Math.round(achievement.progress * 100)}%`}</small>
+              <i>{achievement.icon}</i><div><small>{achievement.category}</small><strong>{achievement.title}</strong><p>{achievement.detail}</p></div>
+              <span><b style={{ width: `${achievement.progress * 100}%` }} /></span><small>{achievement.unlocked ? "UNLOCKED" : `${Math.round(achievement.progress * 100)}%`}</small>
             </article>
           ))}
         </div>
       </div>
 
+      <div className="titles-card">
+        <div className="dashboard-card-title"><div><strong>Titles</strong><small>成就会解锁可展示称号</small></div><span>{growth.titles.filter((title) => title.unlocked).length} UNLOCKED</span></div>
+        <div>{growth.titles.map((title) => <span className={title.unlocked ? "unlocked" : ""} key={title.id}>{title.label}</span>)}</div>
+      </div>
+
       <div className="plan-leaderboard-grid">
         <article className="personal-plan-card">
-          <div className="dashboard-card-title">
-            <div><strong>Your 3-Day Plan</strong><small>根据近期表现自动生成</small></div>
-            <span>MADE FOR YOU</span>
-          </div>
+          <div className="dashboard-card-title"><div><strong>Your 3-Day Plan</strong><small>根据近期表现自动生成</small></div><span>MADE FOR YOU</span></div>
           <div className="training-plan-list">
             {plan.map((item, index) => (
               <button type="button" key={item.day} onClick={() => onStartPlan(item.mode)}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <div><small>{item.day}</small><strong>{item.title}</strong><p>{item.reason}</p></div>
-                <b>{item.duration}</b>
-                <i>→</i>
+                <span>{String(index + 1).padStart(2, "0")}</span><div><small>{item.day}</small><strong>{item.title}</strong><p>{item.reason}</p></div><b>{item.duration}</b><i>→</i>
               </button>
             ))}
           </div>
         </article>
-        <Leaderboard stats={stats} profile={profile} />
+        <Leaderboard stats={stats} profile={profile} growth={growth} />
       </div>
     </Reveal>
   );

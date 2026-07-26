@@ -609,14 +609,16 @@ export function getLevelInfo(xpTotal = 0) {
   const safeXp = Math.max(0, Number(xpTotal) || 0);
   const level = Math.floor(safeXp / XP_PER_LEVEL) + 1;
   const title = level >= 50
-    ? "Keyboard Master"
+    ? "Typing Legend"
     : level >= 30
-      ? "Keyboard Expert"
-      : level >= 10
-        ? "Fast Typist"
+      ? "Flow Master"
+      : level >= 20
+        ? "Speed Runner"
+        : level >= 10
+          ? "Typing Apprentice"
         : level >= 5
-          ? "Flow Builder"
-          : "Beginner";
+          ? "Keyboard Learner"
+          : "Typing Beginner";
   return {
     level,
     title,
