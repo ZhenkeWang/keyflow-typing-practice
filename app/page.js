@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import Aurora from "./components/Aurora";
 import LandingHero from "./components/LandingHero";
@@ -11,8 +11,10 @@ import AITrainingReport from "./components/AITrainingReport";
 import TrainingKeyboard from "./components/TrainingKeyboard";
 import TrainingIntelligence from "./components/TrainingIntelligence";
 import TrainingMetrics from "./components/TrainingMetrics";
-import UserProfileDialog from "./components/UserProfileDialog";
 import GrowthNotifications from "./components/GrowthNotifications";
+import ThemeRuntime from "./components/ThemeRuntime";
+import PwaRuntime from "./components/PwaRuntime";
+import CloudSyncRuntime from "./components/CloudSyncRuntime";
 import { useAiCoachStore } from "./stores/aiCoachStore";
 import ScrollRevealController from "./animations/ScrollRevealController";
 import {
@@ -41,6 +43,8 @@ import {
   normalizeHistory,
   summarizeReactionTime,
 } from "./utils/typingEngine";
+
+const SaaSControlCenter = lazy(() => import("./components/SaaSControlCenter"));
 
 const TEXT_BANK = {
   speed: [
@@ -1059,6 +1063,25 @@ export default function Home() {
         if (entered && status !== "finished") inputRef.current?.focus();
       }}
     >
+      <ThemeRuntime />
+      <PwaRuntime />
+      <CloudSyncRuntime
+        profile={profile}
+        history={history}
+        xpTotal={xpTotal}
+        onCloudRecords={(records) => {
+          if (!records?.length) return;
+          setHistory((current) => {
+            const merged = normalizeHistory(
+              [...records, ...current].filter((record, index, list) => (
+                list.findIndex((item) => (item.timestamp || item.at) === (record.timestamp || record.at)) === index
+              ))
+            ).slice(0, 1000);
+            localStorage.setItem("keyflow-history", JSON.stringify(merged));
+            return merged;
+          });
+        }}
+      />
       <ScrollRevealController />
       <div className="aurora-backdrop">
         <Aurora
@@ -1089,7 +1112,7 @@ export default function Home() {
 
       <header className="nav">
         <div className="nav-actions">
-          <span className="sync-dot"><i /> 本地记录</span>
+          <span className="sync-dot"><i /> {profile.cloud ? "云端已连接" : "本地记录"}</span>
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
           <button
             className="nav-profile-button"
@@ -1100,7 +1123,7 @@ export default function Home() {
             }}
           >
             <i>{profile.username.trim().slice(0, 2).toUpperCase() || "KF"}</i>
-            <span>{profile.signedIn ? profile.username : "登录"}</span>
+              <span>{profile.signedIn ? profile.username : "账号与设置"}</span>
           </button>
           <div className="nav-theme-segmented" onClick={(event) => event.stopPropagation()} aria-label="快速切换主题">
             <button
@@ -1489,13 +1512,26 @@ export default function Home() {
       </section>
 
       <footer className="page-footer"><span>KEYFLOW / LAB</span><p>DESIGNED FOR DEEP FOCUS · 2026</p></footer>
-      <UserProfileDialog
-        open={profileOpen}
-        profile={profile}
-        onClose={() => setProfileOpen(false)}
-        onSave={saveProfile}
-        onSignOut={signOutProfile}
-      />
+      <Suspense fallback={profileOpen ? <div className="saas-center-loading" role="status">正在载入控制中心…</div> : null}>
+        <SaaSControlCenter
+          open={profileOpen}
+          profile={profile}
+          history={history}
+          xpTotal={xpTotal}
+          onClose={() => setProfileOpen(false)}
+          onProfileChange={saveProfile}
+          onCloudRecords={(records) => {
+            if (!records?.length) return;
+            const merged = normalizeHistory(
+              [...records, ...history].filter((record, index, list) => (
+                list.findIndex((item) => (item.timestamp || item.at) === (record.timestamp || record.at)) === index
+              ))
+            ).slice(0, 1000);
+            setHistory(merged);
+            localStorage.setItem("keyflow-history", JSON.stringify(merged));
+          }}
+        />
+      </Suspense>
       <GrowthNotifications
         event={growthEvents[0]}
         onDismiss={() => setGrowthEvents((events) => events.slice(1))}

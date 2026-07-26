@@ -1,5 +1,7 @@
 "use client";
 
+import ShareResultButton from "./ShareResultButton";
+
 export default function SessionResult({
   wpm,
   cpm,
@@ -106,6 +108,8 @@ export default function SessionResult({
         <span>NEXT BEST STEP</span>
         <div><strong>{recommendation?.label || "Accuracy Training"}</strong><p>{recommendation?.reason || "继续保持稳定节奏，并逐步提高速度。"}</p></div>
       </div>
+
+      <ShareResultButton result={{ wpm, accuracy, mode: modeLabel }} />
 
       {testType === "pk" && pkPlayer === 2 && (
         <div className="pk-result">
