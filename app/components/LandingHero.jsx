@@ -5,6 +5,7 @@ import KeyboardShowcase from "./KeyboardShowcase";
 import MotionButton from "./ui/MotionButton";
 import AnimatedHeadline from "../animations/AnimatedHeadline";
 import CountUp from "../animations/CountUp";
+import BrandMark from "./BrandMark";
 
 const HERO_METRICS = [
   { value: 120, suffix: " WPM", label: "Peak typing speed" },
@@ -46,7 +47,7 @@ export default function LandingHero({ ready, leaving, themePreference, onThemeCh
     <section className={`saas-landing apple-landing ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
       <nav className="hero-nav">
         <a className="hero-brand" href="#" onClick={(event) => event.preventDefault()} aria-label="KeyFlow 首页">
-          <i aria-hidden="true">K</i><span>KeyFlow</span>
+          <BrandMark compact animate={ready} /><span>KeyFlow</span>
         </a>
         <div className="hero-nav-right">
           <span className="hero-phase"><i /> Precision training</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   buildCoachSummary,
   calculateGrowthStats,
@@ -24,6 +25,8 @@ import {
   respondToFriendRequest,
   searchPeople,
 } from "../services/social";
+import { useExperienceStore } from "../stores/experienceStore";
+import { playKeySound } from "../services/feedback";
 
 const TABS = [
   ["profile", "Profile"],
@@ -272,12 +275,19 @@ function SettingsPanel() {
   const updateReminders = useThemeStore((state) => state.updateReminders);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [notice, setNotice] = useState("");
+  const sound = useExperienceStore((state) => state.sound);
+  const volume = useExperienceStore((state) => state.volume);
+  const haptics = useExperienceStore((state) => state.haptics);
+  const pointerEffects = useExperienceStore((state) => state.pointerEffects);
+  const hydrateExperience = useExperienceStore((state) => state.hydrate);
+  const updateExperience = useExperienceStore((state) => state.update);
 
   useEffect(() => {
+    hydrateExperience();
     const listener = (event) => { event.preventDefault(); setInstallPrompt(event); };
     window.addEventListener("beforeinstallprompt", listener);
     return () => window.removeEventListener("beforeinstallprompt", listener);
-  }, []);
+  }, [hydrateExperience]);
 
   async function enableReminder(enabled) {
     if (enabled && "Notification" in window && Notification.permission === "default") {
@@ -291,6 +301,25 @@ function SettingsPanel() {
 
   return (
     <div className="settings-grid">
+      <article className="sound-design-card">
+        <div><small>SOUND & FEEDBACK</small><h3>击键体验</h3><p>声音由浏览器实时合成，不下载音频文件，也不会影响输入计算。</p></div>
+        <div className="sound-mode-control">
+          {[["mechanical", "Mechanical"], ["soft", "Soft"], ["silent", "Silent"]].map(([id, label]) => (
+            <button
+              type="button"
+              className={sound === id ? "active" : ""}
+              key={id}
+              onClick={() => {
+                updateExperience({ sound: id });
+                playKeySound({ mode: id, volume, correct: true });
+              }}
+            >{label}</button>
+          ))}
+        </div>
+        <label className="volume-row"><span>音量</span><input type="range" min="0" max="1" step=".05" value={volume} disabled={sound === "silent"} onChange={(event) => updateExperience({ volume: Number(event.target.value) })} /><b>{Math.round(volume * 100)}%</b></label>
+        <label className="switch-row"><span>触觉反馈</span><input type="checkbox" checked={haptics} onChange={(event) => updateExperience({ haptics: event.target.checked })} /></label>
+        <label className="switch-row"><span>鼠标空间光效</span><input type="checkbox" checked={pointerEffects} onChange={(event) => updateExperience({ pointerEffects: event.target.checked })} /></label>
+      </article>
       <article><div><small>TRAINING REMINDER</small><h3>保持节奏</h3><p>提醒设置保存在本地，登录后可同步到其他设备。</p></div><label className="switch-row"><span>{reminders.enabled ? "已开启" : "已关闭"}</span><input type="checkbox" checked={reminders.enabled} onChange={(event) => enableReminder(event.target.checked)} /></label><label className="time-row"><span>提醒时间</span><input type="time" value={reminders.time} onChange={(event) => updateReminders({ time: event.target.value })} /></label>{notice && <p>{notice}</p>}</article>
       <article><div><small>INSTALL APP</small><h3>KeyFlow PWA</h3><p>安装后可从桌面启动，并在离线时打开已缓存的训练界面。</p></div><button className="saas-primary" type="button" disabled={!installPrompt} onClick={async () => { await installPrompt?.prompt(); setInstallPrompt(null); }}>{installPrompt ? "安装 KeyFlow" : "已安装或暂不可用"}</button></article>
     </div>
@@ -307,14 +336,33 @@ export default function SaaSControlCenter({
   onCloudRecords,
 }) {
   const [tab, setTab] = useState("profile");
+  const reduceMotion = useReducedMotion();
   const hydrateAuth = useAuthStore((state) => state.hydrate);
   const hydrateTheme = useThemeStore((state) => state.hydrate);
   useEffect(() => { hydrateAuth(); hydrateTheme(); }, [hydrateAuth, hydrateTheme]);
-  if (!open) return null;
-
   return (
-    <div className="saas-center-backdrop" role="presentation" onMouseDown={onClose}>
-      <section className="saas-center" role="dialog" aria-modal="true" aria-labelledby="saas-center-title" onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
+    <AnimatePresence>
+      {open && <motion.div
+        className="saas-center-backdrop"
+        role="presentation"
+        onMouseDown={onClose}
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: reduceMotion ? 0 : .34 }}
+      >
+      <motion.section
+        className="saas-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="saas-center-title"
+        onMouseDown={(event) => event.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
+        initial={reduceMotion ? false : { opacity: 0, scale: .965, y: 28, filter: "blur(12px)" }}
+        animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+        exit={{ opacity: 0, scale: .975, y: 14, filter: "blur(8px)" }}
+        transition={{ type: reduceMotion ? "tween" : "spring", stiffness: 160, damping: 23 }}
+      >
         <header><div><small>KEYFLOW CLOUD</small><h2 id="saas-center-title">Control Center</h2></div><button type="button" onClick={onClose} aria-label="关闭">×</button></header>
         <nav aria-label="控制中心页面">{TABS.map(([id, label]) => <button type="button" className={tab === id ? "active" : ""} key={id} onClick={() => setTab(id)}>{label}</button>)}</nav>
         <div className="saas-center-content">
@@ -324,7 +372,8 @@ export default function SaaSControlCenter({
           {tab === "membership" && <MembershipPanel />}
           {tab === "settings" && <SettingsPanel />}
         </div>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>}
+    </AnimatePresence>
   );
 }

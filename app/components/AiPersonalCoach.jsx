@@ -114,7 +114,13 @@ export default function AiPersonalCoach({ history, profile, onStartPlan }) {
         <em><i /> {status === "loading" ? "ANALYZING" : `${analysis?.sampleSize || 0} SESSIONS`}</em>
       </header>
 
-      {status === "loading" || !analysis || !plan ? <CoachSkeleton /> : (
+      {status === "error" ? (
+        <div className="experience-error-state" role="status">
+          <i>↻</i>
+          <div><strong>Coach 暂时无法完成分析</strong><p>训练数据仍安全保存在本地，请稍后重新分析。</p></div>
+          <button type="button" onClick={() => analyze(history)}>重新分析</button>
+        </div>
+      ) : status === "loading" || !analysis || !plan ? <CoachSkeleton /> : (
         <AnimatePresence mode="wait">
           <motion.div className="ai-coach-body" key={analysis.lastUpdated} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="ai-status-grid">

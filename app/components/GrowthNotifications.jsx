@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useExperienceStore } from "../stores/experienceStore";
+import { triggerHaptic } from "../services/feedback";
 
 const copy = {
   level: { eyebrow: "LEVEL UP", title: (event) => `Level ${event.level}`, detail: (event) => event.title },
@@ -10,6 +13,10 @@ const copy = {
 
 export default function GrowthNotifications({ event, onDismiss }) {
   const content = event ? copy[event.type] : null;
+  const haptics = useExperienceStore((state) => state.haptics);
+  useEffect(() => {
+    if (event) triggerHaptic(event.type === "level" ? [25, 35, 25, 35, 45] : [18, 30, 28], haptics);
+  }, [event, haptics]);
   return (
     <AnimatePresence>
       {event && content && (

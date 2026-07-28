@@ -15,6 +15,11 @@ import GrowthNotifications from "./components/GrowthNotifications";
 import ThemeRuntime from "./components/ThemeRuntime";
 import PwaRuntime from "./components/PwaRuntime";
 import CloudSyncRuntime from "./components/CloudSyncRuntime";
+import AmbientCanvas from "./components/AmbientCanvas";
+import InteractionRuntime from "./components/InteractionRuntime";
+import BrandMark from "./components/BrandMark";
+import { playKeySound, triggerHaptic } from "./services/feedback";
+import { useExperienceStore } from "./stores/experienceStore";
 import { useAiCoachStore } from "./stores/aiCoachStore";
 import ScrollRevealController from "./animations/ScrollRevealController";
 import {
@@ -352,6 +357,9 @@ export default function Home() {
   const sessionReview = useAiCoachStore((state) => state.sessionReview);
   const reviewSession = useAiCoachStore((state) => state.review);
   const clearSessionReview = useAiCoachStore((state) => state.clearReview);
+  const soundMode = useExperienceStore((state) => state.sound);
+  const soundVolume = useExperienceStore((state) => state.volume);
+  const hapticsEnabled = useExperienceStore((state) => state.haptics);
 
   const inputRef = useRef(null);
   const typingZoneRef = useRef(null);
@@ -658,6 +666,7 @@ export default function Home() {
   useEffect(() => {
     if (status !== "finished" || recorded.current) return;
     recorded.current = true;
+    triggerHaptic([22, 42, 34], hapticsEnabled);
     const completedAt = Date.now();
     const entry = {
       wpm: speed,
@@ -743,7 +752,7 @@ export default function Home() {
       localStorage.setItem(`keyflow-best-${mode}`, String(speed));
       if (mode === "speed") localStorage.setItem("keyflow-best", String(speed));
     }
-  }, [accuracy, best, claimedMissionIds, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, history, metric, mistakeLog, mode, pkPlayer, reactionTime, reviewSession, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
+  }, [accuracy, best, claimedMissionIds, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, hapticsEnabled, history, metric, mistakeLog, mode, pkPlayer, reactionTime, reviewSession, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
 
   useEffect(() => {
     let tabPressed = false;
@@ -798,6 +807,8 @@ export default function Home() {
     if (value.length > typed.length) {
       const index = value.length - 1;
       const isCorrect = value[index] === text[index];
+      playKeySound({ mode: soundMode, volume: soundVolume, correct: isCorrect });
+      if (!isCorrect) triggerHaptic(10, hapticsEnabled);
       const newMistakes = [];
       for (let cursor = typed.length; cursor < value.length; cursor += 1) {
         const expectedCharacter = text[cursor] || "∅";
@@ -1058,13 +1069,14 @@ export default function Home() {
 
   return (
     <main
-      className={`app-shell theme-${theme} ${immersive ? "immersive-mode" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
+      className={`app-shell theme-${theme} ${immersive ? "immersive-mode" : ""} ${status === "running" ? "is-training-focus" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
       onClick={() => {
         if (entered && status !== "finished") inputRef.current?.focus();
       }}
     >
       <ThemeRuntime />
       <PwaRuntime />
+      <InteractionRuntime />
       <CloudSyncRuntime
         profile={profile}
         history={history}
@@ -1092,6 +1104,7 @@ export default function Home() {
         />
       </div>
       <div className="background-wash" />
+      <AmbientCanvas active={!immersive} />
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
 
@@ -1111,6 +1124,9 @@ export default function Home() {
       )}
 
       <header className="nav">
+        <a className="brand phase-six-brand" href="#" onClick={(event) => event.preventDefault()} aria-label="KeyFlow">
+          <BrandMark compact /><span>KeyFlow</span>
+        </a>
         <div className="nav-actions">
           <span className="sync-dot"><i /> {profile.cloud ? "云端已连接" : "本地记录"}</span>
           <span className="best-pill"><b>⌁</b> BEST <strong>{best}</strong> {metric}</span>
@@ -1352,6 +1368,9 @@ export default function Home() {
             {mode === "rhythm" && <span>RHYTHM <b>{rhythmBpm || "—"} / {rhythmTarget}</b></span>}
             <span className="interaction-label">{INTERACTIONS.find((item) => item.id === interaction)?.desc}</span>
           </div>
+          <span className="sr-only" aria-live="polite" aria-atomic="true">
+            {feedback === "wrong" && pulse ? `输入错误，第 ${typed.length} 个字符` : ""}
+          </span>
 
           {pulse > 0 && status === "running" && <span className={`key-burst ${feedback}`} key={pulse}>{feedback === "correct" ? "+1" : "×"}</span>}
           {pulse > 0 && status === "running" && feedback === "correct" && (

@@ -1,0 +1,479 @@
+:root {
+  --brand-flow: #7772ff;
+  --brand-precision: #5ce1c1;
+  --brand-focus: #9aa2ff;
+  --brand-ink: #f6f7fb;
+  --glass-highlight: rgba(255, 255, 255, .12);
+  --glass-shadow: rgba(1, 2, 10, .28);
+  --motion-fluid: cubic-bezier(.16, 1, .3, 1);
+  --motion-responsive: cubic-bezier(.2, .8, .2, 1);
+  --muted: #a8afbf;
+  --dim: #7d8799;
+}
+
+html[data-theme="light"] {
+  --brand-ink: #17171b;
+  --glass-highlight: rgba(255, 255, 255, .72);
+  --glass-shadow: rgba(72, 76, 112, .12);
+  --muted: #5f6570;
+  --dim: #747a86;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.saas-center-backdrop,
+.saas-center { animation: none; }
+
+/* Brand language */
+.keyflow-brand-mark {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  flex: 0 0 auto;
+  border-radius: 15px;
+  color: var(--brand-ink);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--brand-flow) 24%, transparent), transparent 62%),
+    rgba(255, 255, 255, .045);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 1px color-mix(in srgb, var(--brand-flow) 28%, transparent),
+    0 12px 30px color-mix(in srgb, var(--brand-flow) 16%, transparent);
+}
+.keyflow-brand-mark.compact { width: 35px; height: 35px; border-radius: 11px; }
+.keyflow-brand-mark svg { width: 72%; height: 72%; overflow: visible; }
+.keyflow-brand-mark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--brand-flow) 60%, transparent));
+}
+.keyflow-brand-mark .brand-flow-line { stroke: var(--brand-precision); stroke-width: 2.4; }
+.keyflow-brand-mark > i {
+  position: absolute;
+  inset: -30% auto -30% -20%;
+  width: 42%;
+  transform: rotate(15deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.72), transparent);
+  filter: blur(2px);
+}
+.hero-brand > .keyflow-brand-mark { margin-right: 1px; }
+.hero-brand > i { display: none; }
+.phase-six-brand { gap: 10px; font-family: var(--font-display); letter-spacing: -.04em; }
+.phase-six-brand > span:last-child { font-size: 17px; }
+
+/* Low-cost ambient environment */
+.ambient-particle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  opacity: .78;
+  transform: translateZ(0);
+}
+.app-shell::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  width: 620px;
+  height: 620px;
+  left: calc(var(--pointer-x, 50vw) - 310px);
+  top: calc(var(--pointer-y, 35vh) - 310px);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .28;
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand-flow) 15%, transparent), transparent 67%);
+  transition: opacity .5s var(--motion-fluid);
+  transform: translateZ(0);
+}
+html[data-pointer-effects="off"] .app-shell::before { opacity: 0; }
+
+/* visionOS material system */
+:where(
+  .practice-card,
+  .ai-personal-coach,
+  .growth-dashboard-hero,
+  .growth-metric-card,
+  .daily-trend-card,
+  .extended-heatmap-card,
+  .achievement-grid article,
+  .leaderboard-card,
+  .personal-plan-card,
+  .titles-card,
+  .daily-missions,
+  .skill-tree-card
+) {
+  border-color: color-mix(in srgb, var(--border-strong) 78%, var(--brand-flow) 22%);
+  background:
+    linear-gradient(142deg, var(--glass-highlight), transparent 22%),
+    linear-gradient(155deg, color-mix(in srgb, var(--surface-raised) 88%, transparent), color-mix(in srgb, var(--surface) 72%, transparent));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 1px rgba(255, 255, 255, .018),
+    0 24px 70px var(--glass-shadow);
+  backdrop-filter: blur(24px) saturate(135%);
+}
+
+:where(
+  .growth-metric-card,
+  .ai-status-grid article,
+  .achievement-grid article,
+  .mode-card,
+  .daily-trend-card,
+  .leaderboard-card
+) {
+  position: relative;
+  overflow: hidden;
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateZ(0);
+  transform-style: preserve-3d;
+  transition:
+    transform .46s var(--motion-fluid),
+    border-color .35s ease,
+    background-color .35s ease;
+  will-change: transform;
+}
+:where(
+  .growth-metric-card,
+  .ai-status-grid article,
+  .achievement-grid article,
+  .mode-card,
+  .daily-trend-card,
+  .leaderboard-card
+)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(240px circle at var(--glow-x, 50%) var(--glow-y, 50%), color-mix(in srgb, var(--brand-flow) 14%, transparent), transparent 68%);
+  transition: opacity .35s ease;
+}
+html[data-pointer-effects="on"] :where(
+  .growth-metric-card,
+  .ai-status-grid article,
+  .achievement-grid article,
+  .mode-card,
+  .daily-trend-card,
+  .leaderboard-card
+):hover::after { opacity: 1; }
+
+button:not(:disabled) { -webkit-tap-highlight-color: transparent; }
+:where(.hero-primary, .saas-primary, .report-button, .training-plan-list button) {
+  position: relative;
+  overflow: hidden;
+}
+:where(.hero-primary, .saas-primary, .report-button, .training-plan-list button)::after {
+  content: "";
+  position: absolute;
+  inset: -100% auto -100% -35%;
+  width: 26%;
+  pointer-events: none;
+  transform: rotate(18deg) translateX(-280%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+  transition: transform .8s var(--motion-fluid);
+}
+:where(.hero-primary, .saas-primary, .report-button, .training-plan-list button):hover::after {
+  transform: rotate(18deg) translateX(720%);
+}
+
+/* Training focus and feedback */
+.app-shell > :where(.nav, .control-deck, .training-dashboard, .history-section, .page-footer) {
+  transition: opacity .75s var(--motion-fluid), transform .75s var(--motion-fluid);
+}
+.app-shell.is-training-focus > :where(.nav, .control-deck) { opacity: .32; }
+.app-shell.is-training-focus > :where(.training-dashboard, .history-section, .page-footer) { opacity: .14; }
+.app-shell.is-training-focus .practice-card {
+  border-color: color-mix(in srgb, var(--brand-flow) 42%, var(--border));
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 36px 120px color-mix(in srgb, var(--brand-flow) 12%, rgba(0,0,0,.25));
+}
+.app-shell.is-training-focus .background-wash { opacity: .72; }
+
+.training-metric {
+  isolation: isolate;
+  transition: transform .32s var(--motion-fluid);
+}
+.training-metric:hover { transform: translateY(-2px); }
+.metric-ring {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--brand-flow) 11%, transparent), transparent 64%),
+    conic-gradient(from -90deg, var(--metric-color, var(--brand-flow)) var(--metric-progress), color-mix(in srgb, var(--border) 68%, transparent) 0);
+  box-shadow: inset 0 0 0 1px var(--border), 0 0 28px color-mix(in srgb, var(--metric-color, var(--brand-flow)) 12%, transparent);
+  transition: background .42s var(--motion-responsive);
+}
+.training-metric.speed { --metric-color: var(--brand-flow); }
+.training-metric.accuracy { --metric-color: var(--brand-precision); }
+.training-metric.consistency { --metric-color: #9d8fff; }
+.training-metric.time { --metric-color: #77a6ff; }
+.metric-ring::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  box-shadow: inset 0 1px rgba(255,255,255,.08);
+}
+.metric-ring i { z-index: 1; }
+
+.typing-zone { isolation: isolate; }
+.practice-card.has-error .typing-zone::after {
+  content: "";
+  position: absolute;
+  z-index: 7;
+  width: 94px;
+  height: 94px;
+  left: calc(50% - 47px);
+  top: 42%;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(76deg, transparent 46%, rgba(255,123,139,.55) 48%, transparent 50%) 48% 38% / 54% 56% no-repeat,
+    linear-gradient(113deg, transparent 47%, rgba(255,123,139,.36) 49%, transparent 51%) 58% 56% / 42% 54% no-repeat;
+  animation: phaseSixFracture .42s var(--motion-fluid);
+}
+.passage .wrong.latest-error {
+  color: #ff8898;
+  text-shadow: 0 0 15px rgba(255, 77, 105, .48);
+  animation: phaseSixError .3s var(--motion-responsive);
+}
+.passage.is-flowing .correct {
+  text-shadow: 0 0 12px color-mix(in srgb, var(--brand-precision) 24%, transparent);
+}
+.flow-cursor-trail {
+  background: linear-gradient(90deg, transparent, var(--brand-precision), transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--brand-precision) 45%, transparent);
+}
+
+.training-keyboard {
+  transform: perspective(1200px) rotateX(4deg) translateZ(0);
+  transform-origin: 50% 0;
+  box-shadow: 0 36px 72px rgba(0,0,0,.18);
+}
+.training-keyboard-row > span {
+  transform: translateZ(8px);
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.11),
+    0 5px 0 color-mix(in srgb, var(--panel-2) 88%, black),
+    0 9px 14px rgba(0,0,0,.16);
+  transition: transform .11s var(--motion-responsive), box-shadow .16s ease, color .16s;
+}
+.training-keyboard-row > span.active {
+  transform: translateY(5px) translateZ(1px) scale(.97);
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.06),
+    0 1px 0 color-mix(in srgb, var(--panel-2) 90%, black),
+    0 0 22px color-mix(in srgb, var(--brand-flow) 24%, transparent);
+}
+
+/* AI Companion */
+.ai-personal-coach { isolation: isolate; }
+.ai-coach-orb {
+  box-shadow:
+    inset 0 0 22px rgba(255,255,255,.22),
+    0 0 36px color-mix(in srgb, var(--cyan, var(--brand-flow)) 32%, transparent);
+}
+.ai-coach-orb::after {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 28%, rgba(255,255,255,.92), color-mix(in srgb, var(--cyan, var(--brand-flow)) 68%, transparent) 34%, transparent 70%);
+  animation: phaseSixOrbBreath 2.8s ease-in-out infinite;
+}
+.ai-coach-orb.analysis { --orb-state: #75a8ff; }
+.ai-coach-orb.suggestion { --orb-state: #5ce1c1; }
+.ai-coach-orb.complete { --orb-state: #a58cff; }
+.ai-coach-orb.analysis::after,
+.ai-coach-orb.suggestion::after,
+.ai-coach-orb.complete::after { background: radial-gradient(circle at 35% 28%, white, var(--orb-state) 34%, transparent 72%); }
+.ai-coach-ambient {
+  opacity: .72;
+  background:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand-flow) 20%, transparent), transparent 32%),
+    radial-gradient(circle at 88% 74%, color-mix(in srgb, var(--brand-precision) 12%, transparent), transparent 35%);
+}
+.ai-coach-skeleton span {
+  background: linear-gradient(90deg, rgba(255,255,255,.035), rgba(255,255,255,.11), rgba(255,255,255,.035));
+  background-size: 220% 100%;
+  animation: phaseSixSkeleton 1.6s ease-in-out infinite;
+}
+
+/* Empty, error and loading states */
+.empty-history,
+.chart-empty {
+  min-height: 150px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+.empty-history::before,
+.chart-empty::before {
+  content: "⌁";
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--brand-flow) 26%, var(--border));
+  border-radius: 15px;
+  color: var(--brand-flow);
+  background: color-mix(in srgb, var(--brand-flow) 8%, transparent);
+  box-shadow: inset 0 1px var(--glass-highlight);
+  font-size: 22px;
+  animation: phaseSixEmptyFloat 3.2s ease-in-out infinite;
+}
+.saas-error {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 111, 130, .18);
+  border-radius: 11px;
+  color: #ff9aa8;
+  background: rgba(255, 75, 100, .06);
+}
+.saas-success {
+  padding: 10px 12px;
+  border-radius: 11px;
+  color: var(--brand-precision);
+  background: color-mix(in srgb, var(--brand-precision) 8%, transparent);
+}
+.saas-center-loading {
+  box-shadow: 0 20px 70px rgba(0,0,0,.25);
+  animation: phaseSixLoading 1.2s ease-in-out infinite;
+}
+.experience-error-state {
+  min-height: 132px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 20px;
+  border: 1px solid rgba(255, 129, 143, .16);
+  border-radius: 18px;
+  background: rgba(255, 92, 112, .045);
+}
+.experience-error-state > i { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; color: #ff9aaa; background: rgba(255,100,120,.08); font-style: normal; }
+.experience-error-state strong { color: var(--text); }
+.experience-error-state p { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.experience-error-state button { min-height: 38px; border: 1px solid var(--line); border-radius: 11px; color: var(--text); background: rgba(255,255,255,.04); cursor: pointer; }
+
+/* Sound and preferences */
+.sound-mode-control { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 5px; border: 1px solid var(--border); border-radius: 13px; background: rgba(0,0,0,.08); }
+.sound-mode-control button { min-height: 36px; border: 0; border-radius: 9px; color: var(--foreground-muted); background: transparent; cursor: pointer; }
+.sound-mode-control button.active { color: var(--foreground); background: color-mix(in srgb, var(--primary) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 22%, transparent); }
+.volume-row { display: grid; grid-template-columns: auto 1fr 38px; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid var(--border); }
+.volume-row span { color: var(--foreground-muted); font-size: 11px; font-weight: 700; }
+.volume-row input { width: 100%; accent-color: var(--primary); }
+.volume-row b { color: var(--foreground-muted); font: 650 10px var(--font-mono); }
+
+/* Accessible focus */
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand-flow) 78%, white);
+  outline-offset: 3px;
+}
+
+@keyframes phaseSixFracture {
+  0% { opacity: 0; transform: scale(.55) rotate(-4deg); }
+  35% { opacity: .8; }
+  100% { opacity: 0; transform: scale(1.22) rotate(2deg); }
+}
+@keyframes phaseSixError {
+  25% { transform: translateX(-2px) rotate(-1deg); }
+  55% { transform: translateX(2px) rotate(1deg); }
+}
+@keyframes phaseSixOrbBreath {
+  50% { transform: scale(.78); opacity: .72; filter: blur(1px); }
+}
+@keyframes phaseSixSkeleton { 50% { background-position: -120% 0; } }
+@keyframes phaseSixEmptyFloat { 50% { transform: translateY(-5px); } }
+@keyframes phaseSixLoading { 50% { opacity: .68; transform: translate(-50%, -50%) scale(.98); } }
+
+@media (max-width: 720px), (pointer: coarse) {
+  .ambient-particle-canvas { opacity: .34; }
+  .app-shell::before { display: none; }
+  :where(
+    .growth-metric-card,
+    .ai-status-grid article,
+    .achievement-grid article,
+    .mode-card,
+    .daily-trend-card,
+    .leaderboard-card
+  ) { transform: none !important; will-change: auto; }
+  .app-shell.is-training-focus > .nav { opacity: .72; }
+  .app-shell.is-training-focus > .control-deck { opacity: .12; }
+  .training-keyboard { transform: none; box-shadow: none; }
+  .training-keyboard-row > span { box-shadow: inset 0 1px rgba(255,255,255,.1), 0 3px 0 color-mix(in srgb, var(--panel-2) 88%, black); }
+  .phase-six-brand > span:last-child { display: none; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .sound-design-card { order: -1; }
+  .mode-grid {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 2px 10px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .mode-grid::-webkit-scrollbar { display: none; }
+  .mode-card {
+    flex: 0 0 152px;
+    min-height: 64px;
+    scroll-snap-align: start;
+  }
+  .practice-card { border-radius: 22px; }
+  .passage { font-size: clamp(22px, 6.5vw, 30px); line-height: 1.72; }
+  .training-keyboard { min-height: 58px; padding: 10px 13px; }
+  .training-keyboard-rows { display: none; }
+  .training-keyboard-status { margin: 0; }
+  .hero-primary { min-height: 52px; min-width: 190px; }
+  .nav-profile-button,
+  .icon-button { min-width: 42px; min-height: 42px; }
+}
+
+@media (max-width: 430px) {
+  .keyflow-brand-mark.compact { width: 32px; height: 32px; }
+  .training-metrics { gap: 6px; }
+  .training-metric { min-width: 0; padding: 10px 7px; }
+  .metric-ring { transform: scale(.86); }
+  .metric-copy > strong { font-size: clamp(18px, 7vw, 26px); }
+  .sound-mode-control { grid-template-columns: 1fr; }
+  .experience-error-state { grid-template-columns: auto 1fr; }
+  .experience-error-state button { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-particle-canvas { display: none; }
+  .app-shell::before { display: none; }
+  :where(
+    .growth-metric-card,
+    .ai-status-grid article,
+    .achievement-grid article,
+    .mode-card,
+    .daily-trend-card,
+    .leaderboard-card
+  ) { transform: none !important; transition: none !important; will-change: auto; }
+  .ai-coach-orb::after,
+  .ai-coach-skeleton span,
+  .empty-history::before,
+  .chart-empty::before { animation: none !important; }
+  :where(.hero-primary, .saas-primary, .report-button, .training-plan-list button)::after { display: none; }
+}

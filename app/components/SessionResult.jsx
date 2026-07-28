@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import ShareResultButton from "./ShareResultButton";
 
 export default function SessionResult({
@@ -31,8 +32,14 @@ export default function SessionResult({
   onRestart,
   onViewReport,
 }) {
+  const reduceMotion = useReducedMotion();
   return (
-    <div className="result-overlay phase-one-result phase-two-result">
+    <motion.div
+      className="result-overlay phase-one-result phase-two-result"
+      initial={reduceMotion ? false : { opacity: 0, scale: .975, y: 22, filter: "blur(10px)" }}
+      animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+      transition={{ type: reduceMotion ? "tween" : "spring", stiffness: 150, damping: 21 }}
+    >
       <div className="result-glow" />
       <div className="result-kicker"><i /> SESSION COMPLETE</div>
       {leveledUp && <div className="level-up-badge"><span>↑</span> LEVEL UP</div>}
@@ -126,6 +133,6 @@ export default function SessionResult({
             <button className="report-button" onClick={onViewReport}>查看 AI 训练报告</button>
             <button onClick={onRestart}>{testType === "pk" ? "再战一局" : "开始下一轮"} <span>→</span></button>
           </div>}
-    </div>
+    </motion.div>
   );
 }
