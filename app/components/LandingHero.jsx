@@ -23,7 +23,7 @@ const reveal = {
   }),
 };
 
-function ThemeControl({ value, onChange }) {
+function ThemeControl({ value, resolvedTheme, onChange }) {
   return (
     <div className="hero-theme-control" aria-label="主题模式">
       {[["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([id, label]) => (
@@ -35,14 +35,14 @@ function ThemeControl({ value, onChange }) {
           aria-pressed={value === id}
         >
           {value === id && <motion.i layoutId="landing-theme-pill" transition={{ type: "spring", stiffness: 360, damping: 30 }} />}
-          <span>{label}</span>
+          <span>{id === "auto" ? `Auto · ${resolvedTheme === "light" ? "Light" : "Dark"}` : label}</span>
         </button>
       ))}
     </div>
   );
 }
 
-export default function LandingHero({ ready, leaving, themePreference, onThemeChange, onEnter }) {
+export default function LandingHero({ ready, leaving, themePreference, resolvedTheme, onThemeChange, onEnter }) {
   return (
     <section className={`saas-landing apple-landing ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
       <nav className="hero-nav">
@@ -51,7 +51,7 @@ export default function LandingHero({ ready, leaving, themePreference, onThemeCh
         </a>
         <div className="hero-nav-right">
           <span className="hero-phase"><i /> Precision training</span>
-          <ThemeControl value={themePreference} onChange={onThemeChange} />
+          <ThemeControl value={themePreference} resolvedTheme={resolvedTheme} onChange={onThemeChange} />
         </div>
       </nav>
 

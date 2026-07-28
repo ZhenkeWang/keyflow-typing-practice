@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   buildCoachSummary,
@@ -279,6 +279,7 @@ function SettingsPanel() {
   const volume = useExperienceStore((state) => state.volume);
   const haptics = useExperienceStore((state) => state.haptics);
   const pointerEffects = useExperienceStore((state) => state.pointerEffects);
+  const motionPreference = useExperienceStore((state) => state.motion);
   const hydrateExperience = useExperienceStore((state) => state.hydrate);
   const updateExperience = useExperienceStore((state) => state.update);
 
@@ -319,6 +320,14 @@ function SettingsPanel() {
         <label className="volume-row"><span>音量</span><input type="range" min="0" max="1" step=".05" value={volume} disabled={sound === "silent"} onChange={(event) => updateExperience({ volume: Number(event.target.value) })} /><b>{Math.round(volume * 100)}%</b></label>
         <label className="switch-row"><span>触觉反馈</span><input type="checkbox" checked={haptics} onChange={(event) => updateExperience({ haptics: event.target.checked })} /></label>
         <label className="switch-row"><span>鼠标空间光效</span><input type="checkbox" checked={pointerEffects} onChange={(event) => updateExperience({ pointerEffects: event.target.checked })} /></label>
+        <label className="motion-setting-row">
+          <span>Animation</span>
+          <select value={motionPreference} onChange={(event) => updateExperience({ motion: event.target.value })}>
+            <option value="full">Full</option>
+            <option value="reduced">Reduced</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
       </article>
       <article><div><small>TRAINING REMINDER</small><h3>保持节奏</h3><p>提醒设置保存在本地，登录后可同步到其他设备。</p></div><label className="switch-row"><span>{reminders.enabled ? "已开启" : "已关闭"}</span><input type="checkbox" checked={reminders.enabled} onChange={(event) => enableReminder(event.target.checked)} /></label><label className="time-row"><span>提醒时间</span><input type="time" value={reminders.time} onChange={(event) => updateReminders({ time: event.target.value })} /></label>{notice && <p>{notice}</p>}</article>
       <article><div><small>INSTALL APP</small><h3>KeyFlow PWA</h3><p>安装后可从桌面启动，并在离线时打开已缓存的训练界面。</p></div><button className="saas-primary" type="button" disabled={!installPrompt} onClick={async () => { await installPrompt?.prompt(); setInstallPrompt(null); }}>{installPrompt ? "安装 KeyFlow" : "已安装或暂不可用"}</button></article>
@@ -336,10 +345,47 @@ export default function SaaSControlCenter({
   onCloudRecords,
 }) {
   const [tab, setTab] = useState("profile");
+  const dialogRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const reduceMotion = useReducedMotion();
   const hydrateAuth = useAuthStore((state) => state.hydrate);
   const hydrateTheme = useThemeStore((state) => state.hydrate);
   useEffect(() => { hydrateAuth(); hydrateTheme(); }, [hydrateAuth, hydrateTheme]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const previousFocus = document.activeElement;
+    const dialog = dialogRef.current;
+    const focusableSelector = "button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
+    requestAnimationFrame(() => dialog?.querySelector(focusableSelector)?.focus());
+
+    function handleDialogKeydown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+      const focusable = [...dialog.querySelectorAll(focusableSelector)];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleDialogKeydown, true);
+    return () => {
+      document.removeEventListener("keydown", handleDialogKeydown, true);
+      previousFocus?.focus?.({ preventScroll: true });
+    };
+  }, [open]);
   return (
     <AnimatePresence>
       {open && <motion.div
@@ -352,6 +398,7 @@ export default function SaaSControlCenter({
         transition={{ duration: reduceMotion ? 0 : .34 }}
       >
       <motion.section
+        ref={dialogRef}
         className="saas-center"
         role="dialog"
         aria-modal="true"

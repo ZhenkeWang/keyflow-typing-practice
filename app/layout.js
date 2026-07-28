@@ -2,6 +2,7 @@ import "./styles/tokens.css";
 import "./globals.css";
 import "./styles/saas.css";
 import "./styles/phase-six.css";
+import "./styles/phase-seven.css";
 
 export const metadata = {
   metadataBase: new URL("https://keyflow-typing-practice.barkzoombie.chatgpt.site"),

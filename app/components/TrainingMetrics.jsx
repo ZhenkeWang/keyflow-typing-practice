@@ -1,8 +1,6 @@
 "use client";
 
 import { memo } from "react";
-import CountUp from "../animations/CountUp";
-
 function Metric({ label, value, unit, detail, progress, tone }) {
   return (
     <div className={`training-metric ${tone || ""}`}>
@@ -12,7 +10,7 @@ function Metric({ label, value, unit, detail, progress, tone }) {
       <div className="metric-copy">
         <span>{label}</span>
         <strong>
-          {typeof value === "number" ? <CountUp value={value} duration={.24} /> : value}
+          {value}
           <small>{unit}</small>
         </strong>
         <small>{detail}</small>

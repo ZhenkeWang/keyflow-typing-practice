@@ -15,13 +15,15 @@ const TILT_SELECTOR = [
 export default function InteractionRuntime() {
   const hydrate = useExperienceStore((state) => state.hydrate);
   const pointerEffects = useExperienceStore((state) => state.pointerEffects);
+  const motion = useExperienceStore((state) => state.motion);
   useEffect(() => hydrate(), [hydrate]);
 
   useEffect(() => {
     const root = document.documentElement;
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!pointerEffects || coarse || reduced) {
+    root.dataset.motionPreference = motion;
+    if (!pointerEffects || motion !== "full" || coarse || reduced) {
       root.dataset.pointerEffects = "off";
       return undefined;
     }
@@ -59,8 +61,7 @@ export default function InteractionRuntime() {
       cancelAnimationFrame(frame);
       delete root.dataset.pointerEffects;
     };
-  }, [pointerEffects]);
+  }, [motion, pointerEffects]);
 
   return null;
 }
-

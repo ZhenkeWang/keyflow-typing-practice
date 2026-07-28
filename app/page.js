@@ -18,6 +18,7 @@ import CloudSyncRuntime from "./components/CloudSyncRuntime";
 import AmbientCanvas from "./components/AmbientCanvas";
 import InteractionRuntime from "./components/InteractionRuntime";
 import BrandMark from "./components/BrandMark";
+import useThrottledSnapshot from "./hooks/useThrottledSnapshot";
 import { playKeySound, triggerHaptic } from "./services/feedback";
 import { useExperienceStore } from "./stores/experienceStore";
 import { useAiCoachStore } from "./stores/aiCoachStore";
@@ -354,6 +355,8 @@ export default function Home() {
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const [profileOpen, setProfileOpen] = useState(false);
   const [selectedWeakKey, setSelectedWeakKey] = useState("");
+  const [inputFocused, setInputFocused] = useState(false);
+  const [feedbackPhase, setFeedbackPhase] = useState("ready");
   const sessionReview = useAiCoachStore((state) => state.sessionReview);
   const reviewSession = useAiCoachStore((state) => state.review);
   const clearSessionReview = useAiCoachStore((state) => state.clearReview);
@@ -374,6 +377,8 @@ export default function Home() {
   const recorded = useRef(false);
   const composing = useRef(false);
   const appliedTheme = useRef(null);
+  const pausedAt = useRef(0);
+  const feedbackTimer = useRef(0);
 
   const elapsedMs = startedAt.current
     ? Math.max(0, (status === "finished" ? finishedAt.current : now) - startedAt.current)
@@ -405,6 +410,13 @@ export default function Home() {
     ? Math.min(100, (elapsedSeconds / goal) * 100)
     : Math.min(100, (words / goal) * 100);
   const consistency = useMemo(() => calculateConsistency(intervals.current), [pulse, typed]);
+  const displayMetrics = useThrottledSnapshot({
+    speed,
+    accuracy,
+    consistency,
+    timeLabel: testType === "words" ? `${words}/${goal}` : formatTime(timeLeft),
+    timeProgress: testType === "words" ? progress : Math.max(0, 100 - progress),
+  }, status === "running", 250);
   const rhythmBpm = useMemo(() => calculateRhythmBpm(intervals.current), [pulse, typed]);
   const rhythmScore = useMemo(
     () => calculateRhythmScore(intervals.current, rhythmTarget),
@@ -488,6 +500,7 @@ export default function Home() {
     setStatus("idle");
     setNow(0);
     setCombo(0);
+    setFeedbackPhase("ready");
     setFeedback("correct");
     setMistakeLog([]);
     setLastXpAward(0);
@@ -513,6 +526,8 @@ export default function Home() {
     keystrokes.current = { total: 0, incorrect: 0, corrected: 0 };
     characterStats.current = {};
     recorded.current = false;
+    pausedAt.current = 0;
+    window.clearTimeout(feedbackTimer.current);
     requestAnimationFrame(() => inputRef.current?.focus());
   }, [clearSessionReview, codeLanguage, goal, history, mode, numberPreset, rhythmTarget, selectedWeakKey, testType]);
 
@@ -559,6 +574,8 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [growthEvents]);
 
+  useEffect(() => () => window.clearTimeout(feedbackTimer.current), []);
+
   useEffect(() => {
     const resolveTheme = () => setTheme(
       themePreference === "auto" ? getTimeBasedTheme() : themePreference
@@ -579,7 +596,7 @@ export default function Home() {
       root.classList.remove("theme-changing");
       void root.offsetWidth;
       root.classList.add("theme-changing");
-      timer = window.setTimeout(() => root.classList.remove("theme-changing"), 1800);
+      timer = window.setTimeout(() => root.classList.remove("theme-changing"), 680);
     }
     root.dataset.theme = theme;
     localStorage.setItem("keyflow-theme", theme);
@@ -755,15 +772,9 @@ export default function Home() {
   }, [accuracy, best, claimedMissionIds, codeLanguage, codeMetrics, consistency, correct, cpm, elapsedSeconds, errorPatterns, errorRate, hapticsEnabled, history, metric, mistakeLog, mode, pkPlayer, reactionTime, reviewSession, rhythmBpm, rhythmScore, speed, status, testType, totalErrors, trainingReport.hands, typed.length]);
 
   useEffect(() => {
-    let tabPressed = false;
     function handleShortcut(event) {
-      if (event.key === "Tab") {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
-        tabPressed = true;
-        window.setTimeout(() => { tabPressed = false; }, 1000);
-      } else if (event.key === "Enter" && tabPressed) {
-        event.preventDefault();
-        tabPressed = false;
         reset();
       } else if (event.key === "Escape") {
         if (immersive) setImmersive(false);
@@ -786,6 +797,30 @@ export default function Home() {
     finishedAt.current = performance.now();
     setNow(finishedAt.current);
     setStatus("finished");
+    setFeedbackPhase("completed");
+  }
+
+  function pauseSession() {
+    if (status !== "running") return;
+    const stamp = performance.now();
+    pausedAt.current = stamp;
+    setNow(stamp);
+    setStatus("paused");
+    setFeedbackPhase("paused");
+  }
+
+  function resumeSession() {
+    setInputFocused(true);
+    if (status !== "paused") return;
+    const stamp = performance.now();
+    if (pausedAt.current) {
+      startedAt.current += stamp - pausedAt.current;
+    }
+    pausedAt.current = 0;
+    lastKeyAt.current = stamp;
+    setNow(stamp);
+    setStatus("running");
+    setFeedbackPhase("typing");
   }
 
   function processInput(value) {
@@ -793,12 +828,18 @@ export default function Home() {
     value = (mode === "code" ? value.replace(/\r\n/g, "\n") : value.replace(/[\r\n]/g, "")).slice(0, text.length);
     if (interaction === "sprint" && value.length < typed.length) return;
     const stamp = performance.now();
+    if (status === "paused") {
+      if (pausedAt.current) startedAt.current += stamp - pausedAt.current;
+      pausedAt.current = 0;
+      setStatus("running");
+    }
     const reactionDelta = lastKeyAt.current ? stamp - lastKeyAt.current : 0;
     if (status === "idle" && value.length) {
       startedAt.current = stamp;
       lastKeyAt.current = stamp;
       setNow(stamp);
       setStatus("running");
+      setFeedbackPhase("typing");
     } else if (value.length > typed.length) {
       if (lastKeyAt.current) intervals.current.push(stamp - lastKeyAt.current);
       lastKeyAt.current = stamp;
@@ -839,6 +880,13 @@ export default function Home() {
       }
       setCombo((current) => isCorrect ? current + 1 : 0);
       setFeedback(isCorrect ? "correct" : "wrong");
+      window.clearTimeout(feedbackTimer.current);
+      if (isCorrect) {
+        setFeedbackPhase("typing");
+      } else {
+        setFeedbackPhase("error");
+        feedbackTimer.current = window.setTimeout(() => setFeedbackPhase("recover"), 170);
+      }
       setPulse((current) => current + 1);
     } else if (value.length < typed.length) {
       keystrokes.current.corrected += typed.length - value.length;
@@ -865,6 +913,7 @@ export default function Home() {
     setStatus("idle");
     setNow(0);
     setCombo(0);
+    setFeedbackPhase("ready");
     startedAt.current = 0;
     finishedAt.current = 0;
     lastKeyAt.current = 0;
@@ -874,6 +923,7 @@ export default function Home() {
     setMistakeLog([]);
     setResultView("summary");
     recorded.current = false;
+    pausedAt.current = 0;
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
@@ -920,7 +970,17 @@ export default function Home() {
 
   async function toggleImmersive() {
     const next = !immersive;
-    setImmersive(next);
+    const applyMode = () => flushSync(() => setImmersive(next));
+    let transition;
+    if (typeof document.startViewTransition === "function") {
+      document.documentElement.classList.add("immersive-transitioning");
+      transition = document.startViewTransition(applyMode);
+      transition.finished.finally(() => {
+        document.documentElement.classList.remove("immersive-transitioning");
+      });
+    } else {
+      setImmersive(next);
+    }
     try {
       if (next && !document.fullscreenElement) await document.documentElement.requestFullscreen();
       if (!next && document.fullscreenElement) await document.exitFullscreen();
@@ -1009,6 +1069,9 @@ export default function Home() {
     const resolvedTheme = nextTheme === "auto" ? getTimeBasedTheme() : nextTheme;
     setThemePreference(nextTheme);
     setTheme(resolvedTheme);
+    if (entered && status !== "finished") {
+      requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
+    }
   }
 
   function enterPractice(event) {
@@ -1069,7 +1132,7 @@ export default function Home() {
 
   return (
     <main
-      className={`app-shell theme-${theme} ${immersive ? "immersive-mode" : ""} ${status === "running" ? "is-training-focus" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
+      className={`app-shell theme-${theme} state-${status} feedback-${feedbackPhase} ${inputFocused ? "has-input-focus" : ""} ${immersive ? "immersive-mode" : ""} ${status === "running" ? "is-training-focus" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
       onClick={() => {
         if (entered && status !== "finished") inputRef.current?.focus();
       }}
@@ -1100,11 +1163,11 @@ export default function Home() {
           colorStops={theme === "light" ? ["#b8a9ff", "#8de5d1", "#b9c8ff"] : ["#7667ff", "#47d7bf", "#5363e8"]}
           amplitude={theme === "light" ? 0.68 : 0.88}
           blend={theme === "light" ? 0.58 : 0.7}
-          speed={theme === "light" ? 0.78 : 0.9}
+          speed={status === "running" ? 0.16 : status === "paused" ? 0.08 : theme === "light" ? 0.42 : 0.48}
         />
       </div>
       <div className="background-wash" />
-      <AmbientCanvas active={!immersive} />
+      <AmbientCanvas active={!entered && !immersive} calm />
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
 
@@ -1117,6 +1180,7 @@ export default function Home() {
             ready={entryReady}
             leaving={entryLeaving}
             themePreference={themePreference}
+            resolvedTheme={theme}
             onThemeChange={chooseTheme}
             onEnter={enterPractice}
           />
@@ -1148,7 +1212,7 @@ export default function Home() {
               onClick={() => chooseTheme("auto")}
               aria-pressed={themePreference === "auto"}
             >
-              Auto
+              Auto · {theme === "light" ? "Light" : "Dark"}
             </button>
             <button
               className={themePreference === "light" ? "active" : ""}
@@ -1302,10 +1366,13 @@ export default function Home() {
         />
       </section>
 
-      <section className={`practice-card ${status} interaction-${interaction} ${errors > 0 && typed.at(-1) !== text[typed.length - 1] ? "has-error" : ""}`}>
+      <section
+        className={`practice-card glass-level-3 ${status} interaction-${interaction} phase-${feedbackPhase} ${inputFocused ? "is-focused" : ""} ${errors > 0 && typed.at(-1) !== text[typed.length - 1] ? "has-error" : ""}`}
+        data-training-state={status}
+      >
         <div className="progress-track"><span style={{ width: `${progress}%` }} /></div>
         <div className="card-topline">
-          <span className={`live-status ${status}`}><i /> {status === "idle" ? "READY" : status === "running" ? "LIVE SESSION" : "SESSION COMPLETE"}</span>
+          <span className={`live-status ${status}`}><i /> {status === "idle" ? "READY" : status === "running" ? "LIVE SESSION" : status === "paused" ? "PAUSED" : "SESSION COMPLETE"}</span>
           <span>{modeLabel} · {INTERACTIONS.find((item) => item.id === interaction)?.label} · {testType !== "words" ? (goal > 60 ? `${goal / 60} 分钟` : `${goal} 秒`) : `${goal} ${chineseContent ? "字" : "词"}`}</span>
           <div className="session-actions">
             <span className="session-index">{testType === "pk" ? `PLAYER ${pkPlayer} / 2` : `SESSION / ${String(history.length + 1).padStart(2, "0")}`}</span>
@@ -1327,11 +1394,11 @@ export default function Home() {
         )}
 
         <TrainingMetrics
-          wpm={speed}
-          accuracy={accuracy}
-          consistency={consistency}
-          timeLabel={testType === "words" ? `${words}/${goal}` : formatTime(timeLeft)}
-          timeProgress={testType === "words" ? progress : Math.max(0, 100 - progress)}
+          wpm={displayMetrics.speed}
+          accuracy={displayMetrics.accuracy}
+          consistency={displayMetrics.consistency}
+          timeLabel={displayMetrics.timeLabel}
+          timeProgress={displayMetrics.timeProgress}
           best={best}
         />
 
@@ -1340,6 +1407,11 @@ export default function Home() {
             ref={inputRef}
             value={typed + draft}
             onChange={handleInput}
+            onFocus={resumeSession}
+            onBlur={() => {
+              setInputFocused(false);
+              pauseSession();
+            }}
             onCompositionStart={() => { composing.current = true; }}
             onCompositionEnd={(event) => {
               composing.current = false;
@@ -1354,6 +1426,7 @@ export default function Home() {
             onPaste={(event) => event.preventDefault()}
             onDrop={(event) => event.preventDefault()}
             disabled={status === "finished"}
+            aria-describedby="training-state-message"
             aria-label="打字输入区域"
             autoCapitalize="none"
             autoCorrect="off"
@@ -1390,13 +1463,18 @@ export default function Home() {
               ))}
             </span>
           )}
-          {combo >= 5 && status === "running" && (
+          {pulse > 0 && status === "running" && feedback === "correct" && (
             <span
-              className="flow-cursor-trail"
+              className={`flow-cursor-trail ${combo >= 50 ? "tier-3" : combo >= 30 ? "tier-2" : combo >= 10 ? "tier-1" : "tier-0"}`}
               key={`flow-${pulse}`}
               style={{ left: `${burstPosition.x}px`, top: `${burstPosition.y}px` }}
               aria-hidden="true"
             />
+          )}
+          {[10, 30, 50].includes(combo) && status === "running" && (
+            <span className={`combo-milestone combo-${combo}`} key={`combo-${combo}-${pulse}`} aria-hidden="true">
+              {combo} COMBO
+            </span>
           )}
 
           <div className={`passage ${mode} ${combo >= 5 ? "is-flowing" : ""}`} ref={passageRef} aria-hidden="true">
@@ -1421,6 +1499,16 @@ export default function Home() {
           )}
 
           {status === "idle" && <div className="start-hint"><span>{testType === "pk" ? `玩家 ${pkPlayer} 准备好后开始输入` : "点击这里或直接开始输入"}</span><small>{chineseContent ? "支持拼音与五笔输入法" : interaction === "sprint" ? "冲刺模式无法使用退格键" : "首个按键后自动计时"}</small></div>}
+
+          <div
+            id="training-state-message"
+            className={`training-state-message ${status}`}
+            role="status"
+            aria-live="polite"
+          >
+            {status === "idle" && <><strong>Ready</strong><span>点击或直接输入开始训练</span></>}
+            {status === "paused" && <><strong>Paused</strong><span>点击文本继续</span></>}
+          </div>
 
           {status === "finished" && resultView === "summary" && (
             <SessionResult
@@ -1488,7 +1576,7 @@ export default function Home() {
             <div className="key-row" key={rowIndex}>
               {row.map((key, keyIndex) => (
                 <span
-                  className={`${key.spacer ? "key-spacer " : ""}${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? "pressed " : ""}${key.size ? `key-${key.size}` : ""}`}
+                  className={`${key.spacer ? "key-spacer " : ""}${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? `pressed ${feedback} ` : ""}${key.size ? `key-${key.size}` : ""}`}
                   key={`${rowIndex}-${keyIndex}-${key.value}-${lastTypedKey === key.value ? pulse : "idle"}`}
                 >{key.label}</span>
               ))}
@@ -1500,7 +1588,7 @@ export default function Home() {
         </div>}
 
         <footer className="card-footer">
-          <span><kbd>Tab</kbd><b>+</b><kbd>Enter</kbd> 重开</span>
+          <span><kbd>Ctrl</kbd><b>+</b><kbd>Enter</kbd> 重开</span>
           <span><kbd>Esc</kbd> 重置</span>
           <span>每一次敲击，都是进步。</span>
         </footer>

@@ -8,6 +8,7 @@ const DEFAULTS = {
   volume: 0.32,
   haptics: true,
   pointerEffects: true,
+  motion: "full",
 };
 
 export const useExperienceStore = create((set, get) => ({
@@ -27,9 +28,8 @@ export const useExperienceStore = create((set, get) => ({
   update(update) {
     set(update);
     if (typeof window !== "undefined") {
-      const { sound, volume, haptics, pointerEffects } = get();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ sound, volume, haptics, pointerEffects }));
+      const { sound, volume, haptics, pointerEffects, motion } = get();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ sound, volume, haptics, pointerEffects, motion }));
     }
   },
 }));
-

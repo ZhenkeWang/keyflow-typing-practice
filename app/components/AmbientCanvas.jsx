@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 const PARTICLE_COUNT = 34;
 
-export default function AmbientCanvas({ active = true }) {
+export default function AmbientCanvas({ active = true, calm = false }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function AmbientCanvas({ active = true }) {
     let width = 0;
     let height = 0;
     let dpr = 1;
-    const particles = Array.from({ length: coarsePointer ? 18 : PARTICLE_COUNT }, (_, index) => ({
+    const particles = Array.from({ length: calm ? 12 : coarsePointer ? 18 : PARTICLE_COUNT }, (_, index) => ({
       x: (index * 73 % 97) / 97,
       y: (index * 47 % 89) / 89,
       size: .6 + (index % 4) * .35,
@@ -39,7 +39,7 @@ export default function AmbientCanvas({ active = true }) {
     }
 
     function draw(timestamp = 0) {
-      if (timestamp - lastPaint < (reduceMotion || coarsePointer ? 1000 : 34)) {
+      if (timestamp - lastPaint < (reduceMotion || coarsePointer ? 1000 : calm ? 80 : 34)) {
         frame = requestAnimationFrame(draw);
         return;
       }
@@ -64,7 +64,7 @@ export default function AmbientCanvas({ active = true }) {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(frame);
     };
-  }, [active]);
+  }, [active, calm]);
 
   return <canvas ref={canvasRef} className="ambient-particle-canvas" aria-hidden="true" />;
 }
