@@ -14,14 +14,43 @@ const FALLBACK = {
   ],
 };
 
-function clean(value = "") {
-  return value
-    .replace(/<!\[CDATA\[|\]\]>/g, "")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&nbsp;/g, " ")
+const TEXT_ENTITIES = Object.freeze({
+  "&amp;": "&",
+  "&quot;": '"',
+  "&#39;": "'",
+  "&apos;": "'",
+  "&nbsp;": " ",
+});
+
+function stripMarkup(value) {
+  let result = "";
+  let insideTag = false;
+
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    const nextCharacter = value[index + 1] || "";
+
+    if (!insideTag && character === "<" && /[A-Za-z!/?<]/.test(nextCharacter)) {
+      insideTag = true;
+      continue;
+    }
+    if (insideTag) {
+      if (character === ">") insideTag = false;
+      continue;
+    }
+    result += character;
+  }
+
+  return result;
+}
+
+export function clean(value = "") {
+  const withoutMarkup = stripMarkup(
+    value.replaceAll("<![CDATA[", "").replaceAll("]]>", "")
+  );
+
+  return withoutMarkup
+    .replace(/&(?:amp|quot|#39|apos|nbsp);/g, (entity) => TEXT_ENTITIES[entity])
     .replace(/\s+/g, " ")
     .trim();
 }
