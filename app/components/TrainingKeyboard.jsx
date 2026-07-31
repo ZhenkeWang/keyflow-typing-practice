@@ -40,7 +40,7 @@ function TrainingKeyboard({ expectedKey, activeKey, pulse, feedback, compact = f
               return (
                 <span
                   className={`${isActive ? `active ${feedback}` : ""} ${isNext ? "next" : ""} ${key === " " ? "space" : ""} ${["backspace", "tab", "caps", "enter", "shift", "shift-right"].includes(key) ? "wide" : ""}`}
-                  key={`${rowIndex}-${keyIndex}-${key}-${isActive ? pulse : "idle"}`}
+                  key={`${rowIndex}-${keyIndex}-${key}`}
                 >
                   {LABELS[key] || key.toUpperCase()}
                 </span>

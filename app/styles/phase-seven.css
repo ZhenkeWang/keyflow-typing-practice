@@ -310,6 +310,7 @@ html[data-theme="light"] .passage .pending {
 }
 
 .practice-card.has-error,
+.practice-card.has-error .passage,
 .practice-card.has-error .typing-zone::after {
   animation: none !important;
 }

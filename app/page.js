@@ -49,7 +49,10 @@ import {
   normalizeHistory,
   summarizeReactionTime,
 } from "./utils/typingEngine";
-import { getStableWindowStart } from "./utils/textWindow";
+import {
+  getStableWindowStart,
+  shouldCapturePracticeBackspace,
+} from "./utils/textWindow";
 
 const SaaSControlCenter = lazy(() => import("./components/SaaSControlCenter"));
 
@@ -780,7 +783,23 @@ export default function Home() {
 
   useEffect(() => {
     function handleShortcut(event) {
-      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      const target = event.target;
+      const isEditable = target === inputRef.current
+        || target?.isContentEditable
+        || ["INPUT", "TEXTAREA"].includes(target?.tagName);
+      if (shouldCapturePracticeBackspace({
+        key: event.key,
+        entered,
+        status,
+        isEditable,
+      })) {
+        event.preventDefault();
+        event.stopPropagation();
+        inputRef.current?.focus({ preventScroll: true });
+        if (interaction !== "sprint" && typed.length) {
+          processInput(typed.slice(0, -1));
+        }
+      } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         reset();
       } else if (event.key === "Escape") {
@@ -790,7 +809,7 @@ export default function Home() {
     }
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [immersive, reset]);
+  }, [entered, immersive, interaction, reset, status, typed]);
 
   useEffect(() => {
     function handleFullscreenChange() {
@@ -798,6 +817,15 @@ export default function Home() {
     }
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    function handleKeyRelease(event) {
+      const releasedKey = event.key === " " ? " " : event.key.toLowerCase();
+      setActiveKey((current) => current === releasedKey ? "" : current);
+    }
+    window.addEventListener("keyup", handleKeyRelease);
+    return () => window.removeEventListener("keyup", handleKeyRelease);
   }, []);
 
   function finish() {
@@ -833,7 +861,8 @@ export default function Home() {
   function processInput(value) {
     if (status === "finished") return;
     value = (mode === "code" ? value.replace(/\r\n/g, "\n") : value.replace(/[\r\n]/g, "")).slice(0, text.length);
-    if (interaction === "sprint" && value.length < typed.length) return;
+    const isDeletion = value.length < typed.length;
+    if (interaction === "sprint" && isDeletion) return;
     const stamp = performance.now();
     if (status === "paused") {
       if (pausedAt.current) startedAt.current += stamp - pausedAt.current;
@@ -891,12 +920,10 @@ export default function Home() {
       setInputAction("insert");
       setFeedback(isCorrect ? "correct" : "wrong");
       window.clearTimeout(feedbackTimer.current);
-      if (isCorrect) {
-        setFeedbackPhase("typing");
-      } else {
-        setFeedbackPhase("error");
-        feedbackTimer.current = window.setTimeout(() => setFeedbackPhase("recover"), 170);
-      }
+      // Keep error feedback local to the character and keycap. Switching the
+      // page/card into error and recovery phases forces large glass layers to
+      // be recomposited, which can flash when the next character is entered.
+      setFeedbackPhase("typing");
       setPulse((current) => current + 1);
     } else if (value.length < typed.length) {
       keystrokes.current.corrected += typed.length - value.length;
@@ -911,7 +938,9 @@ export default function Home() {
     }
 
     setTyped(value);
-    setVisibleStart((current) => getStableWindowStart(value.length, current));
+    setVisibleStart((current) => getStableWindowStart(value.length, current, {
+      preserveOnBackwardMove: isDeletion,
+    }));
     if (testType === "words" && unitCount(value, mode, newsSource) >= goal) finish();
   }
 
@@ -1152,7 +1181,7 @@ export default function Home() {
 
   return (
     <main
-      className={`app-shell theme-${theme} state-${status} feedback-${feedbackPhase} ${inputFocused ? "has-input-focus" : ""} ${immersive ? "immersive-mode" : ""} ${status === "running" ? "is-training-focus" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
+      className={`app-shell theme-${theme} state-${status} ${inputFocused ? "has-input-focus" : ""} ${immersive ? "immersive-mode" : ""} ${status === "running" ? "is-training-focus" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
       onClick={() => {
         if (entered && status !== "finished") inputRef.current?.focus();
       }}
@@ -1387,7 +1416,7 @@ export default function Home() {
       </section>
 
       <section
-        className={`practice-card glass-level-3 ${status} interaction-${interaction} phase-${feedbackPhase} ${inputFocused ? "is-focused" : ""} ${errors > 0 && typed.at(-1) !== text[typed.length - 1] ? "has-error" : ""}`}
+        className={`practice-card glass-level-3 ${status} interaction-${interaction} ${inputFocused ? "is-focused" : ""}`}
         data-training-state={status}
       >
         <div className="progress-track"><span style={{ width: `${progress}%` }} /></div>
@@ -1602,7 +1631,7 @@ export default function Home() {
               {row.map((key, keyIndex) => (
                 <span
                   className={`${key.spacer ? "key-spacer " : ""}${expectedKey === key.value ? "next " : ""}${lastTypedKey === key.value && pulse ? `pressed ${feedback} ` : ""}${key.size ? `key-${key.size}` : ""}`}
-                  key={`${rowIndex}-${keyIndex}-${key.value}-${lastTypedKey === key.value ? pulse : "idle"}`}
+                  key={`${rowIndex}-${keyIndex}-${key.value}`}
                 >{key.label}</span>
               ))}
             </div>
