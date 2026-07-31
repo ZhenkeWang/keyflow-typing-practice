@@ -258,7 +258,7 @@ kbd { padding: 3px 5px; border: 1px solid var(--line-strong); border-bottom-widt
   --accent-1: var(--primary-strong);
   --accent-2: var(--primary);
   --accent-3: var(--secondary);
-  --font-number: var(--font-mono);
+  --font-number: var(--font-numeric);
 }
 
 html,

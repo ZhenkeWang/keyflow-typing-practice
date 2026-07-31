@@ -49,6 +49,7 @@ import {
   normalizeHistory,
   summarizeReactionTime,
 } from "./utils/typingEngine";
+import { getStableWindowStart } from "./utils/textWindow";
 
 const SaaSControlCenter = lazy(() => import("./components/SaaSControlCenter"));
 
@@ -320,6 +321,7 @@ export default function Home() {
   // still use the randomized starting point for varied practice material.
   const [text, setText] = useState(() => makeText("speed", 1600, "", 0));
   const [typed, setTyped] = useState("");
+  const [visibleStart, setVisibleStart] = useState(0);
   const [status, setStatus] = useState("idle");
   const [now, setNow] = useState(0);
   const [best, setBest] = useState(0);
@@ -331,6 +333,8 @@ export default function Home() {
   const [pkScores, setPkScores] = useState({ 1: null, 2: null });
   const [interaction, setInteraction] = useState("standard");
   const [feedback, setFeedback] = useState("correct");
+  const [activeKey, setActiveKey] = useState("");
+  const [inputAction, setInputAction] = useState("insert");
   const [newsSource, setNewsSource] = useState("news");
   const [feedStatus, setFeedStatus] = useState("idle");
   const [feedUpdated, setFeedUpdated] = useState("");
@@ -496,12 +500,15 @@ export default function Home() {
         : makeText(nextMode, 1600, nextMode === "code" ? nextCodeLanguage : nextNumberPreset)
     );
     setTyped("");
+    setVisibleStart(0);
     setDraft("");
     setStatus("idle");
     setNow(0);
     setCombo(0);
     setFeedbackPhase("ready");
     setFeedback("correct");
+    setActiveKey("");
+    setInputAction("insert");
     setMistakeLog([]);
     setLastXpAward(0);
     setLastXpBreakdown([]);
@@ -620,7 +627,7 @@ export default function Home() {
   }, [entered, entryLeaving, entryReady]);
 
   useEffect(() => {
-    if (!pulse || !typed.length) return;
+    if (!pulse || !typed.length || inputAction !== "insert") return;
     const frame = window.requestAnimationFrame(() => {
       const zone = typingZoneRef.current;
       const target = passageRef.current?.querySelector(`[data-absolute="${typed.length - 1}"]`);
@@ -633,7 +640,7 @@ export default function Home() {
       });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [pulse, typed.length]);
+  }, [inputAction, pulse, typed.length]);
 
   useEffect(() => {
     if (mode !== "news") return;
@@ -879,6 +886,9 @@ export default function Home() {
         setMistakeLog((current) => appendMistakes(current, newMistakes));
       }
       setCombo((current) => isCorrect ? current + 1 : 0);
+      const inputCharacter = (value.at(-1) || "").toLowerCase();
+      setActiveKey(inputCharacter === "\n" ? "enter" : inputCharacter);
+      setInputAction("insert");
       setFeedback(isCorrect ? "correct" : "wrong");
       window.clearTimeout(feedbackTimer.current);
       if (isCorrect) {
@@ -890,10 +900,18 @@ export default function Home() {
       setPulse((current) => current + 1);
     } else if (value.length < typed.length) {
       keystrokes.current.corrected += typed.length - value.length;
+      window.clearTimeout(feedbackTimer.current);
+      lastKeyAt.current = stamp;
       setCombo(0);
+      setFeedback("delete");
+      setFeedbackPhase("typing");
+      setActiveKey("backspace");
+      setInputAction("delete");
+      setPulse((current) => current + 1);
     }
 
     setTyped(value);
+    setVisibleStart((current) => getStableWindowStart(value.length, current));
     if (testType === "words" && unitCount(value, mode, newsSource) >= goal) finish();
   }
 
@@ -909,11 +927,15 @@ export default function Home() {
   function advancePk() {
     setPkPlayer(2);
     setTyped("");
+    setVisibleStart(0);
     setDraft("");
     setStatus("idle");
     setNow(0);
     setCombo(0);
     setFeedbackPhase("ready");
+    setFeedback("correct");
+    setActiveKey("");
+    setInputAction("insert");
     startedAt.current = 0;
     finishedAt.current = 0;
     lastKeyAt.current = 0;
@@ -1051,12 +1073,10 @@ export default function Home() {
     });
   }
 
-  const visibleStart = Math.max(0, typed.length - 85);
   const visibleText = text.slice(visibleStart, visibleStart + 280);
   const expectedCharacter = (text[typed.length] || "").toLowerCase();
-  const lastTypedCharacter = (typed.at(-1) || "").toLowerCase();
   const expectedKey = expectedCharacter === "\n" ? "enter" : expectedCharacter;
-  const lastTypedKey = lastTypedCharacter === "\n" ? "enter" : lastTypedCharacter;
+  const lastTypedKey = activeKey;
   const modeLabel = MODES.find((item) => item.id === mode)?.label;
   const previousComparable = history.find((item) => item.mode === mode && item.metric === metric) || history[0];
   const improvement = previousComparable?.wpm
@@ -1407,6 +1427,11 @@ export default function Home() {
             ref={inputRef}
             value={typed + draft}
             onChange={handleInput}
+            onKeyDown={(event) => {
+              if (event.key !== "Backspace" || composing.current) return;
+              event.stopPropagation();
+              if (interaction === "sprint") event.preventDefault();
+            }}
             onFocus={resumeSession}
             onBlur={() => {
               setInputFocused(false);
@@ -1445,8 +1470,8 @@ export default function Home() {
             {feedback === "wrong" && pulse ? `输入错误，第 ${typed.length} 个字符` : ""}
           </span>
 
-          {pulse > 0 && status === "running" && <span className={`key-burst ${feedback}`} key={pulse}>{feedback === "correct" ? "+1" : "×"}</span>}
-          {pulse > 0 && status === "running" && feedback === "correct" && (
+          {inputAction === "insert" && pulse > 0 && status === "running" && <span className={`key-burst ${feedback}`} key={pulse}>{feedback === "correct" ? "+1" : "×"}</span>}
+          {inputAction === "insert" && pulse > 0 && status === "running" && feedback === "correct" && (
             <span
               className={`spark-burst ${feedback}`}
               key={`spark-${pulse}`}
@@ -1463,7 +1488,7 @@ export default function Home() {
               ))}
             </span>
           )}
-          {pulse > 0 && status === "running" && feedback === "correct" && (
+          {inputAction === "insert" && pulse > 0 && status === "running" && feedback === "correct" && (
             <span
               className={`flow-cursor-trail ${combo >= 50 ? "tier-3" : combo >= 30 ? "tier-2" : combo >= 10 ? "tier-1" : "tier-0"}`}
               key={`flow-${pulse}`}

@@ -39,6 +39,7 @@
 
   --font-display: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans SC", sans-serif;
   --font-body: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Noto Sans SC", sans-serif;
+  --font-numeric: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 }
 
