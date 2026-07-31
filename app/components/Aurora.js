@@ -1,7 +1,15 @@
 "use client";
 
-// Adapted from the free React Bits Aurora background component.
-// https://reactbits.dev — MIT + Commons Clause licensed.
+/**
+ * Adapted from the React Bits Aurora background component.
+ * Source: https://reactbits.dev/backgrounds/aurora
+ * Upstream: https://github.com/DavidHDev/react-bits
+ *
+ * This file remains subject to the React Bits MIT + Commons Clause license.
+ * It is excluded from the repository-wide MIT license. See:
+ * - THIRD_PARTY_NOTICES.md
+ * - licenses/REACT-BITS-LICENSE.md
+ */
 import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
 import { useEffect, useRef } from "react";
 

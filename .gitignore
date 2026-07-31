@@ -2,7 +2,15 @@ node_modules/
 .next/
 out/
 dist/
-.env*
+.env
+.env.local
+.env.*.local
+!.env.example
 *.log
 .vinext/
 .wrangler/
+.audit-runtime/
+coverage/
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

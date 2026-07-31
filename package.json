@@ -1,7 +1,20 @@
 {
   "name": "keyflow-typing-practice",
   "version": "1.0.0",
+  "description": "An adaptive, privacy-conscious typing training platform with real-time metrics, focused practice modes, and growth insights.",
+  "license": "MIT",
   "private": true,
+  "homepage": "https://keyflow-typing-practice.barkzoombie.chatgpt.site",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZhenkeWang/keyflow-typing-practice.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZhenkeWang/keyflow-typing-practice/issues"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build && node scripts/package-sites.mjs",
