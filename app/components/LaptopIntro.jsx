@@ -76,8 +76,8 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
     const rect = keyboardRef.current.getBoundingClientRect();
     const nx = (event.clientX - rect.left) / rect.width - .5;
     const ny = (event.clientY - rect.top) / rect.height - .5;
-    keyboardRef.current.style.setProperty("--intro-kbd-ry", `${nx * 3.2}deg`);
-    keyboardRef.current.style.setProperty("--intro-kbd-rx", `${ny * -2.4}deg`);
+    keyboardRef.current.style.setProperty("--intro-kbd-ry", `${nx * 4.8}deg`);
+    keyboardRef.current.style.setProperty("--intro-kbd-rx", `${ny * -3.4}deg`);
 
     const pointedKey = keyRefs.current.find((key) => {
       if (!key) return false;
@@ -158,29 +158,31 @@ export default function LaptopIntro({ ready, leaving, onEnter }) {
         onPointerLeave={resetPointer}
       >
         <div className="entry-keyboard-aura" aria-hidden="true" />
-        <div className="entry-full-keyboard keyboard full-keyboard" ref={keyboardRef}>
-          {INTRO_KEYS.map((row, rowIndex) => (
-            <div className="key-row" key={rowIndex}>
-              {row.map((key, keyIndex) => {
-                const keyId = `${rowIndex}-${keyIndex}-${key.value}`;
-                const index = absoluteIndex++;
-                return (
-                  <span
-                    className={`${key.spacer ? "key-spacer " : ""}${key.size ? `key-${key.size} ` : ""}`}
-                    data-key-id={keyId}
-                    key={keyId}
-                    ref={key.spacer ? undefined : (node) => { keyRefs.current[index] = node; }}
-                    onPointerDown={key.spacer ? undefined : (event) => {
-                      if (ready && !leaving) onEnter(event);
-                    }}
-                    style={{ "--intro-key-index": index }}
-                  >
-                    {key.label}
-                  </span>
-                );
-              })}
-            </div>
-          ))}
+        <div className="entry-keyboard-float">
+          <div className="entry-full-keyboard keyboard full-keyboard" ref={keyboardRef}>
+            {INTRO_KEYS.map((row, rowIndex) => (
+              <div className="key-row" key={rowIndex}>
+                {row.map((key, keyIndex) => {
+                  const keyId = `${rowIndex}-${keyIndex}-${key.value}`;
+                  const index = absoluteIndex++;
+                  return (
+                    <span
+                      className={`${key.spacer ? "key-spacer " : ""}${key.size ? `key-${key.size} ` : ""}`}
+                      data-key-id={keyId}
+                      key={keyId}
+                      ref={key.spacer ? undefined : (node) => { keyRefs.current[index] = node; }}
+                      onPointerDown={key.spacer ? undefined : (event) => {
+                        if (ready && !leaving) onEnter(event);
+                      }}
+                      style={{ "--intro-key-index": index }}
+                    >
+                      {key.label}
+                    </span>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=M+PLUS+Rounded+1c:wght@700;800;900&family=Manrope:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Nunito:wght@600;700;800&family=Pacifico&family=ZCOOL+KuaiLe&display=swap');
 
 :root {
-  --bg: #0c1020;
-  --panel: #111728;
-  --panel-2: #171e32;
-  --line: rgba(255, 255, 255, .075);
-  --line-strong: rgba(255, 255, 255, .13);
-  --text: #edf1f7;
-  --muted: #909bb0;
-  --dim: #5d687d;
+  --bg: #0d111e;
+  --panel: #171d2d;
+  --panel-2: #20283b;
+  --line: rgba(255, 255, 255, .09);
+  --line-strong: rgba(255, 255, 255, .16);
+  --text: #f2f4fa;
+  --muted: #a1a9bb;
+  --dim: #717b91;
   --violet: #8b74ff;
   --violet-soft: rgba(139, 116, 255, .16);
   --mint: #5ee9c5;

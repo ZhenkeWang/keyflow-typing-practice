@@ -1,9 +1,9 @@
 html[data-visual-theme="cyber-dark"] {
   --primary: #8180ff;
   --secondary: #5ae3c2;
-  --bg: #050507;
-  --panel: #111116;
-  --panel-2: #191921;
+  --bg: #0b0d14;
+  --panel: #171923;
+  --panel-2: #212531;
 }
 
 html[data-visual-theme="terminal"] {

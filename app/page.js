@@ -61,24 +61,46 @@ const TEXT_BANK = {
     "speed comes from relaxed hands clear focus and thousands of accurate repetitions",
     "move quickly through familiar words while keeping every keystroke light and precise",
     "fast typing feels effortless when your eyes stay ahead and your hands trust the rhythm",
+    "read the next word early keep your wrists loose and let familiar patterns carry you forward",
+    "quiet confidence grows when accurate movement becomes automatic through deliberate practice",
+    "smooth transitions between common words create more speed than forcing every individual key",
+    "quick hands stay efficient when the shoulders relax and the eyes remain one phrase ahead",
+    "build momentum with clean phrases steady breathing and a light touch across the home row",
   ],
   ai: [
     "intelligent practice adapts to every hesitation repeated error and improving rhythm",
     "train the weakest key first then carry the new control into combinations and complete sentences",
     "small accurate corrections build durable muscle memory and make fast typing feel natural",
+    "your recent timing suggests a short accuracy block before returning to faster sentence flow",
+    "adaptive sessions repeat difficult transitions just enough to improve control without fatigue",
+    "balanced practice combines weak keys smooth combinations and complete thoughts in one session",
+    "measured feedback turns hesitation into a clear training target for the next focused interval",
   ],
   accuracy: [
     "thinking through the transition brings lasting precision to every typing session",
     "the quick rhythm of writing improves when each combination lands in the right order",
     "practice action station motion typing flowing bring thing through thought",
+    "careful fingers distinguish receive believe separate necessary and rhythm without rushing",
+    "precision begins with patient transitions between their there three then and through",
+    "pause before punctuation, keep every apostrophe correct, and finish each sentence cleanly.",
+    "accuracy protects momentum because one deliberate keystroke costs less than a correction",
   ],
   weak: [
     "quality people sequence practice precision query pixel project keyboard flow",
+    "quick quartz puzzles require precise pressure across quiet peripheral keys",
+    "judge every awkward zigzag sequence while keeping pinky movement controlled",
+    "opaque packages mix frequent letters with rare keys to expose uneven reach",
+    "wax box quiz jump vex glyph rhythm phrase queue proxy zipper",
+    "repeat difficult pairs slowly then connect them inside useful everyday words",
   ],
   rhythm: [
     "breathe and type keep the beat steady hands move lightly thoughts move freely",
     "one clear key at a time creates a calm continuous rhythm across the keyboard",
     "steady motion steady focus steady breathing every keystroke arrives on time",
+    "tap and release tap and release let every short phrase land on the beat",
+    "calm hands move in even waves while the sentence keeps a measured pace",
+    "hold the tempo through each word and leave the same space between every stroke",
+    "soft keys clear beat steady flow soft keys clear beat steady flow",
   ],
   focus: [
     "small steps every day create remarkable results over time stay curious keep learning and trust the process",
@@ -124,21 +146,33 @@ const CODE_BANK = {
     "def train_model(data):\n    result = model.fit(data)\n    return result",
     "scores = [value * 2 for value in results if value > 0]",
     "with open('notes.txt', 'r') as file: content = file.read()",
+    "async def fetch_items(client):\n    response = await client.get('/items')\n    return response.json()",
+    "grouped = {key: [item for item in rows if item.kind == key] for key in kinds}",
+    "try:\n    value = int(raw_value)\nexcept ValueError as error:\n    logger.warning('%s', error)",
   ],
   javascript: [
     "const train = (items) => {\n  return items.filter(Boolean).map((item) => item.value);\n};",
     "if (response.ok) {\n  const data = await response.json();\n  render(data);\n}",
     "export const sum = (numbers = []) => numbers.reduce((total, value) => total + value, 0);",
+    "const results = await Promise.all(tasks.map(async (task) => runTask(task)));",
+    "export function debounce(callback, delay = 200) {\n  let timer;\n  return (...args) => { clearTimeout(timer); timer = setTimeout(() => callback(...args), delay); };\n}",
+    "const visibleItems = items.filter(({ active }) => active).sort((a, b) => a.rank - b.rank);",
   ],
   cpp: [
     "std::vector<int> values = {1, 2, 3};\nfor (const auto& value : values) {\n    std::cout << value;\n}",
     "for (const auto& item : values) { std::cout << item; }",
     "int clamp(int value, int low, int high) { return std::min(std::max(value, low), high); }",
+    "auto found = std::find_if(items.begin(), items.end(), [](const Item& item) { return item.ready; });",
+    "std::unordered_map<std::string, int> counts;\nfor (const auto& word : words) { ++counts[word]; }",
+    "template <typename T>\nT square(const T& value) { return value * value; }",
   ],
   java: [
     "public boolean isReady() { return status == Status.READY; }",
     "List<String> names = items.stream().map(Item::getName).toList();",
     "for (int index = 0; index < values.length; index++) { total += values[index]; }",
+    "CompletableFuture<List<Item>> future = service.load().thenApply(this::normalize);",
+    "Map<String, Long> counts = names.stream().collect(Collectors.groupingBy(name -> name, Collectors.counting()));",
+    "try (var stream = Files.lines(path)) { return stream.filter(line -> !line.isBlank()).toList(); }",
   ],
   shell: [
     "git status --short && npm run build",
@@ -149,11 +183,17 @@ const CODE_BANK = {
     "SELECT user_id, COUNT(*) AS sessions FROM practice_records GROUP BY user_id ORDER BY sessions DESC;",
     "WITH recent AS (SELECT * FROM sessions WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') SELECT AVG(wpm) FROM recent;",
     "UPDATE typing_profiles SET level = level + 1, xp = xp - 1000 WHERE user_id = 42;",
+    "SELECT mode, AVG(wpm) AS average_wpm, AVG(accuracy) AS average_accuracy FROM sessions GROUP BY mode;",
+    "INSERT INTO practice_records (user_id, mode, wpm, accuracy) VALUES (42, 'code', 68, 98.4);",
+    "CREATE INDEX CONCURRENTLY idx_sessions_user_date ON sessions (user_id, created_at DESC);",
   ],
   rust: [
     "fn clamp(value: i32, min: i32, max: i32) -> i32 {\n    value.max(min).min(max)\n}",
     "let active: Vec<_> = items.iter().filter(|item| item.ready).collect();",
     "match result {\n    Ok(value) => println!(\"{value}\"),\n    Err(error) => eprintln!(\"{error}\"),\n}",
+    "let handles: Vec<_> = tasks.into_iter().map(|task| tokio::spawn(run(task))).collect();",
+    "impl Display for Status {\n    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { write!(f, \"{:?}\", self) }\n}",
+    "items.sort_by(|left, right| left.score.total_cmp(&right.score));",
   ],
 };
 
@@ -162,14 +202,20 @@ const NUMBER_BANK = {
   network: [
     "192.168.1.100 10.0.0.24 255.255.255.0 172.16.0.1 8.8.8.8",
     "2001:0db8:85a3:0000:0000:8a2e:0370:7334 127.0.0.1 8080 443 3000",
+    "10.12.4.8:5432 172.20.10.2:5173 192.0.2.44:22 198.51.100.7:8443",
+    "255.255.254.0 10.0.0.0/24 172.16.32.0/20 fe80::1 ff02::1",
   ],
   date: [
     "2026-07-24 09:30 2027-01-01 18:45 2025-12-31 23:59",
     "07/24/2026 24-07-2026 2026.07.24 09:30:45 UTC+8",
+    "2026-08-03T14:25:36+08:00 03 Aug 2026 14:25 2026-W32-1",
+    "01:15:30 12:00:00 23:59:59 2028-02-29 2030-12-31",
   ],
   formula: [
     "E = mc^2 x = (-b + sqrt(b^2 - 4ac)) / 2a 3.14159 * r^2",
     "a^2 + b^2 = c^2 f(x) = 2x + 1 12.5% + 87.5% = 100%",
+    "P(A|B) = P(B|A) * P(A) / P(B) y = mx + b 2pi*r = 31.416",
+    "(18 + 24) / 7 = 6 sqrt(144) = 12 0.625 * 320 = 200",
   ],
 };
 
@@ -1290,6 +1336,7 @@ export default function Home() {
             <button
               key={item.id}
               className={`mode-card ${mode === item.id ? "active" : ""}`}
+              title={item.desc}
               onClick={(event) => { event.stopPropagation(); changeMode(item.id); }}
               onPointerMove={(event) => {
                 const rect = event.currentTarget.getBoundingClientRect();

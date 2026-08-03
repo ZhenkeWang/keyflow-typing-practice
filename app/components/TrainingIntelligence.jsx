@@ -152,32 +152,47 @@ function TrainingIntelligence({
 }) {
   if (!["ai", "weak", "rhythm", "code"].includes(mode)) return null;
 
+  const summaries = {
+    ai: ["AI 训练建议", "查看今日方案与手指热力图"],
+    weak: ["薄弱键分析", "查看高频错误与专项训练"],
+    rhythm: ["节奏训练详情", `${rhythmTarget} BPM · 稳定度 ${rhythmScore || "待测"}`],
+    code: ["代码输入指标", `符号准确率 ${codeMetrics.symbolAccuracy}% · Code WPM ${codeMetrics.codeWpm}`],
+  };
+  const [title, description] = summaries[mode];
+
   return (
-    <div className={`training-intelligence mode-${mode}`}>
-      {mode === "ai" && (
-        <>
-          <AITrainingPlan
-            weakKeys={weakKeys}
-            plan={plan}
-            reactionTime={reactionTime}
-            onStartPlan={onStartPlan}
-          />
-          <FingerHeatmap fingers={fingers} />
-        </>
-      )}
-      {mode === "weak" && (
-        <>
-          <WeakKeyRanking
-            weakKeys={weakKeys}
-            selectedWeakKey={selectedWeakKey}
-            onSelectWeakKey={onSelectWeakKey}
-          />
-          <FingerHeatmap fingers={fingers} />
-        </>
-      )}
-      {mode === "rhythm" && <RhythmTrainer target={rhythmTarget} score={rhythmScore} />}
-      {mode === "code" && <CodeMetrics metrics={codeMetrics} />}
-    </div>
+    <details className={`training-intelligence-disclosure mode-${mode}`}>
+      <summary>
+        <span><i>INSIGHT</i><strong>{title}</strong></span>
+        <small>{description}</small>
+        <b aria-hidden="true">⌄</b>
+      </summary>
+      <div className={`training-intelligence mode-${mode}`}>
+        {mode === "ai" && (
+          <>
+            <AITrainingPlan
+              weakKeys={weakKeys}
+              plan={plan}
+              reactionTime={reactionTime}
+              onStartPlan={onStartPlan}
+            />
+            <FingerHeatmap fingers={fingers} />
+          </>
+        )}
+        {mode === "weak" && (
+          <>
+            <WeakKeyRanking
+              weakKeys={weakKeys}
+              selectedWeakKey={selectedWeakKey}
+              onSelectWeakKey={onSelectWeakKey}
+            />
+            <FingerHeatmap fingers={fingers} />
+          </>
+        )}
+        {mode === "rhythm" && <RhythmTrainer target={rhythmTarget} score={rhythmScore} />}
+        {mode === "code" && <CodeMetrics metrics={codeMetrics} />}
+      </div>
+    </details>
   );
 }
 
