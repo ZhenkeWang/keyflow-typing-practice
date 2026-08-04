@@ -466,3 +466,368 @@ html.theme-changing::after { content: ""; position: fixed; z-index: 99999; inset
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* --------------------------------------------------------------------------
+ * Product polish — spatial hierarchy, legibility and theme-safe surfaces
+ * -------------------------------------------------------------------------- */
+
+/* The practice surface is the primary workspace; missions and controls form
+ * one calm supporting rail. Keeping both columns in normal flow prevents an
+ * expanded Session Lab from covering either the mission list or the passage. */
+.neural-workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "practice journey"
+    "practice composer";
+  gap: clamp(24px, 2.4vw, 38px);
+}
+
+.practice-card { isolation: isolate; }
+
+.practice-card,
+.training-dashboard,
+.growth-dashboard-hero,
+.mission-orbit,
+.skill-tree-card,
+.daily-missions-card,
+.titles-card { border-radius: var(--kf-r3) !important; }
+
+.session-lab,
+.signal-console,
+.error-analysis,
+.error-compare > div { border-radius: var(--kf-r2) !important; }
+
+.mission-orbit {
+  position: relative;
+  top: auto;
+  z-index: 1;
+  align-self: start;
+  overflow: clip;
+}
+
+.orbit-panel,
+.orbit-feature,
+.orbit-copy,
+.orbit-list,
+.orbit-list > button,
+.session-lab,
+.session-lab-body,
+.session-lab .session-controls { min-width: 0; }
+
+.orbit-feature {
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.orbit-list {
+  max-height: none;
+  overflow: visible;
+}
+
+.session-lab {
+  z-index: 1;
+  align-self: start;
+  overflow: clip;
+}
+
+.session-lab.is-open .session-lab-body {
+  max-height: 1800px;
+  overflow: visible;
+  scrollbar-gutter: auto;
+}
+
+/* Passage typography is tuned for long reading sessions. Prose uses the UI
+ * face, while code and number drills retain a stable mono rhythm. */
+.passage {
+  color: var(--kf-muted) !important;
+  font-family: var(--kf-font-ui) !important;
+  font-size: clamp(27px, 2.22vw, 37px) !important;
+  font-weight: 510 !important;
+  line-height: 1.72 !important;
+  letter-spacing: .006em !important;
+  font-variant-ligatures: contextual;
+  -webkit-font-smoothing: antialiased;
+}
+
+.passage.code,
+.passage.numbers {
+  font-family: var(--kf-font-mono) !important;
+  font-size: clamp(24px, 2vw, 34px) !important;
+  letter-spacing: .012em !important;
+}
+
+.passage span {
+  border-radius: .2em;
+  transition:
+    color 150ms ease,
+    background-color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms var(--kf-motion);
+}
+
+.passage span.pending {
+  color: color-mix(in srgb, var(--kf-text) 45%, transparent) !important;
+}
+
+.passage span.correct {
+  color: color-mix(in srgb, var(--kf-text) 67%, transparent) !important;
+  opacity: .72;
+}
+
+.passage span.current {
+  position: relative;
+  z-index: 1;
+  color: var(--kf-text) !important;
+  background: color-mix(in srgb, var(--kf-rose) 13%, transparent) !important;
+  box-shadow:
+    0 0 0 .12em color-mix(in srgb, var(--kf-rose) 8%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--kf-rose) 24%, transparent) !important;
+}
+
+.passage span.current::before {
+  top: auto !important;
+  right: 0 !important;
+  bottom: -.18em !important;
+  left: 0 !important;
+  width: auto !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, transparent, var(--kf-rose), transparent) !important;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--kf-rose) 30%, transparent) !important;
+  animation: neural-current-pulse 1.45s ease-in-out infinite !important;
+}
+
+@keyframes neural-current-pulse {
+  0%, 100% { opacity: .5; transform: scaleX(.72); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+.passage span.wrong,
+.passage span.latest-error {
+  color: #c85f6b !important;
+  background: color-mix(in srgb, #c85f6b 12%, transparent) !important;
+  box-shadow: inset 0 -1px color-mix(in srgb, #c85f6b 52%, transparent);
+}
+
+/* Growth dashboard: every element participates in the layout flow. This
+ * replaces the old absolute level/XP positioning that caused clipping. */
+.growth-dashboard-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  grid-template-areas:
+    "profile action"
+    "skills level"
+    "skills xp";
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  gap: 22px clamp(28px, 4vw, 64px);
+  min-height: 0;
+  padding: clamp(28px, 4vw, 52px);
+  overflow: clip;
+  border-radius: var(--kf-r3);
+  background:
+    radial-gradient(circle at 88% 22%, color-mix(in srgb, var(--kf-rose) 10%, transparent), transparent 35%),
+    linear-gradient(145deg, color-mix(in srgb, var(--kf-surface-raised) 90%, transparent), color-mix(in srgb, var(--kf-surface) 76%, transparent));
+  box-shadow: inset 0 1px var(--kf-glint), var(--kf-shadow-soft);
+}
+
+.growth-profile { grid-area: profile; min-width: 0; }
+.growth-profile-button { grid-area: action; position: relative; z-index: 2; justify-self: end; align-self: start; }
+
+.growth-level-ring {
+  grid-area: level;
+  position: relative;
+  top: auto;
+  right: auto;
+  justify-self: center;
+  width: 146px;
+  height: 146px;
+  transform: none;
+  filter: drop-shadow(0 16px 30px color-mix(in srgb, var(--kf-rose) 14%, transparent));
+}
+
+.growth-level-ring::before {
+  background: color-mix(in srgb, var(--kf-surface-solid) 94%, transparent);
+  box-shadow: inset 0 1px var(--kf-glint);
+}
+
+.growth-xp {
+  grid-area: xp;
+  position: relative;
+  right: auto;
+  bottom: auto;
+  justify-self: stretch;
+  width: 100%;
+}
+
+.profile-skill-strip {
+  grid-area: skills;
+  grid-column: auto;
+  align-self: stretch;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 0;
+}
+
+.profile-skill-strip > span,
+.skill-node,
+.daily-mission-list > div,
+.titles-card {
+  border-color: var(--kf-line) !important;
+  color: var(--kf-text) !important;
+  background: color-mix(in srgb, var(--kf-surface-raised) 86%, transparent) !important;
+  box-shadow: inset 0 1px var(--kf-glint), 0 12px 30px color-mix(in srgb, var(--kf-text) 5%, transparent) !important;
+}
+
+.profile-skill-strip > span {
+  min-height: 58px;
+  padding: 14px 16px;
+  border-radius: var(--kf-r1);
+}
+
+.profile-skill-strip small,
+.skill-node > span,
+.skill-node > small { color: var(--kf-muted) !important; }
+
+.profile-skill-strip strong,
+.skill-node > strong,
+.skill-tree-core span { color: var(--kf-text) !important; }
+
+.skill-tree-card,
+.daily-missions-card,
+.titles-card { border-radius: var(--kf-r3) !important; }
+
+.skill-tree-core {
+  border-color: color-mix(in srgb, var(--kf-rose) 34%, var(--kf-line));
+  background: color-mix(in srgb, var(--kf-rose) 11%, var(--kf-surface-solid));
+  box-shadow: 0 16px 36px color-mix(in srgb, var(--kf-rose) 14%, transparent), inset 0 1px var(--kf-glint);
+}
+
+.skill-tree-line.horizontal,
+.skill-tree-line.vertical {
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--kf-rose) 28%, var(--kf-line)), transparent);
+}
+
+.skill-tree-line.vertical {
+  background: linear-gradient(transparent, color-mix(in srgb, var(--kf-rose) 28%, var(--kf-line)), transparent);
+}
+
+.titles-card > div:last-child > span {
+  color: var(--kf-muted);
+  background: color-mix(in srgb, var(--kf-surface-solid) 76%, transparent);
+}
+
+.titles-card > div:last-child > span.unlocked {
+  color: var(--kf-text);
+  border-color: color-mix(in srgb, var(--kf-rose) 30%, var(--kf-line));
+  background: color-mix(in srgb, var(--kf-rose) 9%, var(--kf-surface-raised));
+}
+
+/* Error analysis must remain legible in both themes; legacy styles mixed a
+ * hard-coded dark base into the Light theme. */
+.error-analysis,
+.error-analysis.is-clean {
+  border-color: color-mix(in srgb, var(--kf-rose) 22%, var(--kf-line)) !important;
+  color: var(--kf-text) !important;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--kf-rose) 7%, var(--kf-surface-raised)), color-mix(in srgb, var(--kf-surface) 90%, transparent)) !important;
+  box-shadow: inset 0 1px var(--kf-glint) !important;
+}
+
+.error-analysis.is-clean { border-color: color-mix(in srgb, var(--kf-mint) 22%, var(--kf-line)) !important; }
+.analysis-heading strong { color: var(--kf-text); }
+.analysis-heading small,
+.error-analysis > p { color: var(--kf-muted); }
+
+.error-compare > div {
+  border: 1px solid var(--kf-line);
+  background: color-mix(in srgb, var(--kf-surface-solid) 76%, transparent);
+}
+
+.error-compare span { color: var(--kf-dim); }
+.error-compare code { color: var(--kf-text); }
+.error-compare > div:last-child code { color: color-mix(in srgb, #c85f6b 82%, var(--kf-text)); }
+
+.error-chips > span {
+  border-color: var(--kf-line);
+  color: var(--kf-text);
+  background: color-mix(in srgb, var(--kf-surface-solid) 68%, transparent);
+}
+
+.training-dashboard article,
+.titles-card,
+.skill-node,
+.profile-skill-strip > span,
+.error-analysis,
+.session-lab,
+.mission-orbit {
+  transition:
+    border-color .55s var(--kf-motion),
+    background-color .65s var(--kf-motion),
+    box-shadow .55s var(--kf-motion),
+    transform .55s var(--kf-motion);
+}
+
+/* Theme-specific material tuning. */
+html[data-theme="light"] .training-dashboard,
+html[data-theme="light"] .training-dashboard article,
+html[data-theme="light"] .titles-card {
+  --panel: var(--kf-surface-raised);
+  --panel-2: var(--kf-surface-solid);
+  --text: var(--kf-text);
+  --muted: var(--kf-muted);
+  --dim: var(--kf-dim);
+  --line: var(--kf-line);
+  --line-strong: var(--kf-line-strong);
+}
+
+html[data-theme="dark"] .growth-dashboard-hero,
+html[data-theme="dark"] .training-dashboard article,
+html[data-theme="dark"] .titles-card {
+  background-color: color-mix(in srgb, var(--kf-surface-raised) 78%, transparent) !important;
+}
+
+@media (max-width: 1120px) {
+  .neural-workspace { display: flex; flex-direction: column; gap: 24px; }
+  .practice-card { order: 1; width: 100%; }
+  .mission-orbit { order: 2; width: 100%; }
+  .session-lab { order: 3; width: 100%; }
+  .orbit-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .session-lab.is-open .session-lab-body { max-height: 2200px; }
+}
+
+@media (max-width: 860px) {
+  .growth-dashboard-hero {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "profile action"
+      "skills skills"
+      "level xp";
+  }
+  .growth-level-ring { justify-self: start; }
+  .growth-xp { align-self: center; min-width: 220px; }
+  .phase-three-core-grid { grid-template-columns: 1fr; }
+  .orbit-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .growth-dashboard-hero {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "profile"
+      "action"
+      "level"
+      "xp"
+      "skills";
+    padding: 22px;
+  }
+  .growth-profile-button,
+  .growth-level-ring { justify-self: start; }
+  .growth-xp { min-width: 0; }
+  .profile-skill-strip { grid-template-columns: 1fr 1fr; }
+  .orbit-list { grid-template-columns: 1fr; }
+  .orbit-feature { grid-template-columns: 46px minmax(0, 1fr); }
+  .orbit-meta { grid-column: 1 / -1; grid-template-columns: repeat(2, auto); justify-content: start; justify-items: start; }
+  .passage { font-size: clamp(22px, 6vw, 29px) !important; line-height: 1.68 !important; }
+}
