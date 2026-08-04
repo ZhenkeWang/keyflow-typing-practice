@@ -165,7 +165,7 @@ button, input, textarea, select { font-family: inherit; }
 .nav-actions > span, .nav-actions > button, .nav-theme-segmented { border-color: var(--kf-line) !important; color: var(--kf-muted); background: color-mix(in srgb, var(--kf-surface) 72%, transparent) !important; box-shadow: inset 0 1px var(--kf-glint); }
 .nav-theme-segmented button.active { color: var(--kf-bg-2); background: var(--kf-text); }
 .sync-dot i { background: var(--kf-mint); }
-.neural-workspace { width: 100%; display: grid; grid-template-columns: minmax(320px, 380px) minmax(0, 1fr); grid-template-areas: "journey practice" "composer practice"; align-items: start; gap: 22px; }
+.neural-workspace { width: 100%; display: grid; grid-template-columns: minmax(320px, 380px) minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "journey practice" "composer practice"; align-items: start; gap: 22px; }
 
 /* Mission orbit */
 .mission-orbit { grid-area: journey; position: sticky; top: 104px; min-width: 0; border: 1px solid var(--kf-line); border-radius: var(--kf-r3); background: color-mix(in srgb, var(--kf-surface-raised) 76%, transparent); box-shadow: inset 0 1px var(--kf-glint), var(--kf-shadow-soft); backdrop-filter: blur(26px) saturate(120%); overflow: hidden; }
@@ -231,7 +231,7 @@ button, input, textarea, select { font-family: inherit; }
 .orbit-progress span, .orbit-progress small { color: var(--kf-muted); }
 
 /* Composer */
-.session-lab { grid-area: composer; border: 1px solid var(--kf-line) !important; border-radius: 18px !important; background: color-mix(in srgb, var(--kf-surface) 74%, transparent) !important; box-shadow: inset 0 1px var(--kf-glint) !important; overflow: hidden; }
+.session-lab { grid-area: composer; position: relative; z-index: 2; align-self: start; width: 100%; min-width: 0; max-width: 100%; margin: 0 !important; border: 1px solid var(--kf-line) !important; border-radius: 18px !important; background: color-mix(in srgb, var(--kf-surface) 74%, transparent) !important; box-shadow: inset 0 1px var(--kf-glint) !important; overflow: hidden; isolation: isolate; }
 .session-lab-toggle { width: 100%; min-height: 62px !important; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 11px 9px 15px; border: 0; color: var(--kf-text) !important; background: transparent !important; cursor: pointer; }
 .session-lab-toggle > span { display: flex; align-items: center; gap: 10px; }
 .session-lab-toggle > span:first-child > i { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--kf-line); border-radius: 11px; font-style: normal; }
@@ -242,17 +242,26 @@ button, input, textarea, select { font-family: inherit; }
 .session-lab-toggle > span:first-child > i { border-color: var(--kf-line) !important; color: var(--kf-rose-strong) !important; background: var(--kf-surface-raised) !important; }
 .session-lab-toggle small { color: var(--kf-muted) !important; }
 .session-lab-body { max-height: 0; opacity: 0; overflow: hidden; transform: translateY(-12px); transition: max-height .95s var(--kf-motion), opacity .55s ease, transform .7s var(--kf-motion); }
-.session-lab.is-open .session-lab-body { max-height: 1500px; opacity: 1; transform: none; border-top: 1px solid var(--kf-line); }
-.session-lab .mode-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 7px !important; padding: 12px !important; }
+.session-lab.is-open .session-lab-body { max-height: min(1120px, 72vh); opacity: 1; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; transform: none; border-top: 1px solid var(--kf-line); }
+.session-lab .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 7px !important; padding: 12px !important; }
 .session-lab .mode-card { min-height: 76px !important; padding: 10px !important; border-radius: 12px !important; transform: none !important; }
 .session-lab .mode-card strong { font-size: 9px !important; }
 .session-lab .mode-card small { font-size: 7px !important; }
 .session-lab .session-controls, .session-lab .feed-bar, .session-lab .specialty-bar, .session-lab .training-intelligence { margin: 0 12px 12px !important; }
+.session-lab .session-controls { width: auto; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) !important; gap: 8px; }
+.session-lab .type-switch, .session-lab .goal-options, .session-lab .interaction-switch { width: 100%; min-width: 0; }
+.session-lab .interaction-switch { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.session-lab .interaction-switch strong, .session-lab .interaction-switch small { white-space: normal; }
+.session-lab .feed-bar, .session-lab .specialty-bar { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.session-lab .training-intelligence-disclosure { min-width: 0; }
+.session-lab .training-intelligence-disclosure > summary { grid-template-columns: minmax(0, 1fr) 24px; gap: 8px 12px; }
+.session-lab .training-intelligence-disclosure > summary > small { grid-column: 1 / -1; text-align: left; }
+.session-lab .training-intelligence { min-width: 0; grid-template-columns: minmax(0, 1fr) !important; }
 .mode-card, .session-controls, .feed-bar, .specialty-bar, .training-intelligence { border-color: var(--kf-line) !important; background: color-mix(in srgb, var(--kf-surface-raised) 68%, transparent) !important; box-shadow: inset 0 1px var(--kf-glint) !important; }
 .mode-card.active { border-color: color-mix(in srgb, var(--kf-rose) 42%, var(--kf-line)) !important; background: color-mix(in srgb, var(--kf-rose) 8%, var(--kf-surface-raised)) !important; }
 
 /* Training stage */
-.practice-card { grid-area: practice; position: relative; min-width: 0; min-height: 780px; padding: 22px 28px 26px !important; border: 1px solid var(--kf-line) !important; border-radius: 30px !important; background: linear-gradient(145deg, color-mix(in srgb, var(--kf-surface-raised) 92%, transparent), color-mix(in srgb, var(--kf-surface) 72%, transparent)) !important; box-shadow: inset 0 1px var(--kf-glint), var(--kf-shadow) !important; backdrop-filter: blur(28px) saturate(118%); overflow: hidden; }
+.practice-card { grid-area: practice; position: relative; z-index: 1; align-self: start; min-width: 0; min-height: 780px; margin: 0 !important; padding: 22px 28px 26px !important; border: 1px solid var(--kf-line) !important; border-radius: 30px !important; background: linear-gradient(145deg, color-mix(in srgb, var(--kf-surface-raised) 92%, transparent), color-mix(in srgb, var(--kf-surface) 72%, transparent)) !important; box-shadow: inset 0 1px var(--kf-glint), var(--kf-shadow) !important; backdrop-filter: blur(28px) saturate(118%); overflow: hidden; }
 .practice-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 18%, color-mix(in srgb, var(--kf-glint) 32%, transparent) 45%, transparent 68%); opacity: .28; transform: translateX(-50%); transition: transform 1.4s var(--kf-motion); }
 .practice-card:hover::before { transform: translateX(45%); }
 .practice-card .progress-track { height: 2px !important; background: var(--kf-line) !important; }
@@ -339,14 +348,32 @@ button, input, textarea, select { font-family: inherit; }
 
 /* Immersive */
 .app-shell.immersive-mode { width: 100% !important; max-width: none !important; min-height: 100dvh; padding: 0 !important; background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--kf-rose) 8%, transparent), transparent 40rem), var(--kf-bg) !important; }
-.immersive-mode > .nav, .immersive-mode .mission-orbit, .immersive-mode .atelier-composer, .immersive-mode ~ * { display: none !important; }
-.immersive-mode .neural-workspace { display: block; }
-.immersive-mode .practice-card { width: 100%; min-height: 100dvh; padding: clamp(24px, 4vw, 64px) clamp(30px, 7vw, 120px) !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
-.immersive-mode .signal-console { max-width: 1100px; margin: 0 auto 24px !important; }
-.immersive-mode .typing-zone { max-width: 1280px; min-height: 62vh; margin: auto; }
-.immersive-mode .passage { font-size: clamp(34px, 3.6vw, 60px) !important; line-height: 1.75 !important; }
-.immersive-exit { top: 24px !important; right: 24px !important; border: 1px solid var(--kf-line) !important; color: var(--kf-muted) !important; background: var(--kf-surface-raised) !important; box-shadow: var(--kf-shadow-soft) !important; }
-.immersive-mode .keyboard.full-keyboard { max-width: 1180px; margin: 20px auto 0; }
+.immersive-mode > .nav, .immersive-mode .mission-orbit, .immersive-mode .session-lab, .immersive-mode ~ * { display: none !important; }
+.immersive-mode .neural-workspace { display: block; width: 100%; min-height: 100dvh; }
+.immersive-mode .practice-card { width: 100%; height: 100dvh; min-height: 100dvh; max-height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: clamp(20px, 3vh, 38px) clamp(28px, 6vw, 96px) clamp(16px, 2.4vh, 28px) !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; overflow: hidden; }
+.immersive-mode .signal-console { grid-row: 1; width: min(1100px, calc(100% - 120px)); max-width: 1100px; margin: 0 auto clamp(12px, 2vh, 22px) !important; }
+.immersive-mode .signal-metric { min-height: clamp(88px, 13vh, 122px); }
+.immersive-mode .typing-zone { grid-row: 2; width: min(1280px, 100%); min-height: 0; height: 100%; margin: 0 auto; padding: clamp(16px, 3vh, 38px) clamp(10px, 3vw, 42px) !important; align-content: center; overflow: hidden; }
+.immersive-mode .passage { width: 100%; max-height: min(42vh, 420px); padding: clamp(14px, 2.5vh, 30px) clamp(4px, 1vw, 14px) !important; overflow: hidden; font-size: clamp(28px, 3vw, 48px) !important; line-height: 1.62 !important; letter-spacing: .018em !important; white-space: pre-wrap; overflow-wrap: normal; word-break: normal; text-wrap: wrap; }
+.immersive-mode .immersive-exit { position: fixed; z-index: 100; top: 18px !important; right: 18px !important; grid-row: auto; margin: 0; border: 1px solid var(--kf-line) !important; color: var(--kf-muted) !important; background: color-mix(in srgb, var(--kf-surface-raised) 88%, transparent) !important; box-shadow: var(--kf-shadow-soft) !important; backdrop-filter: blur(18px); }
+.immersive-mode .keyboard.full-keyboard { grid-row: 3; width: min(1180px, 100%); min-height: clamp(190px, 29vh, 300px); max-width: 1180px; margin: clamp(8px, 1.5vh, 16px) auto 0; padding: clamp(14px, 2vh, 24px) clamp(14px, 2vw, 28px); overflow: hidden; }
+
+@media (max-width: 1120px) {
+  .neural-workspace { display: flex; flex-direction: column; }
+  .mission-orbit { position: relative; top: 0; width: 100%; }
+  .session-lab, .practice-card { width: 100%; }
+  .session-lab .mode-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .session-lab .session-controls { grid-template-columns: minmax(180px, .7fr) minmax(220px, .8fr) minmax(0, 1.25fr) !important; }
+  .session-lab .interaction-switch { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-height: 780px) and (min-width: 641px) {
+  .immersive-mode .practice-card { padding-top: 16px !important; padding-bottom: 12px !important; }
+  .immersive-mode .signal-metric { min-height: 82px; padding-block: 10px; }
+  .immersive-mode .signal-metric footer small { display: none; }
+  .immersive-mode .passage { max-height: 38vh; font-size: clamp(25px, 2.65vw, 40px) !important; line-height: 1.55 !important; }
+  .immersive-mode .keyboard.full-keyboard { min-height: 176px; max-height: 27vh; padding-block: 12px; }
+}
 
 /* Motion and accessibility */
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, [role="button"]:focus-visible { outline: 2px solid color-mix(in srgb, var(--kf-rose) 70%, white); outline-offset: 3px; }
@@ -384,6 +411,12 @@ html.theme-changing::after { content: ""; position: fixed; z-index: 99999; inset
   .practice-card { min-height: 720px; }
 }
 
+@media (max-width: 760px) {
+  .session-lab .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .session-lab .session-controls { grid-template-columns: minmax(0, 1fr) !important; }
+  .session-lab .interaction-switch { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 @media (max-width: 640px) {
   .neural-entry { width: calc(100% - 20px); }
   .neural-nav { min-height: 70px; }
@@ -404,6 +437,10 @@ html.theme-changing::after { content: ""; position: fixed; z-index: 99999; inset
   .nav-profile-button span, .nav-theme-segmented button:first-child { display: none; }
   .mission-orbit { border-radius: 20px; }
   .orbit-list { grid-template-columns: 1fr; }
+  .session-lab-toggle > span:last-child { font-size: 0; }
+  .session-lab .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .session-lab .session-controls { grid-template-columns: minmax(0, 1fr) !important; }
+  .session-lab .interaction-switch { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .practice-card { min-height: 650px; padding: 14px !important; border-radius: 22px !important; }
   .card-topline > span:nth-child(2), .session-index { display: none; }
   .signal-console { grid-template-columns: 1fr 1fr; }
@@ -417,8 +454,13 @@ html.theme-changing::after { content: ""; position: fixed; z-index: 99999; inset
   .result-overlay { inset: 4px !important; padding: 22px 14px !important; border-radius: 18px !important; }
   .result-stat-grid, .report-summary-strip, .ai-status-grid { grid-template-columns: 1fr 1fr !important; }
   .neural-result .result-stat-grid { grid-template-columns: 1fr 1fr !important; }
-  .immersive-mode .practice-card { padding: 16px !important; }
-  .immersive-mode .passage { font-size: clamp(26px, 7vw, 38px) !important; }
+  .immersive-mode .practice-card { padding: 64px 14px 12px !important; }
+  .immersive-mode .signal-console { width: 100%; margin-bottom: 8px !important; }
+  .immersive-mode .signal-metric { min-height: 78px; padding: 9px 10px; }
+  .immersive-mode .signal-metric footer small { display: none; }
+  .immersive-mode .typing-zone { padding: 8px 2px !important; }
+  .immersive-mode .passage { max-height: 36vh; padding: 10px 2px !important; font-size: clamp(24px, 6.6vw, 34px) !important; line-height: 1.55 !important; }
+  .immersive-mode .keyboard.full-keyboard { min-height: 150px; max-height: 25vh; padding: 10px 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
