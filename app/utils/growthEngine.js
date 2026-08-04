@@ -121,9 +121,9 @@ export function calculateSkillLevels(history = []) {
 }
 
 export const DAILY_MISSION_DEFINITIONS = [
-  { id: "speed-session", title: "完成一次 Speed Test", reward: 50, target: 1 },
-  { id: "accuracy-98", title: "单次准确率达到 98%", reward: 80, target: 1 },
-  { id: "characters-1000", title: "今日完成 1,000 字符", reward: 100, target: 1000 },
+  { id: "speed-session", title: "完成一次 Speed Test", reward: 50, target: 1, mode: "speed", goal: 30, icon: "↗" },
+  { id: "accuracy-98", title: "单次准确率达到 98%", reward: 80, target: 1, mode: "accuracy", goal: 60, icon: "◎" },
+  { id: "characters-1000", title: "今日完成 1,000 字符", reward: 100, target: 1000, mode: "ai", goal: 120, icon: "✦" },
 ];
 
 export function buildDailyMissions(history = [], now = Date.now(), claimedIds = []) {

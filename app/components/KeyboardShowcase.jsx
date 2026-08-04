@@ -13,7 +13,7 @@ const ROWS = [
 
 const FLOW_KEYS = new Set(["K", "E", "Y", "F", "L", "O", "W"]);
 
-export default function KeyboardShowcase() {
+export default function KeyboardShowcase({ onEnter }) {
   const reduceMotion = useReducedMotion();
   const [activeKey, setActiveKey] = useState("K");
   const pointerX = useMotionValue(.5);
@@ -39,9 +39,19 @@ export default function KeyboardShowcase() {
   return (
     <motion.div
       className="showcase-perspective"
+      role="button"
+      tabIndex={0}
+      aria-label="轻触虚拟键盘进入训练"
       initial={{ opacity: 0, y: 42, filter: "blur(14px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ delay: .52, duration: 1, ease: [.16, 1, .3, 1] }}
+      transition={{ delay: .52, duration: 1.28, ease: [.16, 1, .3, 1] }}
+      onClick={onEnter}
+      onKeyDown={(event) => {
+        if (["Enter", " "].includes(event.key)) {
+          event.preventDefault();
+          onEnter(event);
+        }
+      }}
       onPointerMove={(event) => {
         const rect = event.currentTarget.getBoundingClientRect();
         pointerX.set((event.clientX - rect.left) / rect.width);
@@ -57,7 +67,7 @@ export default function KeyboardShowcase() {
           className="showcase-keyboard"
           style={{ rotateX, rotateY, "--light-x": lightX, "--light-y": lightY }}
           animate={reduceMotion ? undefined : { y: [0, -7, 0], rotateZ: [0, .25, 0, -.2, 0] }}
-          transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 8.4, repeat: Infinity, ease: "easeInOut" }}
         >
           <div className="showcase-light" />
           <div className="showcase-keywell">

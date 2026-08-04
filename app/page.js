@@ -18,6 +18,7 @@ import CloudSyncRuntime from "./components/CloudSyncRuntime";
 import AmbientCanvas from "./components/AmbientCanvas";
 import InteractionRuntime from "./components/InteractionRuntime";
 import BrandMark from "./components/BrandMark";
+import SessionJourney from "./components/SessionJourney";
 import useThrottledSnapshot from "./hooks/useThrottledSnapshot";
 import { playKeySound, triggerHaptic } from "./services/feedback";
 import { useExperienceStore } from "./stores/experienceStore";
@@ -410,6 +411,7 @@ export default function Home() {
   const [selectedWeakKey, setSelectedWeakKey] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
   const [feedbackPhase, setFeedbackPhase] = useState("ready");
+  const [activeJourneyQuest, setActiveJourneyQuest] = useState(null);
   const sessionReview = useAiCoachStore((state) => state.sessionReview);
   const reviewSession = useAiCoachStore((state) => state.review);
   const clearSessionReview = useAiCoachStore((state) => state.clearReview);
@@ -522,6 +524,10 @@ export default function Home() {
     mode,
   }), [accuracy, mistakeLog, mode, pulse, speed]);
   const levelInfo = useMemo(() => getLevelInfo(xpTotal), [xpTotal]);
+  const currentMissions = useMemo(
+    () => buildDailyMissions(history, Date.now(), claimedMissionIds),
+    [claimedMissionIds, history]
+  );
   const level = levelInfo.level;
 
   const reset = useCallback((options = {}) => {
@@ -1025,6 +1031,7 @@ export default function Home() {
   }
 
   function changeMode(nextMode) {
+    setActiveJourneyQuest(null);
     if (nextMode === mode || typeof document.startViewTransition !== "function") {
       reset({ mode: nextMode });
       return;
@@ -1045,6 +1052,7 @@ export default function Home() {
   function changeInteraction(nextInteraction) {
     if (nextInteraction === interaction) return;
     const applyChange = () => {
+      setActiveJourneyQuest(null);
       setInteraction(nextInteraction);
       reset();
     };
@@ -1193,6 +1201,7 @@ export default function Home() {
   }
 
   function startPlanMode(nextMode) {
+    setActiveJourneyQuest(null);
     reset({ mode: nextMode });
     requestAnimationFrame(() => {
       document.querySelector(".control-deck")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1200,6 +1209,7 @@ export default function Home() {
   }
 
   function startAiPlan(item) {
+    setActiveJourneyQuest(null);
     reset({
       mode: item.mode,
       testType: "time",
@@ -1212,8 +1222,24 @@ export default function Home() {
   }
 
   function selectWeakKey(character) {
+    setActiveJourneyQuest(null);
     reset({ mode: "weak", selectedWeakKey: character, testType: "time", goal: 300 });
     requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
+  function selectJourneyQuest(quest) {
+    if (!quest?.mode) return;
+    setActiveJourneyQuest(quest);
+    setInteraction(quest.interaction || "standard");
+    reset({
+      mode: quest.mode,
+      testType: "time",
+      goal: quest.goal || 60,
+    });
+    requestAnimationFrame(() => {
+      document.querySelector(".practice-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      window.setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 460);
+    });
   }
 
   const pkWinner = pkScores[1] && pkScores[2]
@@ -1326,9 +1352,19 @@ export default function Home() {
               Dark
             </button>
           </div>
-          <button className="icon-button" onClick={(event) => { event.stopPropagation(); reset(); }} aria-label="重新开始">↻</button>
+          <button className="icon-button" onClick={(event) => { event.stopPropagation(); setActiveJourneyQuest(null); reset(); }} aria-label="重新开始">↻</button>
         </div>
       </header>
+
+      <SessionJourney
+        xpTotal={xpTotal}
+        levelInfo={levelInfo}
+        missions={currentMissions}
+        historyLength={history.length}
+        activeQuest={activeJourneyQuest}
+        status={status}
+        onSelectQuest={selectJourneyQuest}
+      />
 
       <section className="control-deck">
         <div className="mode-grid">
@@ -1361,13 +1397,13 @@ export default function Home() {
 
         <div className="session-controls">
           <div className="type-switch">
-            <button className={testType === "time" ? "active" : ""} onClick={(event) => { event.stopPropagation(); reset({ testType: "time", goal: 60 }); }}>计时</button>
-            <button className={testType === "words" ? "active" : ""} onClick={(event) => { event.stopPropagation(); reset({ testType: "words", goal: 25 }); }}>定量</button>
-            <button className={testType === "pk" ? "active" : ""} onClick={(event) => { event.stopPropagation(); reset({ testType: "pk", goal: 30 }); }}>本地 PK</button>
+            <button className={testType === "time" ? "active" : ""} onClick={(event) => { event.stopPropagation(); setActiveJourneyQuest(null); reset({ testType: "time", goal: 60 }); }}>计时</button>
+            <button className={testType === "words" ? "active" : ""} onClick={(event) => { event.stopPropagation(); setActiveJourneyQuest(null); reset({ testType: "words", goal: 25 }); }}>定量</button>
+            <button className={testType === "pk" ? "active" : ""} onClick={(event) => { event.stopPropagation(); setActiveJourneyQuest(null); reset({ testType: "pk", goal: 30 }); }}>本地 PK</button>
           </div>
           <div className="goal-options">
             {(testType === "time" ? timeOptions : testType === "pk" ? pkOptions : wordOptions).map((item) => (
-              <button key={item} className={goal === item ? "active" : ""} onClick={(event) => { event.stopPropagation(); reset({ goal: item }); }}>
+              <button key={item} className={goal === item ? "active" : ""} onClick={(event) => { event.stopPropagation(); setActiveJourneyQuest(null); reset({ goal: item }); }}>
                 {testType !== "words" ? (item > 60 ? `${item / 60}m` : `${item}s`) : `${item}${chineseContent ? "字" : "词"}`}
               </button>
             ))}
@@ -1389,7 +1425,7 @@ export default function Home() {
             <div className={`feed-live ${feedStatus}`}><i /> {feedStatus === "loading" ? "正在更新内容" : feedStatus === "live" ? "实时内容已更新" : "当前使用备用内容"}</div>
             <div className="feed-options">
               {FEED_SOURCES.map((item) => (
-                <button key={item.id} className={newsSource === item.id ? "active" : ""} onClick={(event) => { event.stopPropagation(); setNewsSource(item.id); reset({ mode: "news" }); }}>
+                <button key={item.id} className={newsSource === item.id ? "active" : ""} onClick={(event) => { event.stopPropagation(); setActiveJourneyQuest(null); setNewsSource(item.id); reset({ mode: "news" }); }}>
                   <strong>{item.label}</strong><small>{item.detail}</small>
                 </button>
               ))}
@@ -1415,6 +1451,7 @@ export default function Home() {
                   className={codeLanguage === id ? "active" : ""}
                   onClick={(event) => {
                     event.stopPropagation();
+                    setActiveJourneyQuest(null);
                     reset({ mode: "code", codeLanguage: id });
                   }}
                 >
@@ -1436,6 +1473,7 @@ export default function Home() {
                   className={rhythmTarget === bpm ? "active" : ""}
                   onClick={(event) => {
                     event.stopPropagation();
+                    setActiveJourneyQuest(null);
                     reset({ mode: "rhythm", rhythmTarget: bpm });
                   }}
                 >
@@ -1497,6 +1535,16 @@ export default function Home() {
           timeProgress={displayMetrics.timeProgress}
           best={best}
         />
+
+        {activeJourneyQuest && (
+          <div className={`active-journey-brief tone-${activeJourneyQuest.tone || "violet"}`}>
+            <span>{activeJourneyQuest.icon || "✦"}</span>
+            <div><small>ACTIVE QUEST</small><strong>{activeJourneyQuest.title}</strong></div>
+            <p>{activeJourneyQuest.detail || "完成本轮训练，推进今日成长进度。"}</p>
+            <em>{Math.round(progress)}%</em>
+            <i><b style={{ width: `${progress}%` }} /></i>
+          </div>
+        )}
 
         <div className="typing-zone" ref={typingZoneRef}>
           <textarea

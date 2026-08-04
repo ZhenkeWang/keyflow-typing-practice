@@ -153,7 +153,7 @@ function TrainingDashboard({ history, xpTotal, profile, claimedMissionIds = [], 
 
       <div className="phase-three-core-grid">
         <SkillTree skills={growth.skills} />
-        <DailyMissions missions={growth.missions} />
+        <DailyMissions missions={growth.missions} onStartMission={onStartPlan} />
       </div>
 
       <div className="daily-trends-grid">

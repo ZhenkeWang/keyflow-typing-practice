@@ -1,0 +1,621 @@
+/*
+ * Phase 8 — Flow Journey
+ * Softer spatial color, a more immersive training stage and a visible
+ * task → practice → XP loop without changing the typing engine.
+ */
+
+:root {
+  --flow-lilac: #a99bff;
+  --flow-blue: #77b7ff;
+  --flow-cyan: #64dfdc;
+  --flow-mint: #75e6bc;
+  --flow-rose: #ff9db4;
+  --flow-amber: #ffc47d;
+  --flow-ease: cubic-bezier(.16, 1, .3, 1);
+  --flow-surface: color-mix(in srgb, var(--surface-raised) 72%, transparent);
+}
+
+html[data-theme="dark"] {
+  --background: #10131d;
+  --surface: rgba(31, 35, 49, .72);
+  --surface-raised: rgba(44, 49, 66, .84);
+  --bg: #10131d;
+  --panel: #1a1f2e;
+  --panel-2: #252c3e;
+  --text: #f6f7fb;
+  --muted: #adb4c5;
+  --dim: #7f899f;
+}
+
+/* A single soft atmospheric anchor, inspired by the restrained React Bits
+   background pattern already used by the project. */
+.saas-entry-gate {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(154, 133, 255, .23), transparent 34rem),
+    radial-gradient(circle at 82% 34%, rgba(86, 222, 205, .18), transparent 31rem),
+    radial-gradient(circle at 56% 100%, rgba(104, 152, 255, .17), transparent 36rem),
+    linear-gradient(145deg, #151827, #111521 52%, #121c25) !important;
+}
+
+.saas-entry-gate::before {
+  opacity: .24;
+  background:
+    linear-gradient(112deg, transparent 12%, rgba(255, 255, 255, .055) 44%, transparent 68%),
+    radial-gradient(circle at 50% 44%, rgba(255,255,255,.055), transparent 46%) !important;
+  background-size: 180% 100% !important;
+  animation: flowAtmosphereDrift 12s ease-in-out infinite alternate;
+}
+
+html[data-theme="light"] .saas-entry-gate {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(174, 153, 255, .24), transparent 34rem),
+    radial-gradient(circle at 84% 38%, rgba(105, 226, 207, .22), transparent 31rem),
+    radial-gradient(circle at 54% 100%, rgba(128, 171, 255, .2), transparent 38rem),
+    linear-gradient(145deg, #fafaff, #f4f5fb 56%, #f1faf8) !important;
+}
+
+@keyframes flowAtmosphereDrift {
+  from { transform: translate3d(-2%, 0, 0) scale(1.02); background-position: 0 50%; }
+  to { transform: translate3d(2%, -1%, 0) scale(1.06); background-position: 100% 50%; }
+}
+
+.apple-landing {
+  width: min(1320px, calc(100% - 56px));
+  grid-template-rows: 74px minmax(0, 1fr) auto;
+}
+
+.apple-hero {
+  width: 100%;
+  min-height: min(760px, calc(100dvh - 150px));
+  display: grid;
+  grid-template-columns: minmax(350px, .82fr) minmax(560px, 1.18fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 80px);
+  padding: 46px 0 20px;
+  text-align: left;
+}
+
+.flow-hero-copy {
+  position: relative;
+  z-index: 4;
+  max-width: 520px;
+}
+
+.flow-hero-copy::before {
+  position: absolute;
+  z-index: -1;
+  top: -90px;
+  left: -100px;
+  width: 370px;
+  height: 370px;
+  content: "";
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(155, 135, 255, .16), transparent 68%);
+  filter: blur(12px);
+}
+
+.flow-hero-copy .apple-eyebrow {
+  color: color-mix(in srgb, var(--flow-mint) 76%, var(--text));
+}
+
+.flow-hero-copy h1 {
+  margin-top: 18px;
+  font-size: clamp(82px, 9vw, 132px);
+  letter-spacing: -.09em;
+  text-shadow: 0 24px 70px rgba(89, 81, 187, .15);
+}
+
+.flow-hero-copy h2 {
+  min-height: 2.08em;
+  margin-top: 24px;
+  font-size: clamp(35px, 4.5vw, 62px);
+  background-image: linear-gradient(112deg, #f8f7ff 6%, #bdb2ff 42%, #83bfff 68%, #79e5c7 96%);
+}
+
+html[data-theme="light"] .flow-hero-copy h2 {
+  background-image: linear-gradient(112deg, #242535 4%, #7066d8 43%, #377fc3 68%, #218e7a 96%);
+}
+
+.flow-hero-copy > p {
+  max-width: 430px;
+  margin: 24px 0 0;
+  color: color-mix(in srgb, var(--muted) 88%, var(--text));
+  font-size: 15px;
+  line-height: 1.8;
+  letter-spacing: .01em;
+}
+
+.flow-hero-copy .apple-hero-action {
+  justify-content: flex-start;
+  margin-top: 34px;
+}
+
+.flow-hero-copy .hero-primary {
+  min-width: 190px;
+  height: 52px;
+  background: linear-gradient(112deg, #f8f7ff, #dcd8ff 55%, #c5f5e8);
+  box-shadow: 0 18px 50px rgba(90, 81, 202, .2), inset 0 1px rgba(255,255,255,.9);
+}
+
+html[data-theme="light"] .flow-hero-copy .hero-primary {
+  background: linear-gradient(112deg, #27293a, #45436d 58%, #285a57);
+  box-shadow: 0 18px 44px rgba(67, 65, 129, .22);
+}
+
+.flow-hero-visual {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+}
+
+.flow-hero-visual .showcase-perspective {
+  width: min(780px, 62vw);
+  height: 350px;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.flow-hero-visual .showcase-perspective:focus-visible {
+  border-radius: 32px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--flow-lilac) 70%, transparent);
+}
+
+.flow-hero-visual .showcase-keyboard {
+  background:
+    radial-gradient(circle at var(--light-x) var(--light-y), rgba(176, 190, 255, .18), transparent 30%),
+    linear-gradient(152deg, rgba(59, 64, 83, .98), rgba(28, 31, 43, .99));
+  box-shadow:
+    0 48px 88px rgba(4, 7, 18, .38),
+    0 14px 28px rgba(4, 7, 18, .26),
+    inset 0 1px rgba(255, 255, 255, .15),
+    inset 0 -2px rgba(0, 0, 0, .35);
+}
+
+.flow-hero-visual .showcase-row > span {
+  background: linear-gradient(180deg, #454b62, #292e40);
+  color: rgba(248, 249, 255, .78);
+  box-shadow: 0 6px 0 #171b28, 0 10px 15px rgba(4, 7, 18, .24), inset 0 1px rgba(255,255,255,.13);
+}
+
+.flow-hero-visual .showcase-row > span.auto-pressed {
+  border-color: color-mix(in srgb, var(--flow-cyan) 62%, transparent);
+  color: #fff;
+  background: linear-gradient(180deg, rgba(111, 117, 177, .94), rgba(54, 60, 98, .98));
+  box-shadow: 0 2px 0 #171b28, 0 7px 22px rgba(109, 132, 255, .22), inset 0 0 14px rgba(107, 229, 211, .14);
+}
+
+html[data-theme="light"] .flow-hero-visual .showcase-keyboard {
+  background:
+    radial-gradient(circle at var(--light-x) var(--light-y), rgba(255,255,255,.96), transparent 30%),
+    linear-gradient(152deg, rgba(247, 248, 255, .98), rgba(211, 218, 234, .98));
+}
+
+.hero-flow-steps {
+  position: relative;
+  z-index: 8;
+  width: min(690px, 90%);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: -12px;
+}
+
+.hero-flow-steps > div {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface) 52%, transparent);
+  box-shadow: inset 0 1px rgba(255,255,255,.06);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+.hero-flow-steps span,
+.hero-flow-steps strong,
+.hero-flow-steps small { display: block; }
+.hero-flow-steps span { color: var(--flow-cyan); font: 700 8px var(--font-training); letter-spacing: .13em; }
+.hero-flow-steps strong { margin-top: 7px; font-size: 11px; }
+.hero-flow-steps small { margin-top: 3px; overflow: hidden; color: var(--dim); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Compact interactive journey bento. */
+.session-journey {
+  --journey-accent: var(--flow-lilac);
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 220px minmax(320px, 1fr) 186px;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  min-height: 188px;
+  margin: 22px 0 14px;
+  padding: 10px;
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 26px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-raised) 72%, transparent), color-mix(in srgb, var(--surface) 50%, transparent));
+  box-shadow: inset 0 1px rgba(255,255,255,.07), 0 24px 68px rgba(4, 8, 24, .11);
+  backdrop-filter: blur(24px) saturate(120%);
+  transition: border-color .72s var(--flow-ease), background .82s var(--flow-ease);
+}
+
+.session-journey.tone-mint { --journey-accent: var(--flow-mint); }
+.session-journey.tone-blue { --journey-accent: var(--flow-blue); }
+.session-journey.tone-amber { --journey-accent: var(--flow-amber); }
+.session-journey.tone-rose { --journey-accent: var(--flow-rose); }
+.session-journey.tone-cyan { --journey-accent: var(--flow-cyan); }
+
+.journey-glow {
+  position: absolute;
+  inset: -1px;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.journey-glow::before {
+  position: absolute;
+  top: -130px;
+  left: 24%;
+  width: 420px;
+  height: 260px;
+  content: "";
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--journey-accent) 14%, transparent);
+  filter: blur(48px);
+  transition: background-color .82s var(--flow-ease), transform 1.2s var(--flow-ease);
+}
+
+.journey-level,
+.journey-focus,
+.journey-quest-rail,
+.journey-missions {
+  position: relative;
+  z-index: 2;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  box-shadow: inset 0 1px rgba(255,255,255,.045);
+}
+
+.journey-level {
+  grid-row: 1 / 3;
+  display: grid;
+  grid-template-columns: 66px 1fr;
+  align-content: center;
+  gap: 14px 12px;
+  padding: 18px;
+}
+
+.journey-level-orbit {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--journey-accent) var(--journey-progress), color-mix(in srgb, var(--border) 72%, transparent) 0);
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--journey-accent) 15%, transparent);
+}
+
+.journey-level-orbit::before {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  content: "";
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+}
+
+.journey-level-orbit span { position: relative; z-index: 1; font: 700 19px var(--font-numeric); }
+.journey-level-orbit small { margin-right: 2px; color: var(--dim); font-size: 7px; }
+.journey-level > div:nth-child(2) { align-self: center; min-width: 0; }
+.journey-level > div:nth-child(2) span,
+.journey-level > div:nth-child(2) strong,
+.journey-level > div:nth-child(2) small { display: block; }
+.journey-level > div:nth-child(2) span { color: var(--journey-accent); font: 700 7px var(--font-training); letter-spacing: .12em; }
+.journey-level > div:nth-child(2) strong { margin-top: 5px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.journey-level > div:nth-child(2) small { margin-top: 3px; color: var(--dim); font-size: 8px; }
+.journey-xp-track { grid-column: 1 / 3; height: 4px; overflow: hidden; border-radius: 99px; background: color-mix(in srgb, var(--border) 78%, transparent); }
+.journey-xp-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--journey-accent), var(--flow-cyan)); transition: width 1.1s var(--flow-ease); }
+.journey-total-xp { position: absolute; z-index: 4; bottom: 18px; left: 28px; color: var(--dim); font: 650 7px var(--font-training); letter-spacing: .1em; }
+.journey-total-xp strong { margin-left: 4px; color: var(--text); font-size: 9px; }
+
+.journey-focus {
+  grid-row: 1 / 3;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 22px;
+}
+
+.journey-focus > div { min-width: 0; }
+.journey-focus > div span,
+.journey-focus > div strong,
+.journey-focus > div small { display: block; }
+.journey-focus > div span { color: var(--journey-accent); font: 700 8px var(--font-training); letter-spacing: .12em; }
+.journey-focus > div strong { margin-top: 8px; font-size: clamp(17px, 1.8vw, 24px); letter-spacing: -.04em; }
+.journey-focus > div p { max-width: 480px; margin: 7px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.journey-focus > div small { margin-top: 10px; color: color-mix(in srgb, var(--journey-accent) 72%, var(--text)); font: 650 8px var(--font-training); }
+.journey-focus > button {
+  min-width: 92px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(118deg, color-mix(in srgb, var(--journey-accent) 88%, white), color-mix(in srgb, var(--flow-cyan) 58%, var(--journey-accent)));
+  color: #10131d;
+  font-size: 10px;
+  font-weight: 750;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--journey-accent) 18%, transparent);
+  transition: transform .46s var(--flow-ease), box-shadow .5s var(--flow-ease);
+}
+.journey-focus > button:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 17px 36px color-mix(in srgb, var(--journey-accent) 26%, transparent); }
+.journey-focus > button i { margin-left: 7px; font-style: normal; transition: transform .42s var(--flow-ease); }
+.journey-focus > button:hover i { transform: translateX(3px); }
+
+.journey-quest-rail {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  padding: 7px;
+}
+.journey-quest-rail button {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--dim);
+  transition: transform .46s var(--flow-ease), color .42s ease, background-color .52s ease, border-color .52s ease;
+}
+.journey-quest-rail button:hover { transform: translateY(-2px); color: var(--text); background: color-mix(in srgb, var(--surface-raised) 72%, transparent); }
+.journey-quest-rail button.active { color: var(--journey-accent); border-color: color-mix(in srgb, var(--journey-accent) 28%, transparent); background: color-mix(in srgb, var(--journey-accent) 10%, transparent); }
+.journey-quest-rail button span { font-size: 13px; }
+.journey-quest-rail button small { max-width: 100%; overflow: hidden; font: 650 6px var(--font-training); letter-spacing: .06em; text-overflow: ellipsis; white-space: nowrap; }
+
+.journey-missions { align-self: stretch; }
+.journey-missions > button {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.journey-missions > button > span { color: var(--journey-accent); font: 700 10px var(--font-numeric); }
+.journey-missions > button > span i { font-style: normal; }
+.journey-missions > button strong,
+.journey-missions > button small { display: block; }
+.journey-missions > button strong { font-size: 9px; }
+.journey-missions > button small { margin-top: 2px; color: var(--dim); font-size: 7px; }
+.journey-missions > button b { color: var(--dim); font-size: 14px; font-weight: 400; transition: transform .52s var(--flow-ease); }
+.journey-missions.open > button b { transform: rotate(180deg); }
+.journey-missions > div {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  width: 340px;
+  display: grid;
+  gap: 6px;
+  padding: 9px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--panel-2) 94%, transparent);
+  box-shadow: 0 24px 64px rgba(4, 8, 22, .26), inset 0 1px rgba(255,255,255,.06);
+  backdrop-filter: blur(24px) saturate(130%);
+}
+.journey-missions > div > button {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 25px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  text-align: left;
+  transition: background-color .4s ease, transform .44s var(--flow-ease);
+}
+.journey-missions > div > button:hover { transform: translateX(3px); background: color-mix(in srgb, var(--journey-accent) 9%, transparent); }
+.journey-missions > div > button > i { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--journey-accent); font-style: normal; }
+.journey-missions > div > button strong,
+.journey-missions > div > button small { display: block; }
+.journey-missions > div > button strong { font-size: 9px; }
+.journey-missions > div > button small { margin-top: 3px; color: var(--dim); font-size: 7px; }
+.journey-missions > div > button em { color: var(--journey-accent); font: 650 8px var(--font-training); font-style: normal; }
+
+/* Manual settings become a quiet composer below the more inviting quest layer. */
+.control-deck {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.mode-grid { gap: 7px; }
+.mode-card {
+  min-height: 62px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 78%, transparent);
+}
+.mode-card:hover { transform: translateY(-3px) scale(1.01) !important; }
+.mode-card.active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 16%, var(--surface)), color-mix(in srgb, var(--secondary) 8%, var(--surface)));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 34%, transparent), 0 12px 30px color-mix(in srgb, var(--primary) 9%, transparent);
+}
+
+/* The passage becomes a stage rather than another dashboard card. */
+.practice-card.glass-level-3 {
+  margin-top: 18px;
+  border-radius: 34px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.06), transparent 20%),
+    radial-gradient(circle at 50% -12%, rgba(145, 133, 255, .13), transparent 40rem),
+    color-mix(in srgb, var(--surface-raised) 88%, transparent);
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.1),
+    inset 0 0 0 1px color-mix(in srgb, var(--border-strong) 72%, transparent),
+    0 42px 110px rgba(5, 8, 24, .2);
+  transition: box-shadow .86s var(--flow-ease), background .9s var(--flow-ease), transform .74s var(--flow-ease);
+}
+
+.practice-card.running.glass-level-3 {
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.11),
+    inset 0 0 0 1px color-mix(in srgb, var(--flow-blue) 21%, transparent),
+    0 46px 120px rgba(5, 8, 24, .22),
+    0 0 74px rgba(116, 105, 255, .065);
+}
+
+.typing-zone {
+  min-height: 460px;
+  padding: clamp(36px, 5vw, 68px) clamp(30px, 5.8vw, 76px) 42px;
+  border-radius: 27px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,.026), transparent 44%),
+    color-mix(in srgb, var(--background) 13%, transparent);
+}
+
+.passage {
+  font-size: clamp(25px, 2.55vw, 36px);
+  line-height: 1.82;
+  letter-spacing: -.025em;
+}
+
+.passage span.pending { color: color-mix(in srgb, var(--foreground-muted) 66%, transparent); }
+.passage span.correct { color: color-mix(in srgb, var(--foreground) 48%, transparent); }
+.passage span.current {
+  color: color-mix(in srgb, var(--flow-blue) 74%, var(--foreground));
+  text-shadow: 0 0 20px color-mix(in srgb, var(--flow-blue) 22%, transparent);
+}
+
+.active-journey-brief {
+  --brief-accent: var(--flow-lilac);
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px auto minmax(160px, 1fr) auto;
+  align-items: center;
+  gap: 11px 14px;
+  margin: 16px 0 0;
+  padding: 12px 15px 10px;
+  border: 1px solid color-mix(in srgb, var(--brief-accent) 23%, var(--border));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--brief-accent) 7%, transparent);
+}
+.active-journey-brief.tone-mint { --brief-accent: var(--flow-mint); }
+.active-journey-brief.tone-blue { --brief-accent: var(--flow-blue); }
+.active-journey-brief.tone-amber { --brief-accent: var(--flow-amber); }
+.active-journey-brief.tone-rose { --brief-accent: var(--flow-rose); }
+.active-journey-brief.tone-cyan { --brief-accent: var(--flow-cyan); }
+.active-journey-brief > span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: color-mix(in srgb, var(--brief-accent) 13%, transparent); color: var(--brief-accent); }
+.active-journey-brief small,
+.active-journey-brief strong { display: block; }
+.active-journey-brief small { color: var(--brief-accent); font: 700 7px var(--font-training); letter-spacing: .12em; }
+.active-journey-brief strong { margin-top: 3px; font-size: 10px; }
+.active-journey-brief p { margin: 0; color: var(--muted); font-size: 9px; }
+.active-journey-brief em { color: var(--brief-accent); font: 700 10px var(--font-numeric); font-style: normal; }
+.active-journey-brief > i { grid-column: 1 / -1; height: 2px; overflow: hidden; border-radius: 9px; background: var(--border); }
+.active-journey-brief > i b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brief-accent), var(--flow-cyan)); transition: width .78s var(--flow-ease); }
+
+/* Existing growth modules become actionable instead of passive. */
+.daily-mission-list > button {
+  width: 100%;
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface) 54%, transparent);
+  color: inherit;
+  text-align: left;
+  transition: border-color .5s ease, background-color .5s ease, box-shadow .58s var(--flow-ease);
+}
+.daily-mission-list > button:hover { border-color: color-mix(in srgb, var(--flow-lilac) 34%, var(--border)); background: color-mix(in srgb, var(--flow-lilac) 7%, var(--surface)); box-shadow: 0 15px 38px rgba(7, 10, 26, .1); }
+.daily-mission-list > button > i { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 12px; color: var(--flow-lilac); font-style: normal; }
+.daily-mission-list > button.completed > i { border-color: transparent; background: linear-gradient(135deg, var(--flow-lilac), var(--flow-cyan)); color: #10131d; }
+.daily-mission-list > button > div strong { display: block; color: var(--text); font-size: 11px; }
+.daily-mission-list > button > div > span { display: block; height: 3px; margin: 9px 0 5px; overflow: hidden; border-radius: 9px; background: var(--line); }
+.daily-mission-list > button > div > span b { display: block; height: 100%; background: linear-gradient(90deg, var(--flow-lilac), var(--flow-cyan)); }
+.daily-mission-list > button > div small { color: var(--dim); font-size: 8px; }
+.daily-mission-list > button em { color: var(--flow-mint); font: 650 9px var(--font-training); font-style: normal; }
+.daily-mission-list > button em b { margin-left: 5px; font-size: 12px; }
+
+.immersive-mode > .session-journey {
+  display: none !important;
+}
+
+@media (max-width: 1080px) {
+  .apple-hero {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    padding-top: 44px;
+    text-align: center;
+  }
+  .flow-hero-copy { max-width: 760px; margin: auto; }
+  .flow-hero-copy > p { margin-inline: auto; }
+  .flow-hero-copy .apple-hero-action { justify-content: center; }
+  .flow-hero-visual .showcase-perspective { width: min(790px, 88vw); height: 300px; }
+  .session-journey { grid-template-columns: 200px minmax(280px, 1fr); }
+  .journey-quest-rail { grid-column: 1; grid-row: 3; }
+  .journey-missions { grid-column: 2; grid-row: 3; min-height: 58px; }
+  .journey-total-xp { bottom: 85px; }
+}
+
+@media (max-width: 760px) {
+  .apple-landing { width: min(100% - 28px, 680px); }
+  .apple-hero { min-height: auto; padding: 44px 0 22px; }
+  .flow-hero-copy h1 { font-size: clamp(68px, 22vw, 104px); }
+  .flow-hero-copy h2 { min-height: 2.2em; font-size: clamp(32px, 10vw, 48px); }
+  .flow-hero-copy > p { max-width: 330px; font-size: 13px; }
+  .flow-hero-copy .apple-hero-action { flex-direction: column; gap: 12px; }
+  .flow-hero-visual .showcase-perspective { width: 94vw; height: 245px; }
+  .hero-flow-steps { grid-template-columns: 1fr; width: min(360px, 86vw); margin-top: -4px; }
+  .hero-flow-steps > div { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 0 6px; text-align: left; }
+  .hero-flow-steps small { grid-column: 2; }
+  .apple-landing .hero-metrics { display: none; }
+
+  .session-journey {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    min-height: 0;
+    border-radius: 22px;
+  }
+  .journey-level,
+  .journey-focus,
+  .journey-quest-rail,
+  .journey-missions { grid-column: 1; grid-row: auto; }
+  .journey-level { grid-template-columns: 54px 1fr; padding: 13px; }
+  .journey-level-orbit { width: 54px; height: 54px; }
+  .journey-level-orbit::before { width: 45px; height: 45px; }
+  .journey-focus { grid-template-columns: 1fr; padding: 17px; }
+  .journey-focus > button { width: 100%; }
+  .journey-quest-rail { grid-template-columns: repeat(6, 1fr); min-height: 58px; }
+  .journey-quest-rail button small { display: none; }
+  .journey-total-xp { top: 31px; right: 24px; bottom: auto; left: auto; }
+  .journey-missions > div { right: 0; left: 0; width: auto; }
+  .typing-zone { min-height: 400px; padding: 38px 22px 32px; }
+  .passage { font-size: clamp(22px, 6.6vw, 29px); line-height: 1.75; }
+  .active-journey-brief { grid-template-columns: 32px 1fr auto; }
+  .active-journey-brief p { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saas-entry-gate::before { animation: none !important; }
+  .journey-glow::before,
+  .journey-xp-track i,
+  .active-journey-brief > i b { transition-duration: .001ms !important; }
+}
