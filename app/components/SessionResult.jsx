@@ -35,19 +35,19 @@ export default function SessionResult({
   const reduceMotion = useReducedMotion();
   return (
     <motion.div
-      className="result-overlay phase-one-result phase-two-result"
+      className="result-overlay neural-result"
       initial={reduceMotion ? false : { opacity: 0, scale: .975, y: 22, filter: "blur(10px)" }}
       animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
       transition={{ type: reduceMotion ? "tween" : "spring", stiffness: 150, damping: 21 }}
     >
       <div className="result-glow" />
-      <div className="result-kicker"><i /> SESSION COMPLETE</div>
+      <div className="result-kicker"><i /> PERFORMANCE SYNTHESIS COMPLETE</div>
       {leveledUp && <div className="level-up-badge"><span>↑</span> LEVEL UP</div>}
 
       <div className="result-score">
         <strong>{wpm}</strong>
         <span>{metric}</span>
-        <small>{modeLabel || "Training"} result</small>
+        <small>{modeLabel || "Training"} · PERFORMANCE SCORE</small>
       </div>
 
       <div className="xp-award"><span>+{gainedXp} XP</span><small>Level {level}</small></div>

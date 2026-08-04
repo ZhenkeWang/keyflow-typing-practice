@@ -26,11 +26,11 @@ export default function AITrainingReport({
   onApplyRecommendation,
 }) {
   return (
-    <div className="result-overlay ai-report-overlay phase-two-report">
+    <div className="result-overlay ai-report-overlay neural-report">
       <div className="result-glow" />
       <div className="ai-report-header">
-        <div><span>AI TRAINING REPORT</span><h3>个人训练分析</h3></div>
-        <small>基于本地击键数据即时生成</small>
+        <div><span>KEYFLOW INTELLIGENCE REPORT</span><h3>本轮能力解析</h3></div>
+        <small>基于本地击键信号即时生成</small>
       </div>
 
       <section className={`phase-four-review ${aiReview ? "ready" : "loading"}`}>

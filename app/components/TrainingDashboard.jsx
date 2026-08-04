@@ -118,7 +118,7 @@ function TrainingDashboard({ history, xpTotal, profile, claimedMissionIds = [], 
   const unlockedCount = growth.achievements.filter((item) => item.unlocked).length;
 
   return (
-    <Reveal as="section" className="training-dashboard growth-center phase-three-dashboard" amount={.04}>
+    <Reveal as="section" className="training-dashboard growth-center neural-growth-center" amount={.04}>
       <div className="growth-dashboard-hero phase-three-profile">
         <div className="growth-profile">
           <button className="growth-avatar" type="button" onClick={onEditProfile}>{avatarText(profile)}</button>

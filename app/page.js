@@ -1348,7 +1348,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="atelier-workspace">
+      <section className="neural-workspace">
       <SessionJourney
         xpTotal={xpTotal}
         levelInfo={levelInfo}
@@ -1360,12 +1360,12 @@ export default function Home() {
         onSelectQuest={selectJourneyQuest}
       />
 
-      <section className={`control-deck atelier-composer ${composerOpen ? "is-open" : ""}`}>
-        <button className="atelier-composer-toggle" type="button" onClick={(event) => { event.stopPropagation(); setComposerOpen((value) => !value); }} aria-expanded={composerOpen}>
-          <span><i>⌘</i><span><small>SESSION SETTINGS</small><strong>{modeLabel} · {testType === "words" ? `${goal}${chineseContent ? "字" : "词"}` : `${goal}秒`} · {INTERACTIONS.find((item) => item.id === interaction)?.label}</strong></span></span>
-          <span>{composerOpen ? "完成设置" : "编辑本轮"}<i>+</i></span>
+      <section className={`control-deck session-lab ${composerOpen ? "is-open" : ""}`}>
+        <button className="session-lab-toggle" type="button" onClick={(event) => { event.stopPropagation(); setComposerOpen((value) => !value); }} aria-expanded={composerOpen}>
+          <span><i>⌘</i><span><small>SESSION LAB</small><strong>{modeLabel} · {testType === "words" ? `${goal}${chineseContent ? "字" : "词"}` : `${goal}秒`} · {INTERACTIONS.find((item) => item.id === interaction)?.label}</strong></span></span>
+          <span>{composerOpen ? "完成编排" : "调整训练参数"}<i>+</i></span>
         </button>
-        <div className="atelier-composer-body">
+        <div className="session-lab-body">
         <div className="mode-grid">
           {MODES.map((item) => (
             <button

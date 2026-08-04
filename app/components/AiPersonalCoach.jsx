@@ -97,7 +97,7 @@ export default function AiPersonalCoach({ history, profile, onStartPlan }) {
 
   return (
     <motion.section
-      className="ai-personal-coach"
+      className="ai-personal-coach neural-coach"
       initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, amount: .08 }}

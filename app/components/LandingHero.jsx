@@ -3,95 +3,86 @@
 import { motion, useReducedMotion } from "framer-motion";
 import KeyboardShowcase from "./KeyboardShowcase";
 
-const ease = [.22, 1, .36, 1];
+const easing = [.16, 1, .3, 1];
 
-function ThemeDial({ value, resolvedTheme, onChange }) {
+function ThemeControl({ value, resolvedTheme, onChange }) {
   return (
-    <div className="atelier-theme" aria-label="主题模式">
-      {["auto", "light", "dark"].map((id) => (
+    <div className="neural-theme" role="group" aria-label="主题模式">
+      {[{ id: "auto", label: `自动 · ${resolvedTheme === "light" ? "日" : "夜"}` }, { id: "light", label: "浅色" }, { id: "dark", label: "深色" }].map((item) => (
         <button
           type="button"
-          key={id}
-          className={value === id ? "active" : ""}
-          onClick={(event) => { event.stopPropagation(); onChange(id); }}
-          aria-pressed={value === id}
+          key={item.id}
+          className={value === item.id ? "active" : ""}
+          onClick={(event) => { event.stopPropagation(); onChange(item.id); }}
+          aria-pressed={value === item.id}
         >
-          {value === id && <motion.i layoutId="atelier-theme-cursor" transition={{ type: "spring", stiffness: 280, damping: 30 }} />}
-          <span>{id === "auto" ? `A · ${resolvedTheme === "light" ? "L" : "D"}` : id[0].toUpperCase()}</span>
+          {value === item.id && <motion.i layoutId="neural-theme-track" transition={{ type: "spring", stiffness: 240, damping: 28 }} />}
+          <span>{item.label}</span>
         </button>
       ))}
     </div>
   );
 }
 
-function SplitLine({ children, delay, ready }) {
+function Reveal({ children, delay = 0, className = "" }) {
   const reduceMotion = useReducedMotion();
   return (
-    <span className="atelier-line-mask">
-      <motion.span
-        initial={reduceMotion ? false : { y: "112%", rotate: 1.5 }}
-        animate={ready ? { y: 0, rotate: 0 } : { y: "112%" }}
-        transition={{ duration: 1.05, delay, ease }}
-      >{children}</motion.span>
-    </span>
+    <motion.div
+      className={className}
+      initial={reduceMotion ? false : { opacity: 0, y: 28, filter: "blur(12px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      transition={{ duration: 1.1, delay, ease: easing }}
+    >{children}</motion.div>
   );
 }
 
 export default function LandingHero({ ready, leaving, themePreference, resolvedTheme, onThemeChange, onEnter }) {
   const reduceMotion = useReducedMotion();
-  const fade = (delay, y = 18) => ({
-    initial: reduceMotion ? false : { opacity: 0, y },
-    animate: ready ? { opacity: 1, y: 0 } : { opacity: 0 },
-    transition: { duration: .9, delay, ease },
-  });
-
   return (
-    <main className={`type-atelier ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
-      <div className="atelier-grid" aria-hidden="true" />
+    <main className={`neural-entry ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
+      <div className="neural-mesh" aria-hidden="true"><i /><i /><i /></div>
 
-      <nav className="atelier-nav">
-        <a href="#" className="atelier-brand" onClick={(event) => event.preventDefault()} aria-label="KeyFlow 首页">
-          <span className="atelier-brand-key">K</span>
-          <span><strong>KEYFLOW</strong><small>TYPE ATELIER / 2026</small></span>
+      <nav className="neural-nav">
+        <a href="#" onClick={(event) => event.preventDefault()} className="neural-brand" aria-label="KeyFlow 首页">
+          <span><i /><i /><i /></span>
+          <div><strong>KeyFlow</strong><small>NEURAL TYPE SYSTEM</small></div>
         </a>
-        <div className="atelier-nav-center"><span>TRAIN YOUR HANDS</span><i /><span>FREE YOUR THOUGHTS</span></div>
-        <ThemeDial value={themePreference} resolvedTheme={resolvedTheme} onChange={onThemeChange} />
+        <div className="neural-nav-status"><i /> PERSONAL ENGINE READY</div>
+        <ThemeControl value={themePreference} resolvedTheme={resolvedTheme} onChange={onThemeChange} />
       </nav>
 
-      <section className="atelier-hero">
-        <div className="atelier-copy">
-          <motion.div className="atelier-index" {...fade(.08)}><span>01</span><i /><span>THE PRACTICE DESK</span></motion.div>
-          <h1 aria-label="Type less force. Think more flow.">
-            <SplitLine ready={ready} delay={.12}>TYPE LESS FORCE.</SplitLine>
-            <SplitLine ready={ready} delay={.2}><em>THINK MORE FLOW.</em></SplitLine>
+      <section className="neural-hero">
+        <div className="neural-copy">
+          <Reveal delay={.05} className="neural-kicker"><span>01</span><i /> AI-ADAPTIVE KEYBOARD TRAINING</Reveal>
+          <h1 aria-label="Your thoughts, at typing speed">
+            <motion.span initial={reduceMotion ? false : { y: "110%" }} animate={ready ? { y: 0 } : { y: "110%" }} transition={{ duration: 1.15, delay: .12, ease: easing }}>Your thoughts,</motion.span>
+            <motion.span initial={reduceMotion ? false : { y: "110%" }} animate={ready ? { y: 0 } : { y: "110%" }} transition={{ duration: 1.15, delay: .22, ease: easing }}><em>at typing speed.</em></motion.span>
           </h1>
-          <motion.p {...fade(.38)}>
-            键盘不是速度计，而是思考的延伸。选择一组短练习，建立更轻、更准、更持久的输入手感。
-          </motion.p>
-          <motion.div className="atelier-action-row" {...fade(.48)}>
-            <button type="button" className="atelier-start" onClick={onEnter}>
-              <span>开始一轮 60 秒练习</span><kbd>↵</kbd>
-            </button>
-            <div><strong>12</strong><small>种训练路径</small></div>
-            <div><strong>01</strong><small>个清晰目标</small></div>
-          </motion.div>
+          <Reveal delay={.42} className="neural-description">
+            <p>把每一次击键变成可感知的成长。KeyFlow 根据速度、准确率、节奏与薄弱键，为你编排下一轮训练。</p>
+          </Reveal>
+          <Reveal delay={.54} className="neural-actions">
+            <button type="button" className="neural-primary" onClick={onEnter}><span>开始今日训练</span><i>↗</i></button>
+            <button type="button" className="neural-quiet" onClick={onEnter}><kbd>Enter</kbd><span>无需设置，直接输入</span></button>
+          </Reveal>
         </div>
 
-        <motion.div className="atelier-object" {...fade(.25, 32)}>
-          <div className="atelier-object-head">
-            <span><i /> INPUT DEVICE / LIVE</span>
-            <small>把鼠标移到任意键帽</small>
-          </div>
+        <Reveal delay={.3} className="neural-device">
+          <div className="neural-device-head"><span><i /> LIVE INPUT MODEL</span><small>移动光标感受键程</small></div>
           <KeyboardShowcase onEnter={onEnter} />
-        </motion.div>
+          <div className="neural-device-readout">
+            <div><span>FOCUS</span><strong>Adaptive</strong></div>
+            <div><span>LATENCY</span><strong>&lt; 8ms</strong></div>
+            <div><span>PRIVACY</span><strong>Local first</strong></div>
+          </div>
+        </Reveal>
       </section>
 
-      <motion.section className="atelier-footer-rail" {...fade(.7)}>
-        <div><span>DAILY FORMAT</span><strong>Warm-up → Focus → Reward</strong></div>
-        <div><span>INPUT FEEDBACK</span><strong>Character / Keycap / Rhythm</strong></div>
-        <div><span>YOUR DATA</span><strong>Stored locally by default</strong></div>
-        <button type="button" onClick={onEnter}><i>PRESS</i><strong>ENTER</strong></button>
-      </motion.section>
+      <Reveal delay={.76} className="neural-capabilities">
+        <article><span>01</span><div><strong>Measure</strong><small>实时捕捉速度、节奏与错误模式</small></div><i>WPM</i></article>
+        <article><span>02</span><div><strong>Understand</strong><small>解释为什么变慢，而不只显示分数</small></div><i>AI</i></article>
+        <article><span>03</span><div><strong>Improve</strong><small>把弱点转化为下一轮短训练</small></div><i>XP</i></article>
+      </Reveal>
     </main>
   );
 }
