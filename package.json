@@ -1,6 +1,6 @@
 {
   "name": "keyflow-typing-practice",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "An adaptive, privacy-conscious typing training platform with real-time metrics, focused practice modes, and growth insights.",
   "license": "MIT",
   "private": true,

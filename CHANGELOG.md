@@ -2,6 +2,22 @@
 
 All notable changes to KeyFlow are documented here.
 
+## [2.0.0] - 2026-08-04
+
+### Redesigned
+
+- Replaced the entry experience with the softer Flow Sanctuary portal and an interactive 3D Flowboard
+- Rebuilt the training surface around a calmer, more immersive visual hierarchy
+- Introduced nine coordinated practice paths spanning speed, accuracy, rhythm, code, weak keys, adaptive, number, real-world, and deep-flow training
+- Redesigned daily missions, XP progression, streaks, and session recommendations into an interactive growth journey
+- Consolidated advanced options into a collapsible session composer to reduce visual noise
+- Refined light and dark palettes, fullscreen behavior, responsive layouts, reduced-motion support, and transition pacing
+
+### Preserved
+
+- Existing typing engine, performance metrics, history, reports, themes, and local progress data
+- React Bits Aurora attribution and its original third-party license terms
+
 ## [1.0.0] - 2026-07-31
 
 ### Added

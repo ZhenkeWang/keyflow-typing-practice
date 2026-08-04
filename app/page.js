@@ -227,6 +227,9 @@ const MODES = [
   { id: "weak", label: "Weak Keys", icon: "⌁", desc: "历史薄弱按键" },
   { id: "code", label: "Coding", icon: "</>", desc: "程序语言输入" },
   { id: "rhythm", label: "Rhythm", icon: "◉", desc: "BPM 节奏稳定" },
+  { id: "numbers", label: "Numbers", icon: "#", desc: "数字与符号控制" },
+  { id: "news", label: "Real World", icon: "⌘", desc: "现实内容与热点" },
+  { id: "focus", label: "Deep Flow", icon: "≈", desc: "低干扰长段练习" },
 ];
 
 const INTERACTIONS = [
@@ -412,6 +415,7 @@ export default function Home() {
   const [inputFocused, setInputFocused] = useState(false);
   const [feedbackPhase, setFeedbackPhase] = useState("ready");
   const [activeJourneyQuest, setActiveJourneyQuest] = useState(null);
+  const [composerOpen, setComposerOpen] = useState(false);
   const sessionReview = useAiCoachStore((state) => state.sessionReview);
   const reviewSession = useAiCoachStore((state) => state.review);
   const clearSessionReview = useAiCoachStore((state) => state.clearReview);
@@ -528,6 +532,7 @@ export default function Home() {
     () => buildDailyMissions(history, Date.now(), claimedMissionIds),
     [claimedMissionIds, history]
   );
+  const currentStreak = useMemo(() => calculatePracticeStreak(history), [history]);
   const level = levelInfo.level;
 
   const reset = useCallback((options = {}) => {
@@ -1356,17 +1361,24 @@ export default function Home() {
         </div>
       </header>
 
+      <section className="flow-workspace">
       <SessionJourney
         xpTotal={xpTotal}
         levelInfo={levelInfo}
         missions={currentMissions}
         historyLength={history.length}
+        streak={currentStreak}
         activeQuest={activeJourneyQuest}
         status={status}
         onSelectQuest={selectJourneyQuest}
       />
 
-      <section className="control-deck">
+      <section className={`control-deck flow-composer ${composerOpen ? "is-open" : ""}`}>
+        <button className="flow-composer-toggle" type="button" onClick={(event) => { event.stopPropagation(); setComposerOpen((value) => !value); }} aria-expanded={composerOpen}>
+          <span><i>⌘</i><span><small>SESSION COMPOSER</small><strong>{modeLabel} · {testType === "words" ? `${goal}${chineseContent ? "字" : "词"}` : `${goal}秒`} · {INTERACTIONS.find((item) => item.id === interaction)?.label}</strong></span></span>
+          <span>{composerOpen ? "收起调音台" : "自定义本轮练习"}<i>⌄</i></span>
+        </button>
+        <div className="flow-composer-body">
         <div className="mode-grid">
           {MODES.map((item) => (
             <button
@@ -1463,6 +1475,31 @@ export default function Home() {
           </div>
         )}
 
+        {mode === "numbers" && (
+          <div className="specialty-bar" aria-label="数字训练类型">
+            <span><i>#</i> Number material</span>
+            <div>
+              {[
+                ["mixed", "综合数字"],
+                ["network", "IP 与端口"],
+                ["date", "日期时间"],
+                ["formula", "数学公式"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  className={numberPreset === id ? "active" : ""}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setActiveJourneyQuest(null);
+                    reset({ mode: "numbers", numberPreset: id });
+                  }}
+                >{label}</button>
+              ))}
+            </div>
+            <small>把真实数字格式变成稳定的键盘肌肉记忆</small>
+          </div>
+        )}
+
         {mode === "rhythm" && (
           <div className="specialty-bar rhythm-control" aria-label="节奏训练目标">
             <span><i className="rhythm-beat" style={{ "--beat-duration": `${60 / rhythmTarget}s` }} /> Rhythm target</span>
@@ -1498,6 +1535,7 @@ export default function Home() {
           rhythmScore={rhythmScore}
           codeMetrics={codeMetrics}
         />
+        </div>
       </section>
 
       <section
@@ -1741,6 +1779,7 @@ export default function Home() {
           <span><kbd>Esc</kbd> 重置</span>
           <span>每一次敲击，都是进步。</span>
         </footer>
+      </section>
       </section>
 
       <TrainingDashboard

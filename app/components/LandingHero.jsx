@@ -1,38 +1,28 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import KeyboardShowcase from "./KeyboardShowcase";
 import MotionButton from "./ui/MotionButton";
-import AnimatedHeadline from "../animations/AnimatedHeadline";
-import CountUp from "../animations/CountUp";
 import BrandMark from "./BrandMark";
 
-const HERO_METRICS = [
-  { value: 120, suffix: " WPM", label: "Peak typing speed" },
-  { value: 99.8, decimals: 1, suffix: "%", label: "Average accuracy" },
-  { value: 10, suffix: "M+", label: "Keystrokes practiced" },
+const ENTRY_BEATS = [
+  { key: "01", title: "Choose a mood", detail: "短任务，而不是漫长测试" },
+  { key: "02", title: "Follow the pulse", detail: "反馈跟随节奏，不打断思考" },
+  { key: "03", title: "Leave stronger", detail: "每轮练习都推进真实成长" },
 ];
 
-const FLOW_STEPS = [
-  { index: "01", title: "Choose your flow", detail: "速度、精准、节奏或代码" },
-  { index: "02", title: "Feel every key", detail: "即时反馈保持沉浸" },
-  { index: "03", title: "Grow with purpose", detail: "任务与经验持续推进" },
+const SIGNALS = [
+  { value: "09", label: "practice paths" },
+  { value: "LIVE", label: "adaptive feedback" },
+  { value: "LOCAL", label: "private progress" },
 ];
 
-const reveal = {
-  hidden: { opacity: 0, y: 24, filter: "blur(10px)" },
-  visible: (delay = 0) => ({
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { delay, duration: 1.05, ease: [.16, 1, .3, 1] },
-  }),
-};
+const ease = [.16, 1, .3, 1];
 
 function ThemeControl({ value, resolvedTheme, onChange }) {
   return (
-    <div className="hero-theme-control" aria-label="主题模式">
-      {[["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([id, label]) => (
+    <div className="portal-theme-control" aria-label="主题模式">
+      {[['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']].map(([id, label]) => (
         <button
           key={id}
           className={value === id ? "active" : ""}
@@ -40,7 +30,7 @@ function ThemeControl({ value, resolvedTheme, onChange }) {
           onClick={(event) => { event.stopPropagation(); onChange(id); }}
           aria-pressed={value === id}
         >
-          {value === id && <motion.i layoutId="landing-theme-pill" transition={{ type: "spring", stiffness: 360, damping: 30 }} />}
+          {value === id && <motion.i layoutId="portal-theme-pill" transition={{ type: "spring", stiffness: 260, damping: 28, mass: .9 }} />}
           <span>{id === "auto" ? `Auto · ${resolvedTheme === "light" ? "Light" : "Dark"}` : label}</span>
         </button>
       ))}
@@ -48,57 +38,88 @@ function ThemeControl({ value, resolvedTheme, onChange }) {
   );
 }
 
-export default function LandingHero({ ready, leaving, themePreference, resolvedTheme, onThemeChange, onEnter }) {
+function BrandWord({ ready }) {
+  const reduceMotion = useReducedMotion();
   return (
-    <section className={`saas-landing apple-landing ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
-      <nav className="hero-nav">
-        <a className="hero-brand" href="#" onClick={(event) => event.preventDefault()} aria-label="KeyFlow 首页">
-          <BrandMark compact animate={ready} /><span>KeyFlow</span>
+    <h1 className="portal-wordmark" aria-label="KeyFlow">
+      {"KeyFlow".split("").map((letter, index) => (
+        <motion.span
+          key={`${letter}-${index}`}
+          initial={reduceMotion ? false : { opacity: 0, y: 48, rotateX: -70, filter: "blur(12px)" }}
+          animate={ready ? { opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)" } : { opacity: 0 }}
+          transition={{ delay: .12 + index * .065, duration: 1.15, ease }}
+        >{letter}</motion.span>
+      ))}
+    </h1>
+  );
+}
+
+export default function LandingHero({ ready, leaving, themePreference, resolvedTheme, onThemeChange, onEnter }) {
+  const reduceMotion = useReducedMotion();
+  const reveal = (delay) => ({
+    initial: reduceMotion ? false : { opacity: 0, y: 26, filter: "blur(10px)" },
+    animate: ready ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0 },
+    transition: { delay, duration: 1.05, ease },
+  });
+
+  return (
+    <section className={`flow-portal ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
+      <nav className="portal-nav">
+        <a className="portal-brand" href="#" onClick={(event) => event.preventDefault()} aria-label="KeyFlow 首页">
+          <BrandMark compact animate={ready} />
+          <span><strong>KeyFlow</strong><small>typing sanctuary</small></span>
         </a>
-        <div className="hero-nav-right">
-          <span className="hero-phase"><i /> Precision training</span>
+        <div className="portal-nav-meta">
+          <span className="portal-presence"><i /> Flow space is ready</span>
           <ThemeControl value={themePreference} resolvedTheme={resolvedTheme} onChange={onThemeChange} />
         </div>
       </nav>
 
-      <div className="apple-hero">
-        <div className="flow-hero-copy">
-          <motion.div className="apple-eyebrow" variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.08}>
-            YOUR KEYBOARD · YOUR RHYTHM
+      <div className="portal-stage">
+        <div className="portal-copy">
+          <motion.div className="portal-kicker" {...reveal(.08)}>
+            <i /> A softer way to build keyboard skill
           </motion.div>
-          <motion.h1 variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.14}>KeyFlow</motion.h1>
-          <motion.h2 variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.22}>
-            <AnimatedHeadline active={ready && !leaving} />
-          </motion.h2>
-          <motion.p variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.3}>
-            不只是测试速度，而是找到更轻、更稳、更属于你的输入节奏。
+          <BrandWord ready={ready} />
+          <motion.h2 {...reveal(.58)}>让手指进入节奏<br /><span>让思考保持流动</span></motion.h2>
+          <motion.p {...reveal(.68)}>
+            从一个刚刚好的短任务开始。KeyFlow 会把速度、准确率、节奏与薄弱键，编排成每天都不重复的练习旅程。
           </motion.p>
-          <motion.div className="apple-hero-action" variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.38}>
-            <MotionButton className="hero-primary" onClick={onEnter}>
-              Enter your flow <span>→</span>
+          <motion.div className="portal-actions" {...reveal(.78)}>
+            <MotionButton className="portal-primary" onClick={onEnter}>
+              <span>进入训练空间</span><i>↗</i>
             </MotionButton>
-            <span className="hero-shortcut"><kbd>Enter</kbd> 或轻触键盘开始</span>
+            <span className="portal-shortcut"><kbd>Enter</kbd><small>无需设置，立即开始</small></span>
           </motion.div>
-        </div>
-        <div className="flow-hero-visual">
-          <KeyboardShowcase onEnter={onEnter} />
-          <motion.div className="hero-flow-steps" variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.58}>
-            {FLOW_STEPS.map((step) => (
-              <div key={step.index}><span>{step.index}</span><strong>{step.title}</strong><small>{step.detail}</small></div>
+          <motion.div className="portal-signals" {...reveal(.9)}>
+            {SIGNALS.map((signal) => (
+              <div key={signal.label}><strong>{signal.value}</strong><span>{signal.label}</span></div>
             ))}
           </motion.div>
         </div>
+
+        <motion.div className="portal-visual" {...reveal(.38)}>
+          <div className="portal-aura" aria-hidden="true"><i /><i /><i /></div>
+          <div className="portal-visual-label"><span>LIVE INSTRUMENT</span><small>move across the keys</small></div>
+          <KeyboardShowcase onEnter={onEnter} />
+          <div className="portal-beats">
+            {ENTRY_BEATS.map((beat, index) => (
+              <motion.div
+                key={beat.key}
+                initial={reduceMotion ? false : { opacity: 0, x: 18 }}
+                animate={ready ? { opacity: 1, x: 0 } : { opacity: 0 }}
+                transition={{ delay: .82 + index * .12, duration: .86, ease }}
+              >
+                <span>{beat.key}</span><div><strong>{beat.title}</strong><small>{beat.detail}</small></div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
-      <motion.div className="hero-metrics" variants={reveal} initial="hidden" animate={ready ? "visible" : "hidden"} custom={.76}>
-        {HERO_METRICS.map((item) => (
-          <div key={item.label}>
-            <strong><CountUp value={item.value} decimals={item.decimals} suffix={item.suffix} /></strong>
-            <span>{item.label}</span>
-          </div>
-        ))}
-        <p>Accuracy first. Speed follows.</p>
-      </motion.div>
+      <motion.footer className="portal-footer" {...reveal(1.02)}>
+        <span>Designed for deep focus</span><i /><span>Press any key to begin</span>
+      </motion.footer>
     </section>
   );
 }
