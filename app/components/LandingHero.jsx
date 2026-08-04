@@ -2,124 +2,96 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import KeyboardShowcase from "./KeyboardShowcase";
-import MotionButton from "./ui/MotionButton";
-import BrandMark from "./BrandMark";
 
-const ENTRY_BEATS = [
-  { key: "01", title: "Choose a mood", detail: "短任务，而不是漫长测试" },
-  { key: "02", title: "Follow the pulse", detail: "反馈跟随节奏，不打断思考" },
-  { key: "03", title: "Leave stronger", detail: "每轮练习都推进真实成长" },
-];
+const ease = [.22, 1, .36, 1];
 
-const SIGNALS = [
-  { value: "09", label: "practice paths" },
-  { value: "LIVE", label: "adaptive feedback" },
-  { value: "LOCAL", label: "private progress" },
-];
-
-const ease = [.16, 1, .3, 1];
-
-function ThemeControl({ value, resolvedTheme, onChange }) {
+function ThemeDial({ value, resolvedTheme, onChange }) {
   return (
-    <div className="portal-theme-control" aria-label="主题模式">
-      {[['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']].map(([id, label]) => (
+    <div className="atelier-theme" aria-label="主题模式">
+      {["auto", "light", "dark"].map((id) => (
         <button
+          type="button"
           key={id}
           className={value === id ? "active" : ""}
-          type="button"
           onClick={(event) => { event.stopPropagation(); onChange(id); }}
           aria-pressed={value === id}
         >
-          {value === id && <motion.i layoutId="portal-theme-pill" transition={{ type: "spring", stiffness: 260, damping: 28, mass: .9 }} />}
-          <span>{id === "auto" ? `Auto · ${resolvedTheme === "light" ? "Light" : "Dark"}` : label}</span>
+          {value === id && <motion.i layoutId="atelier-theme-cursor" transition={{ type: "spring", stiffness: 280, damping: 30 }} />}
+          <span>{id === "auto" ? `A · ${resolvedTheme === "light" ? "L" : "D"}` : id[0].toUpperCase()}</span>
         </button>
       ))}
     </div>
   );
 }
 
-function BrandWord({ ready }) {
+function SplitLine({ children, delay, ready }) {
   const reduceMotion = useReducedMotion();
   return (
-    <h1 className="portal-wordmark" aria-label="KeyFlow">
-      {"KeyFlow".split("").map((letter, index) => (
-        <motion.span
-          key={`${letter}-${index}`}
-          initial={reduceMotion ? false : { opacity: 0, y: 48, rotateX: -70, filter: "blur(12px)" }}
-          animate={ready ? { opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)" } : { opacity: 0 }}
-          transition={{ delay: .12 + index * .065, duration: 1.15, ease }}
-        >{letter}</motion.span>
-      ))}
-    </h1>
+    <span className="atelier-line-mask">
+      <motion.span
+        initial={reduceMotion ? false : { y: "112%", rotate: 1.5 }}
+        animate={ready ? { y: 0, rotate: 0 } : { y: "112%" }}
+        transition={{ duration: 1.05, delay, ease }}
+      >{children}</motion.span>
+    </span>
   );
 }
 
 export default function LandingHero({ ready, leaving, themePreference, resolvedTheme, onThemeChange, onEnter }) {
   const reduceMotion = useReducedMotion();
-  const reveal = (delay) => ({
-    initial: reduceMotion ? false : { opacity: 0, y: 26, filter: "blur(10px)" },
-    animate: ready ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0 },
-    transition: { delay, duration: 1.05, ease },
+  const fade = (delay, y = 18) => ({
+    initial: reduceMotion ? false : { opacity: 0, y },
+    animate: ready ? { opacity: 1, y: 0 } : { opacity: 0 },
+    transition: { duration: .9, delay, ease },
   });
 
   return (
-    <section className={`flow-portal ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
-      <nav className="portal-nav">
-        <a className="portal-brand" href="#" onClick={(event) => event.preventDefault()} aria-label="KeyFlow 首页">
-          <BrandMark compact animate={ready} />
-          <span><strong>KeyFlow</strong><small>typing sanctuary</small></span>
+    <main className={`type-atelier ${ready ? "is-ready" : ""} ${leaving ? "is-leaving" : ""}`}>
+      <div className="atelier-grid" aria-hidden="true" />
+
+      <nav className="atelier-nav">
+        <a href="#" className="atelier-brand" onClick={(event) => event.preventDefault()} aria-label="KeyFlow 首页">
+          <span className="atelier-brand-key">K</span>
+          <span><strong>KEYFLOW</strong><small>TYPE ATELIER / 2026</small></span>
         </a>
-        <div className="portal-nav-meta">
-          <span className="portal-presence"><i /> Flow space is ready</span>
-          <ThemeControl value={themePreference} resolvedTheme={resolvedTheme} onChange={onThemeChange} />
-        </div>
+        <div className="atelier-nav-center"><span>TRAIN YOUR HANDS</span><i /><span>FREE YOUR THOUGHTS</span></div>
+        <ThemeDial value={themePreference} resolvedTheme={resolvedTheme} onChange={onThemeChange} />
       </nav>
 
-      <div className="portal-stage">
-        <div className="portal-copy">
-          <motion.div className="portal-kicker" {...reveal(.08)}>
-            <i /> A softer way to build keyboard skill
-          </motion.div>
-          <BrandWord ready={ready} />
-          <motion.h2 {...reveal(.58)}>让手指进入节奏<br /><span>让思考保持流动</span></motion.h2>
-          <motion.p {...reveal(.68)}>
-            从一个刚刚好的短任务开始。KeyFlow 会把速度、准确率、节奏与薄弱键，编排成每天都不重复的练习旅程。
+      <section className="atelier-hero">
+        <div className="atelier-copy">
+          <motion.div className="atelier-index" {...fade(.08)}><span>01</span><i /><span>THE PRACTICE DESK</span></motion.div>
+          <h1 aria-label="Type less force. Think more flow.">
+            <SplitLine ready={ready} delay={.12}>TYPE LESS FORCE.</SplitLine>
+            <SplitLine ready={ready} delay={.2}><em>THINK MORE FLOW.</em></SplitLine>
+          </h1>
+          <motion.p {...fade(.38)}>
+            键盘不是速度计，而是思考的延伸。选择一组短练习，建立更轻、更准、更持久的输入手感。
           </motion.p>
-          <motion.div className="portal-actions" {...reveal(.78)}>
-            <MotionButton className="portal-primary" onClick={onEnter}>
-              <span>进入训练空间</span><i>↗</i>
-            </MotionButton>
-            <span className="portal-shortcut"><kbd>Enter</kbd><small>无需设置，立即开始</small></span>
-          </motion.div>
-          <motion.div className="portal-signals" {...reveal(.9)}>
-            {SIGNALS.map((signal) => (
-              <div key={signal.label}><strong>{signal.value}</strong><span>{signal.label}</span></div>
-            ))}
+          <motion.div className="atelier-action-row" {...fade(.48)}>
+            <button type="button" className="atelier-start" onClick={onEnter}>
+              <span>开始一轮 60 秒练习</span><kbd>↵</kbd>
+            </button>
+            <div><strong>12</strong><small>种训练路径</small></div>
+            <div><strong>01</strong><small>个清晰目标</small></div>
           </motion.div>
         </div>
 
-        <motion.div className="portal-visual" {...reveal(.38)}>
-          <div className="portal-aura" aria-hidden="true"><i /><i /><i /></div>
-          <div className="portal-visual-label"><span>LIVE INSTRUMENT</span><small>move across the keys</small></div>
-          <KeyboardShowcase onEnter={onEnter} />
-          <div className="portal-beats">
-            {ENTRY_BEATS.map((beat, index) => (
-              <motion.div
-                key={beat.key}
-                initial={reduceMotion ? false : { opacity: 0, x: 18 }}
-                animate={ready ? { opacity: 1, x: 0 } : { opacity: 0 }}
-                transition={{ delay: .82 + index * .12, duration: .86, ease }}
-              >
-                <span>{beat.key}</span><div><strong>{beat.title}</strong><small>{beat.detail}</small></div>
-              </motion.div>
-            ))}
+        <motion.div className="atelier-object" {...fade(.25, 32)}>
+          <div className="atelier-object-head">
+            <span><i /> INPUT DEVICE / LIVE</span>
+            <small>把鼠标移到任意键帽</small>
           </div>
+          <KeyboardShowcase onEnter={onEnter} />
         </motion.div>
-      </div>
+      </section>
 
-      <motion.footer className="portal-footer" {...reveal(1.02)}>
-        <span>Designed for deep focus</span><i /><span>Press any key to begin</span>
-      </motion.footer>
-    </section>
+      <motion.section className="atelier-footer-rail" {...fade(.7)}>
+        <div><span>DAILY FORMAT</span><strong>Warm-up → Focus → Reward</strong></div>
+        <div><span>INPUT FEEDBACK</span><strong>Character / Keycap / Rhythm</strong></div>
+        <div><span>YOUR DATA</span><strong>Stored locally by default</strong></div>
+        <button type="button" onClick={onEnter}><i>PRESS</i><strong>ENTER</strong></button>
+      </motion.section>
+    </main>
   );
 }

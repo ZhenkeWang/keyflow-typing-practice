@@ -2,7 +2,6 @@
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import Aurora from "./components/Aurora";
 import LandingHero from "./components/LandingHero";
 import ErrorAnalysis from "./components/ErrorAnalysis";
 import SessionResult from "./components/SessionResult";
@@ -15,7 +14,6 @@ import GrowthNotifications from "./components/GrowthNotifications";
 import ThemeRuntime from "./components/ThemeRuntime";
 import PwaRuntime from "./components/PwaRuntime";
 import CloudSyncRuntime from "./components/CloudSyncRuntime";
-import AmbientCanvas from "./components/AmbientCanvas";
 import InteractionRuntime from "./components/InteractionRuntime";
 import BrandMark from "./components/BrandMark";
 import SessionJourney from "./components/SessionJourney";
@@ -1284,18 +1282,7 @@ export default function Home() {
         }}
       />
       <ScrollRevealController />
-      <div className="aurora-backdrop">
-        <Aurora
-          colorStops={theme === "light" ? ["#b8a9ff", "#8de5d1", "#b9c8ff"] : ["#7667ff", "#47d7bf", "#5363e8"]}
-          amplitude={theme === "light" ? 0.68 : 0.88}
-          blend={theme === "light" ? 0.58 : 0.7}
-          speed={status === "running" ? 0.16 : status === "paused" ? 0.08 : theme === "light" ? 0.42 : 0.48}
-        />
-      </div>
       <div className="background-wash" />
-      <AmbientCanvas active={!entered && !immersive} calm />
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
 
       {(!entered || entryLeaving) && (
         <section
@@ -1361,7 +1348,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="flow-workspace">
+      <section className="atelier-workspace">
       <SessionJourney
         xpTotal={xpTotal}
         levelInfo={levelInfo}
@@ -1373,12 +1360,12 @@ export default function Home() {
         onSelectQuest={selectJourneyQuest}
       />
 
-      <section className={`control-deck flow-composer ${composerOpen ? "is-open" : ""}`}>
-        <button className="flow-composer-toggle" type="button" onClick={(event) => { event.stopPropagation(); setComposerOpen((value) => !value); }} aria-expanded={composerOpen}>
-          <span><i>⌘</i><span><small>SESSION COMPOSER</small><strong>{modeLabel} · {testType === "words" ? `${goal}${chineseContent ? "字" : "词"}` : `${goal}秒`} · {INTERACTIONS.find((item) => item.id === interaction)?.label}</strong></span></span>
-          <span>{composerOpen ? "收起调音台" : "自定义本轮练习"}<i>⌄</i></span>
+      <section className={`control-deck atelier-composer ${composerOpen ? "is-open" : ""}`}>
+        <button className="atelier-composer-toggle" type="button" onClick={(event) => { event.stopPropagation(); setComposerOpen((value) => !value); }} aria-expanded={composerOpen}>
+          <span><i>⌘</i><span><small>SESSION SETTINGS</small><strong>{modeLabel} · {testType === "words" ? `${goal}${chineseContent ? "字" : "词"}` : `${goal}秒`} · {INTERACTIONS.find((item) => item.id === interaction)?.label}</strong></span></span>
+          <span>{composerOpen ? "完成设置" : "编辑本轮"}<i>+</i></span>
         </button>
-        <div className="flow-composer-body">
+        <div className="atelier-composer-body">
         <div className="mode-grid">
           {MODES.map((item) => (
             <button
@@ -1575,8 +1562,8 @@ export default function Home() {
         />
 
         {activeJourneyQuest && (
-          <div className={`active-journey-brief tone-${activeJourneyQuest.tone || "violet"}`}>
-            <span>{activeJourneyQuest.icon || "✦"}</span>
+          <div className={`active-journey-brief color-${activeJourneyQuest.color || "clay"}`}>
+            <span>{activeJourneyQuest.mark || activeJourneyQuest.icon || "KF"}</span>
             <div><small>ACTIVE QUEST</small><strong>{activeJourneyQuest.title}</strong></div>
             <p>{activeJourneyQuest.detail || "完成本轮训练，推进今日成长进度。"}</p>
             <em>{Math.round(progress)}%</em>

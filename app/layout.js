@@ -4,7 +4,7 @@ import "./styles/saas.css";
 import "./styles/phase-six.css";
 import "./styles/phase-seven.css";
 import "./styles/phase-eight.css";
-import "./styles/phase-nine.css";
+import "./styles/phase-ten.css";
 
 export const metadata = {
   metadataBase: new URL("https://keyflow-typing-practice.barkzoombie.chatgpt.site"),
