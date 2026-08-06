@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import LandingHero from "./components/LandingHero";
 import ErrorAnalysis from "./components/ErrorAnalysis";
@@ -49,6 +49,7 @@ import {
   summarizeReactionTime,
 } from "./utils/typingEngine";
 import {
+  getLineAnchoredWindowStart,
   getStableWindowStart,
   shouldCapturePracticeBackspace,
 } from "./utils/textWindow";
@@ -699,6 +700,39 @@ export default function Home() {
     });
     return () => window.cancelAnimationFrame(frame);
   }, [inputAction, pulse, typed.length]);
+
+  useLayoutEffect(() => {
+    if (!entered || status === "finished") return;
+    const passage = passageRef.current;
+    const caret = passage?.querySelector(`[data-absolute="${typed.length}"]`);
+    if (!passage || !caret) return;
+
+    const passageRect = passage.getBoundingClientRect();
+    const caretRect = caret.getBoundingClientRect();
+    const lineHeight = Number.parseFloat(window.getComputedStyle(passage).lineHeight)
+      || caretRect.height
+      || 32;
+    const safeBottom = passageRect.bottom - Math.min(8, lineHeight * .12);
+
+    if (caretRect.bottom <= safeBottom) return;
+
+    const lineStarts = [];
+    let previousTop = Number.NEGATIVE_INFINITY;
+    passage.querySelectorAll("[data-absolute]").forEach((node) => {
+      const rect = node.getBoundingClientRect();
+      if (Math.abs(rect.top - previousTop) < 2) return;
+      previousTop = rect.top;
+      lineStarts.push(Number(node.dataset.absolute));
+    });
+
+    const nextStart = getLineAnchoredWindowStart(
+      typed.length,
+      visibleStart,
+      lineStarts,
+      1,
+    );
+    if (nextStart > visibleStart) setVisibleStart(nextStart);
+  }, [entered, immersive, mode, status, text, typed.length, visibleStart]);
 
   useEffect(() => {
     if (mode !== "news") return;

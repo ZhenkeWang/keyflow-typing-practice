@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getLineAnchoredWindowStart,
   getStableWindowStart,
   shouldCapturePracticeBackspace,
 } from "../app/utils/textWindow.js";
@@ -38,6 +39,18 @@ test("advances when the cursor crosses the forward buffer", () => {
 
 test("never returns a negative passage start", () => {
   assert.equal(getStableWindowStart(3, 0), 0);
+});
+
+test("anchors an overflowing caret one visual line below retained context", () => {
+  assert.equal(
+    getLineAnchoredWindowStart(118, 40, [40, 62, 84, 106], 1),
+    84,
+  );
+});
+
+test("line anchoring stays stable when no measured line is usable", () => {
+  assert.equal(getLineAnchoredWindowStart(70, 40, [], 1), 40);
+  assert.equal(getLineAnchoredWindowStart(70, 40, [12, 30], 1), 40);
 });
 
 test("captures Backspace when fullscreen focus is outside the typing field", () => {
