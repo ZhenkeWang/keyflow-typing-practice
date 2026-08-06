@@ -1,5 +1,7 @@
 "use client";
 
+import ResultPortal from "./ResultPortal";
+
 function HandCard({ label, stats, weaker }) {
   return (
     <div className={`hand-card ${weaker ? "weaker" : ""}`}>
@@ -26,7 +28,8 @@ export default function AITrainingReport({
   onApplyRecommendation,
 }) {
   return (
-    <div className="result-overlay ai-report-overlay neural-report">
+    <ResultPortal>
+      <div className="result-overlay ai-report-overlay neural-report" role="dialog" aria-modal="true" aria-label="AI 训练分析报告">
       <div className="result-glow" />
       <div className="ai-report-header">
         <div><span>KEYFLOW INTELLIGENCE REPORT</span><h3>本轮能力解析</h3></div>
@@ -117,6 +120,7 @@ export default function AITrainingReport({
         <button onClick={onBack}>返回成绩</button>
         <button onClick={onRestart}>再练一轮 <span>→</span></button>
       </div>
-    </div>
+      </div>
+    </ResultPortal>
   );
 }

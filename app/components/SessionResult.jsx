@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import ShareResultButton from "./ShareResultButton";
+import ResultPortal from "./ResultPortal";
 
 export default function SessionResult({
   wpm,
@@ -34,8 +35,12 @@ export default function SessionResult({
 }) {
   const reduceMotion = useReducedMotion();
   return (
-    <motion.div
+    <ResultPortal>
+      <motion.div
       className="result-overlay neural-result"
+      role="dialog"
+      aria-modal="true"
+      aria-label="本轮训练成果"
       initial={reduceMotion ? false : { opacity: 0, scale: .975, y: 22, filter: "blur(10px)" }}
       animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
       transition={{ type: reduceMotion ? "tween" : "spring", stiffness: 150, damping: 21 }}
@@ -133,6 +138,7 @@ export default function SessionResult({
             <button className="report-button" onClick={onViewReport}>查看 AI 训练报告</button>
             <button onClick={onRestart}>{testType === "pk" ? "再战一局" : "开始下一轮"} <span>→</span></button>
           </div>}
-    </motion.div>
+      </motion.div>
+    </ResultPortal>
   );
 }

@@ -846,3 +846,275 @@ html[data-theme="dark"] .titles-card {
   .passage { height: 6.72em; max-height: 6.72em !important; }
   .immersive-mode .passage { height: 5.04em; max-height: 5.04em !important; }
 }
+
+/* --------------------------------------------------------------------------
+ * Full-screen training results and AI report
+ * -------------------------------------------------------------------------- */
+.result-overlay {
+  position: fixed !important;
+  z-index: 10000 !important;
+  inset: 0 !important;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  padding: clamp(34px, 4.5vw, 76px) clamp(24px, 6vw, 104px) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(circle at 82% 10%, color-mix(in srgb, var(--kf-rose) 13%, transparent), transparent 38rem),
+    radial-gradient(circle at 8% 88%, color-mix(in srgb, var(--kf-blue) 8%, transparent), transparent 34rem),
+    color-mix(in srgb, var(--kf-surface-solid) 97%, var(--kf-bg)) !important;
+  box-shadow: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.result-overlay::before {
+  position: fixed;
+  background:
+    linear-gradient(var(--kf-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--kf-line) 1px, transparent 1px) !important;
+  background-size: 72px 72px !important;
+  opacity: .18;
+  mask-image: radial-gradient(circle at 50% 40%, #000, transparent 82%);
+}
+
+.neural-result {
+  display: grid !important;
+  grid-template-columns: minmax(260px, .68fr) minmax(560px, 1.32fr);
+  grid-template-areas:
+    "kicker kicker"
+    "score stats"
+    "xp context"
+    "breakdown context"
+    "review review"
+    "mistakes next"
+    "code code"
+    "share share"
+    "pk pk"
+    "actions actions";
+  align-content: start !important;
+  justify-content: center !important;
+  justify-items: stretch !important;
+  gap: clamp(16px, 1.6vw, 26px) clamp(24px, 3vw, 52px) !important;
+  text-align: left;
+}
+
+.neural-result > * { min-width: 0; }
+.neural-result .result-kicker { grid-area: kicker; }
+.neural-result .result-score { grid-area: score; align-self: center; text-align: left; }
+.neural-result .xp-award { grid-area: xp; justify-self: start; }
+.neural-result .xp-breakdown { grid-area: breakdown; }
+.neural-result .result-stat-grid { grid-area: stats; }
+.neural-result .result-training-context { grid-area: context; }
+.neural-result .session-ai-review { grid-area: review; }
+.neural-result .result-mistakes { grid-area: mistakes; }
+.neural-result .result-next-step { grid-area: next; }
+.neural-result .result-code-metrics { grid-area: code; }
+.neural-result .result-share-actions { grid-area: share; }
+.neural-result .pk-result { grid-area: pk; }
+.neural-result .result-actions { grid-area: actions; }
+
+.result-kicker {
+  font: 650 11px/1.4 var(--kf-font-mono) !important;
+  letter-spacing: .15em !important;
+}
+
+.result-score { margin: 0; }
+.result-score strong { font-size: clamp(74px, 8vw, 132px) !important; line-height: .9; }
+.result-score > span { margin-left: 12px; font-size: clamp(12px, 1vw, 17px) !important; }
+.result-score > small { margin-top: 12px; color: var(--kf-muted) !important; font-size: 12px !important; letter-spacing: .08em; }
+
+.level-up-badge { position: fixed !important; top: 28px; right: 34px; padding: 11px 15px; font-size: 11px; }
+.xp-award { min-height: 46px; margin: 0; padding: 10px 16px; }
+.xp-award span { font-size: 15px; }
+.xp-award small { font-size: 12px; }
+.neural-result .xp-breakdown { width: 100%; margin: 0; justify-content: flex-start; gap: 9px; }
+.neural-result .xp-breakdown > span { padding: 9px 12px; }
+.neural-result .xp-breakdown small { font-size: 11px; }
+.neural-result .xp-breakdown strong { font-size: 12px; }
+
+.neural-result .result-stat-grid {
+  width: 100%;
+  margin: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.neural-result .result-stat-grid > div { min-height: 92px; display: grid; align-content: center; padding: 16px 18px; }
+.neural-result .result-stat-grid span { font-size: 10px; letter-spacing: .1em; }
+.neural-result .result-stat-grid strong { margin-top: 9px; font-size: clamp(19px, 1.6vw, 27px); }
+.neural-result .result-stat-grid strong small { font-size: 11px; }
+
+.neural-result .result-training-context {
+  width: 100%;
+  margin: 0;
+  align-content: start;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.neural-result .result-training-context span { padding: 8px 12px; font-size: 11px; }
+
+.neural-result .session-ai-review {
+  width: 100%;
+  margin: 0;
+  padding: 12px;
+  grid-template-columns: minmax(130px, .55fr) repeat(3, 1fr);
+  gap: 10px;
+}
+.neural-result .session-ai-review > div,
+.neural-result .session-ai-review > p { min-height: 96px; padding: 16px 18px; }
+.neural-result .session-ai-review > div span { font-size: 10px; }
+.neural-result .session-ai-review > div strong { font-size: 30px; }
+.neural-result .session-ai-review > div strong small { font-size: 12px; }
+.neural-result .session-ai-review > p { margin: 0; color: var(--kf-muted); font-size: 14px; line-height: 1.6; }
+.neural-result .session-ai-review > p b { margin-bottom: 7px; color: var(--kf-text); font-size: 11px; }
+
+.neural-result .result-mistakes,
+.neural-result .result-next-step {
+  width: 100%;
+  min-height: 150px;
+  margin: 0;
+  padding: 20px 22px;
+}
+.neural-result .result-mistakes > div { font-size: 11px; }
+.neural-result .result-mistakes ol { gap: 10px; }
+.neural-result .result-mistakes li { padding: 12px 14px; font-size: 13px; }
+.neural-result .result-mistakes code { font-size: 17px; }
+.neural-result .result-mistakes p { margin-top: 14px; color: var(--kf-muted); font-size: 14px; line-height: 1.6; }
+.neural-result .result-next-step { grid-template-columns: 145px minmax(0, 1fr); align-content: center; gap: 20px; }
+.neural-result .result-next-step > span { font-size: 10px; }
+.neural-result .result-next-step strong { font-size: 18px; }
+.neural-result .result-next-step p { margin: 7px 0 0; color: var(--kf-muted); font-size: 14px; line-height: 1.6; }
+
+.result-share-actions,
+.result-actions { margin: 0; gap: 12px; }
+.result-overlay .result-share-actions button,
+.result-overlay .result-actions button {
+  min-height: 48px;
+  margin: 0;
+  padding: 0 20px;
+  font-size: 13px;
+}
+
+/* AI report uses the full canvas as a readable analytical workspace. */
+.neural-report {
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-content: start;
+  gap: clamp(16px, 1.7vw, 28px);
+  text-align: left;
+}
+.neural-report > * { min-width: 0; }
+.neural-report .ai-report-header,
+.neural-report .phase-four-review,
+.neural-report .report-summary-strip,
+.neural-report .ai-report-grid,
+.neural-report .report-finger-heatmap,
+.neural-report .report-actions { grid-column: 1 / -1; width: 100%; margin: 0; }
+.neural-report .report-training-plan { grid-column: 1 / 8; width: 100%; margin: 0; }
+.neural-report .report-recommendation { grid-column: 8 / -1; width: 100%; margin: 0; }
+
+.ai-report-header { padding-bottom: 22px; border-bottom: 1px solid var(--kf-line); }
+.ai-report-header span { font-size: 11px !important; }
+.ai-report-header h3 { margin-top: 9px; color: var(--kf-text); font-size: clamp(32px, 3vw, 48px); }
+.ai-report-header > small { color: var(--kf-muted); font-size: 12px; }
+
+.neural-report .phase-four-review { grid-template-columns: minmax(180px, .42fr) 1.58fr; gap: 14px; padding: 20px; }
+.neural-report .phase-four-review-score { padding: 18px; }
+.neural-report .phase-four-review-score > span { font-size: 10px; }
+.neural-report .phase-four-review-score strong { font-size: 42px; }
+.neural-report .phase-four-review-score strong small { font-size: 13px; }
+.neural-report .phase-four-review-grid { gap: 10px; }
+.neural-report .phase-four-review-grid article { padding: 16px; }
+.neural-report .phase-four-review-grid span { font-size: 9px; }
+.neural-report .phase-four-review-grid strong { margin-top: 9px; font-size: 14px; }
+.neural-report .phase-four-review-grid small { margin-top: 7px; font-size: 12px; line-height: 1.5; }
+.neural-report .phase-four-review > p { font-size: 14px; }
+
+.neural-report .report-summary-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.neural-report .report-summary-strip > div { min-height: 90px; padding: 16px 18px; }
+.neural-report .report-summary-strip span { font-size: 10px; }
+.neural-report .report-summary-strip strong { margin-top: 9px; font-size: 24px; }
+.neural-report .report-summary-strip strong small { font-size: 11px; }
+
+.neural-report .ai-report-grid { gap: 14px; }
+.neural-report .ai-report-grid > section,
+.neural-report .report-finger-heatmap,
+.neural-report .report-training-plan,
+.neural-report .report-recommendation { padding: 22px; }
+.neural-report .report-section-title strong { font-size: 16px; }
+.neural-report .report-section-title > span,
+.neural-report .report-recommendation > span { font-size: 10px; }
+.neural-report .report-error-list { gap: 9px; margin-top: 15px; }
+.neural-report .report-error-list > div { gap: 9px; padding: 7px 0; font-size: 12px; }
+.neural-report .report-error-list code { padding: 6px 9px; font-size: 13px; }
+.neural-report .report-error-list small { font-size: 11px; }
+.neural-report .report-clean,
+.neural-report .report-insight { font-size: 13px; line-height: 1.65; }
+
+.neural-report .hand-grid { gap: 10px; margin-top: 15px; }
+.neural-report .hand-card { padding: 16px; }
+.neural-report .hand-card > span { font-size: 12px; }
+.neural-report .hand-card > span i { font-size: 9px; }
+.neural-report .hand-card > strong { margin-top: 9px; font-size: 26px; }
+.neural-report .hand-card > small { margin-top: 5px; font-size: 11px; }
+.neural-report .hand-card > div { height: 5px; margin-top: 12px; }
+
+.neural-report .report-finger-heatmap > div:last-child { gap: 9px; margin-top: 16px; }
+.neural-report .report-finger-heatmap article { padding: 14px 8px; }
+.neural-report .report-finger-heatmap article span,
+.neural-report .report-finger-heatmap article small { font-size: 10px; }
+.neural-report .report-finger-heatmap article strong { font-size: 19px; }
+
+.neural-report .report-training-plan > div:last-child { gap: 10px; margin-top: 16px; }
+.neural-report .report-training-plan button { min-height: 66px; margin: 0; padding: 12px 14px; grid-template-columns: 38px minmax(0, 1fr) auto 20px; }
+.neural-report .report-training-plan button > i { width: 36px; height: 36px; font-size: 12px; }
+.neural-report .report-training-plan button > span strong { font-size: 14px; }
+.neural-report .report-training-plan button > span small { margin-top: 4px; font-size: 11px; }
+.neural-report .report-training-plan button > b { font-size: 10px; }
+
+.neural-report .report-recommendation { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.neural-report .report-recommendation strong { font-size: 19px; }
+.neural-report .report-recommendation p { margin-top: 7px; color: var(--kf-muted); font-size: 13px; line-height: 1.6; }
+.neural-report .report-recommendation > small { color: var(--kf-muted); font-size: 11px; }
+.neural-report .report-recommendation button,
+.neural-report .report-actions button { min-height: 48px; margin: 0; padding: 0 20px; font-size: 13px; }
+.neural-report .report-recommendation button { margin-top: auto; }
+
+@media (max-width: 980px) {
+  .result-overlay { padding: 30px 24px 48px !important; }
+  .neural-result {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "kicker" "score" "xp" "breakdown" "stats" "context"
+      "review" "mistakes" "next" "code" "share" "pk" "actions";
+  }
+  .neural-result .result-score { text-align: center; }
+  .neural-result .xp-award { justify-self: center; }
+  .neural-result .xp-breakdown,
+  .neural-result .result-training-context { justify-content: center; }
+  .neural-report .report-training-plan,
+  .neural-report .report-recommendation { grid-column: 1 / -1; }
+}
+
+@media (max-width: 680px) {
+  .result-overlay { padding: 24px 16px 42px !important; }
+  .result-score strong { font-size: clamp(68px, 24vw, 96px) !important; }
+  .neural-result .result-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .neural-result .session-ai-review { grid-template-columns: 1fr; }
+  .neural-result .result-mistakes ol { flex-direction: column; }
+  .neural-result .result-next-step { grid-template-columns: 1fr; }
+  .result-share-actions,
+  .result-actions { flex-wrap: wrap; }
+  .neural-report .ai-report-header { align-items: flex-start; flex-direction: column; }
+  .neural-report .phase-four-review { grid-template-columns: 1fr; }
+  .neural-report .phase-four-review-grid { grid-template-columns: 1fr; }
+  .neural-report .report-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .neural-report .ai-report-grid { grid-template-columns: 1fr; }
+  .neural-report .report-finger-heatmap > div:last-child { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
