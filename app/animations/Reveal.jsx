@@ -15,10 +15,10 @@ export default function Reveal({
   return (
     <Component
       className={className}
-      initial={reduceMotion ? false : { opacity: 0, y: 40, filter: "blur(8px)" }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount, margin: "0px 0px -6% 0px" }}
-      transition={{ delay, duration: .78, ease: [.16, 1, .3, 1] }}
+      transition={{ delay, duration: .45, ease: [.16, 1, .3, 1] }}
     >
       {children}
     </Component>

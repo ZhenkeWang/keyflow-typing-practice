@@ -1291,7 +1291,9 @@ export default function Home() {
   return (
     <main
       className={`app-shell theme-${theme} state-${status} ${inputFocused ? "has-input-focus" : ""} ${immersive ? "immersive-mode" : ""} ${status === "running" ? "is-training-focus" : ""} ${!entered ? "landing-active" : "practice-entered"}`}
-      onClick={() => {
+      onClick={(event) => {
+        // Let settings and disclosure controls keep their native keyboard focus.
+        if (event.target.closest("button, a, input, textarea, select, summary, [role='button'], [role='tab']")) return;
         if (entered && status !== "finished") inputRef.current?.focus();
       }}
     >
@@ -1383,6 +1385,7 @@ export default function Home() {
       </header>
 
       <section className="neural-workspace">
+      <div className="ios-support-rail">
       <SessionJourney
         xpTotal={xpTotal}
         levelInfo={levelInfo}
@@ -1396,10 +1399,10 @@ export default function Home() {
 
       <section className={`control-deck session-lab ${composerOpen ? "is-open" : ""}`}>
         <button className="session-lab-toggle" type="button" onClick={(event) => { event.stopPropagation(); setComposerOpen((value) => !value); }} aria-expanded={composerOpen}>
-          <span><i>⌘</i><span><small>SESSION LAB</small><strong>{modeLabel} · {testType === "words" ? `${goal}${chineseContent ? "字" : "词"}` : `${goal}秒`} · {INTERACTIONS.find((item) => item.id === interaction)?.label}</strong></span></span>
-          <span>{composerOpen ? "完成编排" : "调整训练参数"}<i>+</i></span>
+          <span><i>⌘</i><span><small>训练设置</small><strong>{modeLabel} · {testType === "words" ? `${goal}${chineseContent ? "字" : "词"}` : `${goal}秒`} · {INTERACTIONS.find((item) => item.id === interaction)?.label}</strong></span></span>
+          <span>{composerOpen ? "收起" : "调整"}<i>+</i></span>
         </button>
-        <div className="session-lab-body">
+        <div className="session-lab-body" inert={!composerOpen}>
         <div className="mode-grid">
           {MODES.map((item) => (
             <button
@@ -1559,6 +1562,7 @@ export default function Home() {
         </div>
       </section>
 
+      </div>
       <section
         className={`practice-card glass-level-3 ${status} interaction-${interaction} ${inputFocused ? "is-focused" : ""}`}
         data-training-state={status}
@@ -1803,6 +1807,8 @@ export default function Home() {
       </section>
       </section>
 
+      <details className="ios-section-group">
+        <summary><span><strong>成长与分析</strong><small>个人档案、AI 教练、技能、成就与排行榜</small></span><span className="ios-group-meta">Lv.{levelInfo.level}<i aria-hidden="true">›</i></span></summary>
       <TrainingDashboard
         history={history}
         xpTotal={xpTotal}
@@ -1811,7 +1817,10 @@ export default function Home() {
         onEditProfile={() => setProfileOpen(true)}
         onStartPlan={startPlanMode}
       />
+      </details>
 
+      <details className="ios-section-group">
+        <summary><span><strong>训练记录</strong><small>回顾速度、准确率与稳定性</small></span><span className="ios-group-meta">{history.length} 次<i aria-hidden="true">›</i></span></summary>
       <section className="history-section">
         <div className="section-heading"><span>RECENT SESSIONS</span><small>最近记录保存在此设备</small></div>
         <div className="history-list">
@@ -1826,8 +1835,9 @@ export default function Home() {
           )) : <div className="empty-history">完成第一轮练习后，成绩会出现在这里。</div>}
         </div>
       </section>
+      </details>
 
-      <footer className="page-footer"><span>KEYFLOW / LAB</span><p>DESIGNED FOR DEEP FOCUS · 2026</p></footer>
+      <footer className="page-footer"><span>KeyFlow</span><p>从每一次轻触，积累进步。</p></footer>
       <Suspense fallback={profileOpen ? <div className="saas-center-loading" role="status">正在载入控制中心…</div> : null}>
         <SaaSControlCenter
           open={profileOpen}

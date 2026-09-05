@@ -41,7 +41,7 @@ function SessionJourney({ xpTotal, levelInfo, missions, historyLength, streak = 
   return (
     <aside className={`mission-orbit tone-${selected.color}`} aria-label="训练任务中心">
       <header className="orbit-head">
-        <div><span>TODAY / PERSONAL PROGRAM</span><strong>训练控制台</strong></div>
+        <div><span>每一天，进步一点</span><strong>今日训练</strong></div>
         <div className="orbit-level"><i>LV</i><strong>{String(levelInfo.level).padStart(2, "0")}</strong><span>{streak} DAY FLOW</span></div>
       </header>
 
@@ -60,6 +60,8 @@ function SessionJourney({ xpTotal, levelInfo, missions, historyLength, streak = 
               <div className="orbit-meta"><span>{selected.goal}<small>SEC</small></span><span>{selected.reward}</span></div>
               <button type="button" onClick={() => start(selected)}><span>启动训练</span><i>↗</i></button>
             </section>
+            <details className="ios-quest-library">
+              <summary>浏览全部训练<span>{JOURNEY_QUESTS.length} 项 <i aria-hidden="true">›</i></span></summary>
             <div className="orbit-list">
               {JOURNEY_QUESTS.map((quest, index) => (
                 <button type="button" className={`${selected.id === quest.id ? "active" : ""} tone-${quest.color}`} key={quest.id} onClick={() => setSelectedId(quest.id)} aria-pressed={selected.id === quest.id}>
@@ -67,6 +69,7 @@ function SessionJourney({ xpTotal, levelInfo, missions, historyLength, streak = 
                 </button>
               ))}
             </div>
+            </details>
             <button className="orbit-shuffle" type="button" onClick={() => { setSelectedId(null); setRotation((value) => value + 1); }}>换一个推荐 <i>↻</i></button>
           </motion.div>
         )}

@@ -17,10 +17,10 @@ function Signal({ id, label, value, unit, progress, caption, primary = false }) 
 function TrainingMetrics({ wpm, accuracy, consistency, timeLabel, timeProgress, best }) {
   return (
     <div className="training-metrics signal-console" aria-label="实时训练数据">
-      <Signal id="01" label="VELOCITY" value={wpm} unit="WPM" progress={wpm} caption={`PERSONAL BEST ${best}`} primary />
-      <Signal id="02" label="PRECISION" value={accuracy} unit="%" progress={accuracy} caption="LIVE ACCURACY" />
-      <Signal id="03" label="CADENCE" value={consistency} unit="%" progress={consistency} caption="RHYTHM STABILITY" />
-      <Signal id="04" label="REMAINING" value={timeLabel} unit="" progress={timeProgress} caption="SESSION TIME" />
+      <Signal id="01" label="速度" value={wpm} unit="WPM" progress={wpm} caption={`个人最佳 ${best}`} primary />
+      <Signal id="02" label="准确率" value={accuracy} unit="%" progress={accuracy} caption="每一次准确输入" />
+      <Signal id="03" label="稳定性" value={consistency} unit="%" progress={consistency} caption="保持均匀节奏" />
+      <Signal id="04" label="剩余" value={timeLabel} unit="" progress={timeProgress} caption="本轮训练" />
     </div>
   );
 }

@@ -27,11 +27,12 @@ export default function KeyboardShowcase({ onEnter }) {
   const shineY = useTransform(smoothY, [0, 1], ["8%", "82%"]);
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion) { setAutoKey(""); return; }
     let index = 0;
     const timer = window.setInterval(() => {
-      index = (index + 1) % PULSE.length;
-      setAutoKey(PULSE[index]);
+      index += 1;
+      setAutoKey(PULSE[index] || "");
+      if (index >= PULSE.length) window.clearInterval(timer);
     }, 720);
     return () => window.clearInterval(timer);
   }, [reduceMotion]);
@@ -51,8 +52,8 @@ export default function KeyboardShowcase({ onEnter }) {
       }}
       onPointerLeave={() => { pointerX.set(.5); pointerY.set(.5); setHoverKey(""); }}
     >
-      <motion.div className="neural-keyboard-shadow" animate={reduceMotion ? undefined : { scaleX: [1, .94, 1], opacity: [.28, .18, .28] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
-      <motion.div className="neural-keyboard" style={reduceMotion ? undefined : { rotateX, rotateY, "--shine-x": shineX, "--shine-y": shineY }} animate={reduceMotion ? undefined : { y: [0, -5, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}>
+      <div className="neural-keyboard-shadow" />
+      <motion.div className="neural-keyboard" style={reduceMotion ? undefined : { rotateX, rotateY, "--shine-x": shineX, "--shine-y": shineY }}>
         <div className="neural-keyboard-light" />
         <div className="neural-keywell">
           {ROWS.map((row, rowIndex) => (
@@ -72,7 +73,7 @@ export default function KeyboardShowcase({ onEnter }) {
             </div>
           ))}
         </div>
-        <footer><span>KEYFLOW / TITANIUM 01</span><i /><strong>{hoverKey || autoKey}</strong></footer>
+        <footer><span>KeyFlow</span><i /><strong>{hoverKey || autoKey || "⌘"}</strong></footer>
       </motion.div>
     </motion.div>
   );

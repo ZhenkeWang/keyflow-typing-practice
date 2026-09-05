@@ -5,6 +5,7 @@ import "./styles/phase-six.css";
 import "./styles/phase-seven.css";
 import "./styles/phase-eight.css";
 import "./styles/phase-eleven.css";
+import "./styles/ios.css";
 
 export const metadata = {
   metadataBase: new URL("https://keyflow-typing-practice.barkzoombie.chatgpt.site"),
@@ -40,8 +41,8 @@ export const viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#eceef0" },
-    { media: "(prefers-color-scheme: dark)", color: "#18171a" },
+    { media: "(prefers-color-scheme: light)", color: "#f2f2f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#101012" },
   ],
 };
 
