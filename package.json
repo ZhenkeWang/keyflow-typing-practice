@@ -31,7 +31,7 @@
     "@react-three/fiber": "^9.6.1",
     "@vinext/cloudflare": "^1.0.0-beta.3",
     "framer-motion": "^12.42.2",
-    "next": "^16.2.11",
+    "next": "^16.3.4",
     "ogl": "^1.0.11",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -45,11 +45,11 @@
     "sharp": "^0.35.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.46.0",
+    "@cloudflare/vite-plugin": "^1.54.7",
     "@vitejs/plugin-react": "^6.0.4",
     "@vitejs/plugin-rsc": "^0.5.29",
     "vite": "^8.1.5",
-    "wrangler": "^4.113.0"
+    "wrangler": "^4.131.0"
   },
   "type": "module"
 }
