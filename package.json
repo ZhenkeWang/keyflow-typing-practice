@@ -45,11 +45,11 @@
     "sharp": "^0.35.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.46.0",
+    "@cloudflare/vite-plugin": "^1.62.3",
     "@vitejs/plugin-react": "^6.0.4",
     "@vitejs/plugin-rsc": "^0.5.29",
     "vite": "^8.1.5",
-    "wrangler": "^4.113.0"
+    "wrangler": "^4.145.0"
   },
   "type": "module"
 }
